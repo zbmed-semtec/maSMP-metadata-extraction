@@ -1,0 +1,405 @@
+{
+  "status": "success",
+  "schema": "maSMP",
+  "code_url": "https://github.com/KnowledgeCaptureAndDiscovery/somef",
+  "message": "Code analysis completed.",
+  "results": {
+    "maSMP:SoftwareSourceCode": {
+      "@context": [
+        "http://schema.org/",
+        {
+          "codemeta": "https://w3id.org/codemeta/3.0"
+        },
+        {
+          "maSMP": "https://discovery.biothings.io/ns/maSMPProfiles/"
+        }
+      ],
+      "@type": "maSMP:SoftwareSourceCode",
+      "name": "somef",
+      "author": [
+        {
+          "@type": "Person",
+          "familyName": "Garijo",
+          "givenName": "Daniel",
+          "@id": "http://orcid.org/0000-0003-0454-7145"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Mao",
+          "givenName": "Allen"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Dharmala",
+          "givenName": "Haripriya"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Diwanji",
+          "givenName": "Cedant"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Wang",
+          "givenName": "Jiajing"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Kelley",
+          "givenName": "Aidan"
+        },
+        {
+          "@type": "Person",
+          "familyName": "García",
+          "givenName": "Miguel Angel"
+        }
+      ],
+      "version": "0.9.7_2",
+      "description": "SOftware Metadata Extraction Framework: A tool for automatically extracting relevant software information from readme files",
+      "citation": [
+        {
+          "@type": "Article",
+          "@id": "https://doi.org/10.1162/qss_a_00167"
+        }
+      ],
+      "codemeta:buildInstructions": null,
+      "contributor": [
+        {
+          "@type": "Person",
+          "url": "https://github.com/dgarijo"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/ma-garcia"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/citronella3alain"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/AidanKelley"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/vmdiwanji"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/juanjemdIos"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/rafaeel9"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/haripriyad252"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/kuefmz"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/apps/dependabot"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/Str3am786"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/akshataasheth"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/lwdemo123"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/quiteaniceguy"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/leejjoseph"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/tpronk"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/Rosna"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/jiaywan"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/proycon"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/Anas-Elhounsri"
+        }
+      ],
+      "license": {
+        "name": "MIT License",
+        "url": "https://api.github.com/licenses/mit"
+      },
+      "identifier": "https://doi.org/10.1162/qss_a_00167",
+      "dateModified": "2025-02-07",
+      "datePublished": "2025-02-07",
+      "keywords": [],
+      "programmingLanguage": [
+        "Jupyter Notebook",
+        "Python",
+        "C++",
+        "JavaScript",
+        "Shell",
+        "PHP",
+        "CMake",
+        "WDL",
+        "Common Workflow Language",
+        "Dockerfile",
+        "Makefile",
+        "CSS",
+        "Batchfile"
+      ],
+      "codemeta:referencePublication": {
+        "@type": "ScholarlyArticle",
+        "@id": "https://doi.org/10.1162/qss_a_00167",
+        "name": "A Framework for Creating Knowledge Graphs of Scientific Software Metadata",
+        "author": [
+          {
+            "@type": "Person",
+            "familyName": "Kelley",
+            "givenName": "Aidan"
+          },
+          {
+            "@type": "Person",
+            "familyName": "Garijo",
+            "givenName": "Daniel"
+          }
+        ]
+      },
+      "codemeta:readme": "https://github.com/KnowledgeCaptureAndDiscovery/somef/blob/master/README.md",
+      "discussionUrl": null,
+      "codeRepository": "https://github.com/KnowledgeCaptureAndDiscovery/somef",
+      "url": "https://github.com/KnowledgeCaptureAndDiscovery/somef",
+      "maSMP:versionControlSystem": {
+        "@type": "SoftwareApplication",
+        "@id": "https://www.wikidata.org/wiki/Q186055",
+        "url": "https://git-scm.com/",
+        "name": "Git"
+      },
+      "targetProduct": "https://github.com/KnowledgeCaptureAndDiscovery/somef/releases/tag/0.9.7_2",
+      "archivedAt": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/zipball/master",
+      "maSMP:intendedUse": null,
+      "codeSampleType": null,
+      "runtimePlatform": null,
+      "conditionsOfAccess": "Public",
+      "copyrightHolder": null,
+      "maintainer": null,
+      "maSMP:developerDocumentation": null,
+      "maSMP:learningResource": null,
+      "maSMP:changelog": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/commits",
+      "maSMP:userDocumentation": null,
+      "maSMP:deployInstructions": null,
+      "maSMP:installInstructions": null,
+      "maSMP:testInstructions": null,
+      "codemeta:issueTracker": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/issues"
+    },
+    "maSMP:SoftwareApplication": {
+      "@context": [
+        "http://schema.org/",
+        {
+          "codemeta": "https://w3id.org/codemeta/3.0"
+        },
+        {
+          "maSMP": "https://discovery.biothings.io/ns/maSMPProfiles/"
+        }
+      ],
+      "@type": "maSMP:SoftwareApplication",
+      "name": "somef",
+      "author": [
+        {
+          "@type": "Person",
+          "familyName": "Garijo",
+          "givenName": "Daniel",
+          "@id": "http://orcid.org/0000-0003-0454-7145"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Mao",
+          "givenName": "Allen"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Dharmala",
+          "givenName": "Haripriya"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Diwanji",
+          "givenName": "Cedant"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Wang",
+          "givenName": "Jiajing"
+        },
+        {
+          "@type": "Person",
+          "familyName": "Kelley",
+          "givenName": "Aidan"
+        },
+        {
+          "@type": "Person",
+          "familyName": "García",
+          "givenName": "Miguel Angel"
+        }
+      ],
+      "description": "SOftware Metadata Extraction Framework: A tool for automatically extracting relevant software information from readme files",
+      "citation": [
+        {
+          "@type": "Article",
+          "@id": "https://doi.org/10.1162/qss_a_00167"
+        }
+      ],
+      "codemeta:buildInstructions": null,
+      "softwareRequirements": null,
+      "contributor": [
+        {
+          "@type": "Person",
+          "url": "https://github.com/dgarijo"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/ma-garcia"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/citronella3alain"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/AidanKelley"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/vmdiwanji"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/juanjemdIos"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/rafaeel9"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/haripriyad252"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/kuefmz"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/apps/dependabot"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/Str3am786"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/akshataasheth"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/lwdemo123"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/quiteaniceguy"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/leejjoseph"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/tpronk"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/Rosna"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/jiaywan"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/proycon"
+        },
+        {
+          "@type": "Person",
+          "url": "https://github.com/Anas-Elhounsri"
+        }
+      ],
+      "license": {
+        "name": "MIT License",
+        "url": "https://api.github.com/licenses/mit"
+      },
+      "identifier": "https://doi.org/10.1162/qss_a_00167",
+      "dateModified": "2025-02-07",
+      "datePublished": "2025-02-07",
+      "keywords": [],
+      "releaseNotes": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/releases/latest",
+      "codemeta:referencePublication": {
+        "@type": "ScholarlyArticle",
+        "@id": "https://doi.org/10.1162/qss_a_00167",
+        "name": "A Framework for Creating Knowledge Graphs of Scientific Software Metadata",
+        "author": [
+          {
+            "@type": "Person",
+            "familyName": "Kelley",
+            "givenName": "Aidan"
+          },
+          {
+            "@type": "Person",
+            "familyName": "Garijo",
+            "givenName": "Daniel"
+          }
+        ]
+      },
+      "codemeta:readme": "https://github.com/KnowledgeCaptureAndDiscovery/somef/blob/master/README.md",
+      "discussionUrl": null,
+      "url": "https://github.com/KnowledgeCaptureAndDiscovery/somef",
+      "archivedAt": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/zipball/master",
+      "maSMP:intendedUse": null,
+      "conditionsOfAccess": "Public",
+      "copyrightHolder": null,
+      "maintainer": null,
+      "maSMP:developerDocumentation": null,
+      "maSMP:learningResource": null,
+      "maSMP:changelog": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/commits",
+      "maSMP:userDocumentation": null,
+      "maSMP:deployInstructions": null,
+      "maSMP:installInstructions": null,
+      "maSMP:testInstructions": null,
+      "softwareVersion": "0.9.7_2",
+      "memoryRequirements": null,
+      "operatingSystem": null,
+      "processorRequirements": null,
+      "storageRequirements": null,
+      "codemeta:issueTracker": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/issues"
+    }
+  }
+}
