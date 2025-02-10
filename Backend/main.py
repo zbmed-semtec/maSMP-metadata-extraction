@@ -3,8 +3,18 @@ from pydantic import BaseModel, HttpUrl
 from typing import Optional, Dict, Any
 from src.process_repository import process_repository
 from src.constants import All_properties
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Pydantic model for the response structure
 class MetadataResponse(BaseModel):
@@ -50,6 +60,7 @@ async def extract_metadata(
         )
 
     except Exception as e:
+        print(f"Error processing repository: {e}")
         raise HTTPException(
             status_code=400,
             detail=str(e)
