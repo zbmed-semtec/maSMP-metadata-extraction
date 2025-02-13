@@ -1,127 +1,203 @@
 <template>
-  <div class="metadata-display">
-    <div class="header">
-      <button @click="goBack" class="back-button">Back</button>
-      <button @click="downloadJson" class="download-button">Download JSON</button>
+  <div class="metadata-container">
+    <div class="button-container">
+      <button @click="goBack" class="button">Back</button>
+      <button @click="downloadJson" class="button">Download</button>
     </div>
 
-    <!-- Display tabs only for maSMP schema -->
-    <div v-if="schema === 'maSMP'" class="tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        :class="['tab-button', { active: currentTab === tab }]"
-        @click="currentTab = tab"
-      >
-        {{ tab }}
-      </button>
-    </div>
-
-    <!-- Tab content displayed based on selected tab -->
-    <div v-if="schema === 'maSMP'" class="tab-content">
-      <!-- Tab 1: SoftwareSourceCode -->
-      <div v-if="currentTab === 'maSMP:SoftwareSourceCode'">
-        <MetadataTable :metadata="metadata.results['maSMP:SoftwareSourceCode']" :schema="schema" />
+    <div v-if="schema === 'maSMP'" class="tabs-container">
+      <div class="tabs">
+        <button
+          @click="activeTab = 'ssc_tab'"
+          :class="{ active: activeTab === 'ssc_tab' }"
+        >
+          Profile: Software Source Code
+        </button>
+        <button
+          @click="activeTab = 'sa_tab'"
+          :class="{ active: activeTab === 'sa_tab' }"
+        >
+          Profile: SoftwareApplication
+        </button>
       </div>
-
-      <!-- Tab 2: SoftwareApplication -->
-      <div v-if="currentTab === 'maSMP:SoftwareApplication'">
-        <MetadataTable :metadata="metadata.results['maSMP:SoftwareApplication']" :schema="schema" />
+      <div class="tab-content">
+        <MetadataTable
+          v-if="activeTab === 'ssc_tab'"
+          :data="filterMetadata(results['maSMP:SoftwareSourceCode'])"
+        />
+        <MetadataTable
+          v-if="activeTab === 'sa_tab'"
+          :data="filterMetadata(results['maSMP:SoftwareApplication'])"
+        />
       </div>
     </div>
 
-    <!-- For other schemas like CodeMeta, display properties directly in a nested table -->
-    <div v-else>
-      <MetadataTable :metadata="metadata" :schema="schema" />
+    <div v-else-if="schema === 'CODEMETA'" class="metadata-content">
+      <MetadataTable :data="filterMetadata(results)" />
+    </div>
+
+    <div v-else class="metadata-content">
+      <p>No results to display.</p>
     </div>
   </div>
 </template>
 
 <script>
-import MetadataTable from './MetadataTable.vue';
+import MetadataTable from './MetadataTable.vue'; // Import the MetadataTable component
 
 export default {
   components: {
     MetadataTable,
   },
-  props: {
-    metadata: {
-      type: Object,
-      required: true,
-    },
-    schema: {
-      type: String,
-      required: true,
-    },
-  },
   data() {
     return {
-      currentTab: 'maSMP:SoftwareSourceCode', // Default tab
-      tabs: ['maSMP:SoftwareSourceCode', 'maSMP:SoftwareApplication'],
+      metadata: {},
+      schema: '',
+      results: {},
+      activeTab: 'ssc_tab',
     };
+  },
+  created() {
+    const metadataString = this.$route.query.metadata;
+    if (metadataString) {
+      this.metadata = JSON.parse(metadataString);
+      this.schema = this.metadata.schema;
+      this.results = this.metadata.results;
+    }
   },
   methods: {
     goBack() {
-      this.$emit('go-back');
+      this.$router.push('/'); // Navigate back to the home page
     },
     downloadJson() {
-      const dataStr = JSON.stringify(this.metadata, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
+      let dataToDownload;
+      let filename;
+
+      // Helper function to remove null values from an object
+      const removeNullValues = (obj) => {
+        return Object.fromEntries(
+          // eslint-disable-next-line no-unused-vars
+          Object.entries(obj).filter(([key, value]) => value !== null)
+        );
+      };
+
+      if (this.schema === 'CODEMETA') {
+        // Download the results directly for CODEMETA schema
+        dataToDownload = removeNullValues(this.results);
+        filename = 'codemeta_data.json';
+      } else if (this.schema === 'maSMP') {
+        // Download the active tab's data for maSMP schema
+        if (this.activeTab === 'ssc_tab') {
+          dataToDownload = removeNullValues(this.results['maSMP:SoftwareSourceCode']);
+          filename = 'maSMP_SoftwareSourceCode.json';
+        } else if (this.activeTab === 'sa_tab') {
+          dataToDownload = removeNullValues(this.results['maSMP:SoftwareApplication']);
+          filename = 'maSMP_SoftwareApplication.json';
+        }
+      } else {
+        // Fallback in case of unknown schema
+        console.error('Unknown schema:', this.schema);
+        return;
+      }
+
+      // Convert the data to a JSON string
+      const dataStr = JSON.stringify(dataToDownload, null, 2);
+
+      // Create a Blob and trigger the download
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'metadata.json';
+      link.download = filename;
       link.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url); // Clean up
+    },
+    filterMetadata(data) {
+      // Remove @context and @type from the metadata
+      // eslint-disable-next-line no-unused-vars
+      const { '@context': context, '@type': type, ...filteredData } = data;
+      return filteredData;
     },
   },
 };
 </script>
 
 <style scoped>
-.metadata-display {
-  max-width: 1200px;
-  margin: 0 auto;
+.metadata-container {
+  display: flex;
+  flex-direction: column;
   padding: 20px;
+  max-width: 1200px; /* Increased width */
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
 }
 
-.header {
+.button-container {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.back-button, .download-button {
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
   background-color: #42b983;
   color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #36976f;
+}
+
+.tabs-container {
+  margin-top: 20px;
 }
 
 .tabs {
   display: flex;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.tab-button {
+.tabs button {
   padding: 10px 20px;
-  background-color: #f4f4f4;
   border: none;
-  cursor: pointer;
-  margin-right: 10px;
   border-radius: 5px;
+  cursor: pointer;
+  background-color: #f4f4f4;
+  color: #333;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
-.tab-button.active {
-  background-color: #42b983;
+.tabs button.active {
+  background-color: #007bff;
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .tab-content {
-  background-color: #f9f9f9;
+  background: #f4f4f4;
   padding: 20px;
   border-radius: 5px;
+  overflow-x: auto;
+}
+
+.metadata-content {
+  background: #f4f4f4;
+  padding: 20px;
+  border-radius: 5px;
+  overflow-x: auto;
 }
 </style>

@@ -1,44 +1,52 @@
 <template>
-  <table class="metadata-table">
-    <tbody>
-      <tr v-for="(value, key) in data" :key="key">
-        <td class="property">{{ key }}</td>
-        <td class="value">
-          <!-- Render Nested Objects as Inner Tables -->
-          <template v-if="isObject(value) && !isSpecialType(value)">
-            <MetadataTable :data="value" />
-          </template>
+  <div>
+    <!-- Render Person -->
+    <template v-if="isPerson(value)">
+      <span v-html="renderPerson(value)" />
+    </template>
 
-          <!-- Render Special Types (Person, Article, VersionControlSystem) -->
-          <template v-else-if="isSpecialType(value)">
-            <span v-html="renderSpecialType(value)" />
-            <MetadataTable v-if="hasAdditionalInfo(value)" :data="filterAdditionalInfo(value)" />
-          </template>
+    <!-- Render Article or ScholarlyArticle -->
+    <template v-else-if="isArticle(value)">
+      <span v-html="renderArticle(value)" />
+      <MetadataTable v-if="hasAdditionalInfo(value)" :data="filterArticleInfo(value)" />
+    </template>
 
-          <!-- Render Arrays -->
-          <template v-else-if="isArray(value)">
-            <div v-for="(item, index) in value" :key="index" class="array-item">
-              <MetadataTable v-if="isObject(item)" :data="item" />
-              <span v-else v-html="renderValue(item)" />
-            </div>
-          </template>
+    <!-- Render VersionControlSystem -->
+    <template v-else-if="isVersionControlSystem(value)">
+      <span v-html="renderVersionControlSystem(value)" />
+      <MetadataTable v-if="hasAdditionalInfo(value)" :data="filterVersionControlSystemInfo(value)" />
+    </template>
 
-          <!-- Render Primitive Values (strings, numbers, etc.) -->
-          <template v-else>
-            <span v-html="renderValue(value)" />
-          </template>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- Render Nested Objects -->
+    <template v-else-if="isObject(value)">
+      <MetadataTable :data="value" />
+    </template>
+
+    <!-- Render Arrays -->
+    <template v-else-if="isArray(value)">
+      <div v-for="(item, index) in value" :key="index" class="array-item">
+        <ValueRenderer :value="item" />
+      </div>
+    </template>
+
+    <!-- Render Primitive Values (strings, numbers, etc.) -->
+    <template v-else>
+      <span v-html="renderValue(value)" />
+    </template>
+  </div>
 </template>
 
 <script>
+import MetadataTable from './MetadataTable.vue';
+
 export default {
-  name: 'MetadataTable',
+  name: 'ValueRenderer',
+  components: {
+    MetadataTable,
+  },
   props: {
-    data: {
-      type: Object,
+    value: {
+      type: [Object, Array, String, Number, Boolean],
       required: true,
     },
   },
@@ -50,15 +58,7 @@ export default {
     isArray(value) {
       return Array.isArray(value);
     },
-    isSpecialType(value) {
-      return (
-        this.isPerson(value) ||
-        this.isArticle(value) ||
-        this.isVersionControlSystem(value)
-      );
-    },
     isPerson(value) {
-      console.log(this.isObject(value));
       return this.isObject(value) && value['@type'] === 'Person';
     },
     isArticle(value) {
@@ -69,16 +69,6 @@ export default {
     },
 
     // Render Methods
-    renderSpecialType(value) {
-      if (this.isPerson(value)) {
-        return this.renderPerson(value);
-      } else if (this.isArticle(value)) {
-        return this.renderArticle(value);
-      } else if (this.isVersionControlSystem(value)) {
-        return this.renderVersionControlSystem(value);
-      }
-      return '';
-    },
     renderPerson(person) {
       if (person.url) {
         return `👤<a href="${person.url}" target="_blank" rel="noopener noreferrer">${person.url}</a>`;
@@ -114,9 +104,14 @@ export default {
       const { '@type': type, '@id': id, ...rest } = obj;
       return Object.keys(rest).length > 0;
     },
-    filterAdditionalInfo(obj) {
+    filterArticleInfo(article) {
       // eslint-disable-next-line no-unused-vars
-      const { '@type': type, '@id': id, ...rest } = obj;
+      const { '@type': type, '@id': id, ...rest } = article;
+      return rest;
+    },
+    filterVersionControlSystemInfo(vcs) {
+      // eslint-disable-next-line no-unused-vars
+      const { '@type': type, '@id': id, ...rest } = vcs;
       return rest;
     },
   },
@@ -124,38 +119,6 @@ export default {
 </script>
 
 <style scoped>
-.metadata-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-  font-family: Arial, sans-serif;
-  background-color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.metadata-table td {
-  padding: 12px;
-  text-align: left;
-}
-
-.metadata-table .property {
-  font-weight: bold;
-  background-color: #f9f9f9;
-  width: 30%;
-  border-bottom: 1px solid #ddd;
-}
-
-.metadata-table .value {
-  background-color: #fff;
-  border-bottom: 1px solid #ddd;
-}
-
-.metadata-table tr:last-child td {
-  border-bottom: none;
-}
-
 .array-item {
   margin-bottom: 8px;
 }
