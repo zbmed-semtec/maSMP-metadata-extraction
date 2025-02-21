@@ -1,2 +1,4 @@
-# private-maplan-project
-Private space for maPlan project to track issues and so
+# Automated Metadata Extraction for Machine-Actionable Software Management Plan
+
+This project focuses on extracting metadata from GitHub repositories to generate a **Machine-Actionable Software Management Plan (SMP)**.
+
