@@ -46,16 +46,36 @@ Returns a JSON object (`MetadataResponse`) containing the analysis results.
 To use the token, include it in the request as the `access_token` parameter.
 
 ## Installation
-```sh
-# Create a virtual environment with Conda
-conda create --name maplan python=3.10
+Before starting, make sure you have **Conda** installed. If not, you can follow the official instructions to install it from [here](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
-# Activate the environment
-conda activate maplan
+### Steps to Set Up the Backend
+1. **Navigate to the backend folder**:
+   Ensure you're inside the `backend` directory of the project before proceeding with the setup.
 
-# Install dependencies
-pip install -r requirements.txt
-```
+   ```sh
+   cd backend
+   ```
+
+2. **Create a virtual environment with Conda**: 
+   If you don't have a Conda environment yet, create one using the following command:
+
+   ```sh
+   conda create --name maplan python=3.10
+   ```
+
+3. **Activate the environment**: 
+   Once the environment is created, activate it using the following command:
+
+   ```sh
+   conda activate maplan
+   ```
+
+4. **Install dependencies**: 
+   Use pip to install the necessary dependencies:
+
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 ```sh

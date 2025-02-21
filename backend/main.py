@@ -27,8 +27,15 @@ class MetadataResponse(BaseModel):
 
 @app.get("/metadata", response_model=MetadataResponse)
 async def extract_metadata(
-    repo_url: HttpUrl = Query(..., description="URL of the code repository"),
-    schema: str = Query(..., description="Schema to analyze against"),
+    repo_url: HttpUrl = Query(
+        "https://github.com/KnowledgeCaptureAndDiscovery/somef", 
+        description="URL of the code repository"  # Default URL for testing
+    ),
+    schema: str = Query(
+        "maSMP", 
+        description="Schema to analyze against", 
+        enum=["maSMP", "CODEMETA"]  # Restrict to valid schema values
+    ),
     access_token: Optional[str] = Query(None, description="Optional access token for private repositories")
 ) -> MetadataResponse:
     """
