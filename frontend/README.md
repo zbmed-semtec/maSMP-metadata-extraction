@@ -17,14 +17,14 @@ Ensure you're inside the `frontend` directory of the project before proceeding w
    cd frontend
    ```
 
-### 1. Install Dependencies
+### 2. Install Dependencies
 Make sure you have **Node.js** installed. Then, run the following command to install the required dependencies:
 
 ```sh
 npm install
 ```
 
-### 2. Start the Development Server
+### 3. Start the Development Server
 To start the development server with hot-reloading:
 
 ```sh
