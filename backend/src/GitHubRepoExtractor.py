@@ -94,6 +94,7 @@ class GitHubRepoExtractor:
             "discussionUrl": f"{repo_data.get('html_url')}/discussions" if repo_data.get('has_discussions') else None,
             "hasSourceCode": f"{repo_data.get('html_url')}#id",
             "keywords": repo_data.get('topics') or None,
+            "maSMP:versionControlSystem": {"@type": "SoftwareApplication", "@id":"https://www.wikidata.org/wiki/Q186055", "url": "https://git-scm.com/", "name": "Git"},
         })
 
         # Extract programming languages and contributors
