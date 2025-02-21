@@ -5,7 +5,7 @@ This project focuses on extracting metadata from GitHub repositories to generate
 This README is specifically for the **frontend component**, which utilizes **Vue 3** for the user interface.
 
 ## Prerequisites
-Before running the frontend, ensure the **backend service is up and running**. Follow the instructions in the [Backend README](/private-maplan-project/backend/README.md) to set up and start the backend server.
+Before running the frontend, ensure the **backend service is up and running**. Follow the instructions in the [Backend README](../backend/README.md) to set up and start the backend server.
 
 ## Project Setup
 To set up and run the frontend, follow these steps:
