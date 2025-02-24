@@ -175,7 +175,7 @@ def construct_json(data, schema):
 
         for key, value in data.items():
             if key in schema_properties:
-                jsonld_document[key] = value
+                jsonld_document[key] = None if isinstance(value, list) and not value else value
 
         jsonld_document.update({
             key: value
