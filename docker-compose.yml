@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+
+  vue:
+    build:
+      context: ./frontend
+      args:
+        VUE_APP_API_URL: ${VUE_APP_API_URL}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env.docker
+    depends_on:
+      - backend
+    networks:
+      - app-network
+  
+networks:
+  app-network:
+    driver: bridge
