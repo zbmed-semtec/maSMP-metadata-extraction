@@ -153,11 +153,12 @@ class RepoFilesParser():
         for branch in ['master', 'main']:
             license_url = f'https://raw.githubusercontent.com/{self.owner}/{self.repo}/{branch}/LICENSE'
             response = Utilities.fetch_github_file(license_url, self.access_token)
-            license_content = response.text
-            match = re.search(r"Copyright\s+\([cC]\)\s+\d{4}\s+(.+)", license_content)
-            if match:
-                self.all_properties["copyrightHolder"] = match.group(1)
-                break
+            if response.status_code == 200:
+                license_content = response.text
+                match = re.search(r"Copyright\s+\([cC]\)\s+\d{4}\s+(.+)", license_content)
+                if match:
+                    self.all_properties["copyrightHolder"] = match.group(1)
+                    break
 
     def parse_readme_file(self):
         """

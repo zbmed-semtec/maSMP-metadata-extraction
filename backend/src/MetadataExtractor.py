@@ -20,7 +20,7 @@ def process_repository(repo_url, All_properties, schema, access_token=None):
         dict: The constructed JSON-LD document.
     """
     GitExtractor = GitHubRepoExtractor(repo_url, All_properties, access_token)
-    All_properties = GitExtractor.process_repo()
+    All_properties, hasRelease = GitExtractor.process_repo()
 
     FileParser = RepoFilesParser(repo_url, All_properties, access_token)
     All_properties, DOI, reference_extracted = FileParser.parse_files()
@@ -28,7 +28,7 @@ def process_repository(repo_url, All_properties, schema, access_token=None):
     DataFetcher = ExternalDataFetcher(repo_url, All_properties, DOI, access_token, reference_extracted)
     All_properties = DataFetcher.extract()
 
-    jsonld_document = construct_json(All_properties, schema)
+    jsonld_document = construct_json(All_properties, schema, hasRelease)
     return jsonld_document
 
 if __name__ == "__main__":
