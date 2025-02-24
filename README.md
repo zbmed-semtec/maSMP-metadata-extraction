@@ -36,7 +36,7 @@ This will:
 
 ### 3. Access the Application
 Once the containers are up and running, open your browser and go to:
-- **Frontend UI:** [http://localhost:3000](http://localhost:3000)
+- **Frontend UI:** [http://localhost:8080](http://localhost:8080)
 - **Backend API Documentation:**
   - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
   - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
