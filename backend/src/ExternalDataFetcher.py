@@ -150,7 +150,9 @@ class ExternalDataFetcher():
         Extracts DOI-based reference information and updates metadata properties.
         """
         response = self.fetch_openalex_metadata()
-        reference_publication = {"@type": "ScholarlyArticle", "@id": f"https://doi.org/{self.doi}"}
+        reference_publication = None
+        if self.doi:
+            reference_publication = {"@type": "ScholarlyArticle", "@id": f"https://doi.org/{self.doi}"}
         
         if response.get('title'):
             reference_publication['name'] = response['title']
