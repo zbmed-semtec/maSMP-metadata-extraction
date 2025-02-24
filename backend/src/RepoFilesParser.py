@@ -206,6 +206,7 @@ class RepoFilesParser():
 
         if reference_publications and self.all_properties["codemeta:referencePublication"] is None:
             self.all_properties["codemeta:referencePublication"] = reference_publications
+            self.reference_extracted = True
 
         if unique_authors and self.all_properties["author"] is None:
             self.all_properties["author"] = unique_authors
