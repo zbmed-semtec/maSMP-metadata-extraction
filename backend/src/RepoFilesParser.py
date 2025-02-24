@@ -78,9 +78,10 @@ class RepoFilesParser():
         Extracts metadata from the CITATION.cff file and updates all_properties.
         """
         cff_data = self.get_citation_filedata()
-        
         if not cff_data:
             return
+        
+        print("FOUND SOMETHING IN CFF")
         
         target_keys = {
             "alternateName": "title",
@@ -163,18 +164,17 @@ class RepoFilesParser():
         """
         Extracts the reference publication and authors details from readme bibtex.
         """
-        for branch in ['master', 'main']:
+        reference_publications = []
+        all_authors = []
+        for branch in ['main', 'master']:
             readme_url = f"https://raw.githubusercontent.com/{self.owner}/{self.repo}/{branch}/README.md"
             response = Utilities.fetch_github_file(readme_url, self.access_token)
 
             if response and response.status_code == 200:
                 self.readme_content = response.text
                 citations = re.findall(r'```bibtex([\s\S]*?)```', self.readme_content)
-                reference_publications = []
-                all_authors = []
-
+                
                 for citation in citations:
-                    print("Entered the for loop")
                     reference_publication = {"@type": "ScholarlyArticle"}
 
                     title_match = re.search(r'title\s*=\s*[{"](.*?)[}"]', citation, re.IGNORECASE)
@@ -199,7 +199,7 @@ class RepoFilesParser():
                     
                     reference_publications.append(reference_publication)
                 break
-  
+
         unique_authors = None
         if all_authors:
             unique_authors = [dict(t) for t in {frozenset(author.items()) for author in all_authors}]
