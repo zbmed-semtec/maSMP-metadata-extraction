@@ -23,6 +23,7 @@ class RepoFilesParser():
         self.all_properties = all_properties
         self.doi = None
         self.reference_extracted = False
+        self.readme_content = None
 
     def parse_files(self):
         """
@@ -33,6 +34,7 @@ class RepoFilesParser():
         """
         self.parse_citation_cff()
         self.parse_license_file()
+        self.parse_readme_file()
         return self.all_properties, self.doi, self.reference_extracted
 
     def get_citation_filedata(self):
@@ -156,3 +158,54 @@ class RepoFilesParser():
             if match:
                 self.all_properties["copyrightHolder"] = match.group(1)
                 break
+
+    def parse_readme_file(self):
+        """
+        Extracts the reference publication and authors details from readme bibtex.
+        """
+        for branch in ['master', 'main']:
+            readme_url = f"https://raw.githubusercontent.com/{self.owner}/{self.repo}/{branch}/README.md"
+            response = Utilities.fetch_github_file(readme_url, self.access_token)
+
+            if response and response.status_code == 200:
+                self.readme_content = response.text
+                citations = re.findall(r'```bibtex([\s\S]*?)```', self.readme_content)
+                reference_publications = []
+                all_authors = []
+
+                for citation in citations:
+                    print("Entered the for loop")
+                    reference_publication = {"@type": "ScholarlyArticle"}
+
+                    title_match = re.search(r'title\s*=\s*[{"](.*?)[}"]', citation, re.IGNORECASE)
+                    if title_match:
+                        reference_publication['name'] = title_match.group(1)
+
+                    author_matches = re.findall(r'author\s*=\s*[{"](.*?)[}"]', citation, re.IGNORECASE)
+                    authors = []
+                    for author_str in author_matches:
+                        for author in author_str.split(' and '):
+                            author_parts = author.strip().split(' ')
+                            author_entry = {
+                                "@type": "Person",
+                                "familyName": author_parts[0].strip() if len(author_parts) > 0 else None,
+                                "givenName": author_parts[1].strip() if len(author_parts) > 1 else None,
+                            }
+                            authors.append(author_entry)
+                            all_authors.extend(authors)
+
+                    if authors:
+                        reference_publication['author'] = authors
+                    
+                    reference_publications.append(reference_publication)
+                break
+  
+        unique_authors = None
+        if all_authors:
+            unique_authors = [dict(t) for t in {frozenset(author.items()) for author in all_authors}]
+
+        if reference_publications and self.all_properties["codemeta:referencePublication"] is None:
+            self.all_properties["codemeta:referencePublication"] = reference_publications
+
+        if unique_authors and self.all_properties["author"] is None:
+            self.all_properties["author"] = unique_authors
