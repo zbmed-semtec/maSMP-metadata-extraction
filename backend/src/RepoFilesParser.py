@@ -93,7 +93,6 @@ class RepoFilesParser():
         for property_name, target_key in target_keys.items():
             values = Utilities.find_property(cff_data, target_key)
             if values:
-                self.doi = values[0]
                 if property_name == "identifier":
                     self.all_properties[property_name] = f"https://doi.org/{values[0]}"
                     self.all_properties["citation"].append({"@type":"Article", "@id": f"https://doi.org/{values[0]}"})
@@ -129,23 +128,26 @@ class RepoFilesParser():
         reference_publication = {"@type": "ScholarlyArticle"}
         
         if 'doi' in preferred_citation:
-            reference_publication["@id"] = f"https://doi.org/{preferred_citation['doi']}"
+            if preferred_citation['doi'] is not None:
+                reference_publication["@id"] = f"https://doi.org/{preferred_citation['doi']}"
         if 'title' in preferred_citation:
-            reference_publication['name'] = preferred_citation['title']
+            if preferred_citation['title'] is not None:
+                reference_publication['name'] = preferred_citation['title']
         if 'authors' in preferred_citation:
             reference_publication['author'] = []
-            for author in preferred_citation['authors']:
-                author_entry = {
-                    "@type": "Person",
-                    "familyName": author.get('family-names'),
-                    "givenName": author.get('given-names'),
-                }
-                if 'orcid' in author:
-                    author_entry["@id"] = author['orcid']
-                reference_publication["author"].append(author_entry)
-        
-        self.all_properties["codemeta:referencePublication"] = reference_publication
+            if preferred_citation['authors'] is not None:
+                for author in preferred_citation['authors']:
+                    author_entry = {
+                        "@type": "Person",
+                        "familyName": author.get('family-names'),
+                        "givenName": author.get('given-names'),
+                    }
+                    if 'orcid' in author:
+                        author_entry["@id"] = author['orcid']
+                    reference_publication["author"].append(author_entry)
 
+        self.all_properties["codemeta:referencePublication"] = reference_publication
+        
     def parse_license_file(self):
         """
         Extracts the copyright holder information from the LICENSE file if available.
@@ -210,3 +212,4 @@ class RepoFilesParser():
 
         if unique_authors and self.all_properties["author"] is None:
             self.all_properties["author"] = unique_authors
+
