@@ -23,6 +23,8 @@ class GitHubRepoExtractor:
         if access_token:
             self.headers['Authorization'] = f'token {access_token}'
         self.all_properties = all_properties
+        self.last_commit_date = None
+        self.release_info = {"hasRelease": False, "tag_name": None, "release_date": None}
 
     def process_repo(self):
         """
@@ -35,7 +37,7 @@ class GitHubRepoExtractor:
             self.extract_github_properties()
         else:
             raise ValueError("Unsupported git hosting service.")
-        return self.all_properties
+        return self.all_properties, self.release_info["hasRelease"]
 
     def rate_limit_get(self, url, backoff_rate=2, initial_backoff=1):
         """
@@ -126,9 +128,26 @@ class GitHubRepoExtractor:
         except requests.exceptions.RequestException:
             logger.warning("No license found for this repository.")
 
+        # Extract last commit info
+        try:
+            commit_data = self.rate_limit_get(api_url + "/commits")
+            commit_date = commit_data[0]["commit"]["committer"]["date"]
+            self.last_commit_date  = str(Utilities.format_date(commit_date)[:10])
+        except:
+            logger.warning("Last commit date cannot be fetched")
+
         # Extract latest release information
         try:
             release_data = self.rate_limit_get(api_url + "/releases/latest")
-            self.all_properties.update({"version": release_data.get('tag_name'), "softwareVersion": release_data.get('tag_name')})
+            if release_data:
+                self.release_info["hasRelease"] = True
+                self.release_info["tag"] = release_data.get("tag_name")
+                self.release_info["release_date"] = str(Utilities.format_date(release_data.get("published_at"))[:10])
         except requests.exceptions.RequestException:
             logger.warning("No releases found for this repository.")
+
+        lastest_release_flag = Utilities.compare_dates(self.last_commit_date, self.release_info["release_date"])
+        if self.release_info["hasRelease"]: # Assign softwareVersion if there is a release associated
+            self.all_properties["softwareVersion"] = self.release_info["tag"]
+            if lastest_release_flag: # Assign version only if the last commit is behind or same as the latest release date
+                self.all_properties["version"]= self.release_info["tag"]

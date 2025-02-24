@@ -2,6 +2,7 @@ import re
 import requests
 import logging
 from urllib.parse import urlparse
+from datetime import datetime
 from src.constants import CODEMETA, maSMP_SoftwareSourceCode, maSMP_SoftwareApplication, to_be_removed
 
 def is_valid_and_reachable(url, access_token=None):
@@ -116,7 +117,7 @@ def fetch_github_file(url, access_token=None):
         access_token (str, optional): Authentication token for private repositories.
     
     Returns:
-        requests.Response: The response object containing the file content.
+        requests.Response: The response object.
     """
     headers = {}
     if access_token:
@@ -124,13 +125,45 @@ def fetch_github_file(url, access_token=None):
     response = requests.get(url, headers=headers)
     return response
 
-def construct_json(data, schema):
+def format_date(commit_date: str) -> str:
+    """
+    Convert an ISO 8601 formatted date string to a readable format.
+    
+    Args:
+        commit_date (str): The date string in ISO 8601 format (e.g., "2024-02-24T15:30:00Z").
+    
+    Returns:
+        str: The formatted date string in "YYYY-MM-DD HH:MM:SS" format (e.g., "2024-02-24 15:30:00").
+    """
+    formatted_date = datetime.strptime(commit_date, "%Y-%m-%dT%H:%M:%SZ")
+    return formatted_date.strftime("%Y-%m-%d %H:%M:%S")
+
+def compare_dates(date1: str, date2: str) -> bool:
+    """
+    Compare two dates in "YYYY-MM-DD" format.
+    
+    Args:
+        date1 (str): First date string.
+        date2 (str): Second date string.
+    
+    Returns:
+        bool: True if date2 is latest or both are the same, False if date1 is latest.
+    """
+    if date1 is None or date2 is None:
+        return False
+    
+    d1 = datetime.strptime(date1, "%Y-%m-%d")
+    d2 = datetime.strptime(date2, "%Y-%m-%d")
+    return d1 <= d2
+
+def construct_json(data, schema, hasRelease):
     """
     Constructs a JSON-LD document from extracted data and a schema.
     
     Args:
         data (dict): Extracted metadata properties.
         schema (str): The schema type (e.g., 'CODEMETA', 'maSMP').
+        hasRelease (bool): True if the github project has any release else False.
     
     Returns:
         dict: A JSON-LD document.
@@ -181,6 +214,7 @@ def construct_json(data, schema):
 
     if schema == "maSMP":
         return {
+            "hasRelease": hasRelease,
             "maSMP:SoftwareSourceCode": create_jsonld("maSMP:SoftwareSourceCode"),
             "maSMP:SoftwareApplication": create_jsonld("maSMP:SoftwareApplication")
         }
