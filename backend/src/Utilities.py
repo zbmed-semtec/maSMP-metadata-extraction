@@ -117,18 +117,12 @@ def fetch_github_file(url, access_token=None):
     
     Returns:
         requests.Response: The response object containing the file content.
-    
-    Raises:
-        Exception: If the request fails.
     """
     headers = {}
     if access_token:
         headers['Authorization'] = f'token {access_token}'
     response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response
-    else: 
-        raise Exception(f"Failed to fetch file: {response.status_code}")
+    return response
 
 def construct_json(data, schema):
     """
