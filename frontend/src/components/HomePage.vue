@@ -45,7 +45,7 @@
         <h3>How to Get a GitHub Access Token?</h3>
           <ol>
             <li>Go to <a href="https://github.com/settings/tokens" target="_blank">GitHub Developer Settings</a></li><br>
-            <li>Click <strong>"Generate new token"</strong></li><br>
+            <li>Click <strong>"Generate new token (classic)"</strong></li><br>
             <li>Select <strong>expiration</strong> (optional, but recommended)</li><br>
             <li>Enable the following scopes:
               <ul>
