@@ -105,13 +105,19 @@ class GitHubRepoExtractor:
             except requests.exceptions.RequestException:
                 logger.warning(f"Could not fetch {key} for this repository.")
 
-        # Extract README and CHANGELOG files
+        # Extract README file
         for branch in ['master', 'main']:
-            for file, key in [("README.md", "codemeta:readme"), ("CHANGELOG.md", "maSMP:changelog")]:
-                url = f"https://github.com/{self.owner}/{self.repo}/blob/{branch}/{file}"
-                if Utilities.is_valid_and_reachable(url, self.access_token):
-                    self.all_properties[key] = url
-                    break
+            readme_url = f"https://github.com/{self.owner}/{self.repo}/blob/{branch}/README.md"
+            if Utilities.is_valid_and_reachable(readme_url, self.access_token):
+                self.all_properties["codemeta:readme"] = readme_url
+                break
+
+        # Extract CHANGELOG file
+        for branch in ['master', 'main']:
+            changelog_url = f"https://github.com/{self.owner}/{self.repo}/blob/{branch}/CHANGELOG.md"
+            if Utilities.is_valid_and_reachable(changelog_url, self.access_token):
+                self.all_properties["maSMP:changelog"] = changelog_url
+                break
 
         # Extract license information
         try:
