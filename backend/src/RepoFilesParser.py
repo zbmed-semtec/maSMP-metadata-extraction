@@ -34,7 +34,8 @@ class RepoFilesParser():
         """
         self.parse_citation_cff()
         self.parse_license_file()
-        self.parse_readme_file()
+        if not self.reference_extracted:
+            self.parse_readme_file()
         return self.all_properties, self.doi, self.reference_extracted
 
     def get_citation_filedata(self):
