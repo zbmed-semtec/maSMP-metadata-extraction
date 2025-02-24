@@ -80,9 +80,7 @@ class RepoFilesParser():
         cff_data = self.get_citation_filedata()
         if not cff_data:
             return
-        
-        print("FOUND SOMETHING IN CFF")
-        
+                
         target_keys = {
             "alternateName": "title",
             "identifier": "doi",
