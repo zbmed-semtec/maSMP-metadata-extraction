@@ -1,0 +1,219 @@
+{
+    "status": "success",
+    "schema": "CODEMETA",
+    "code_url": "https://github.com/KnowledgeCaptureAndDiscovery/somef",
+    "message": "Code analysis completed.",
+    "results": {
+        "@context": [
+            "http://schema.org/",
+            {
+                "codemeta": "https://w3id.org/codemeta/3.0"
+            }
+        ],
+        "@type": "SoftwareSourceCode",
+        "name": "somef",
+        "alternateName": "SOMEF: Software metadata extraction framework",
+        "author": [
+            {
+                "@type": "Person",
+                "familyName": "Garijo",
+                "givenName": "Daniel",
+                "@id": "http://orcid.org/0000-0003-0454-7145"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Mao",
+                "givenName": "Allen"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Dharmala",
+                "givenName": "Haripriya"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Diwanji",
+                "givenName": "Cedant"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Wang",
+                "givenName": "Jiajing"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Kelley",
+                "givenName": "Aidan"
+            },
+            {
+                "@type": "Person",
+                "familyName": "García",
+                "givenName": "Miguel Angel"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Ciuciu-Kiss",
+                "givenName": "Jenifer"
+            },
+            {
+                "@type": "Person",
+                "familyName": "Mendoza",
+                "givenName": "Juanje"
+            }
+        ],
+        "version": "0.9.11",
+        "description": "SOftware Metadata Extraction Framework: A tool for automatically extracting relevant software information from readme files",
+        "citation": [
+            {
+                "@type": "Article",
+                "@id": "https://doi.org/10.1162/qss_a_00167"
+            }
+        ],
+        "codemeta:buildInstructions": null,
+        "documentation": null,
+        "softwareRequirements": null,
+        "contributor": [
+            {
+                "@type": "Person",
+                "url": "https://github.com/dgarijo"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/juanjemdIos"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/ma-garcia"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/citronella3alain"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/AidanKelley"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/vmdiwanji"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/rafaeel9"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/haripriyad252"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/kuefmz"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/apps/dependabot"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/Anas-Elhounsri"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/Str3am786"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/quiteaniceguy"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/lwdemo123"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/akshataasheth"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/leejjoseph"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/tpronk"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/Daniel-Mietchen"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/Rosna"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/jiaywan"
+            },
+            {
+                "@type": "Person",
+                "url": "https://github.com/proycon"
+            }
+        ],
+        "license": {
+            "name": "MIT License",
+            "url": "https://api.github.com/licenses/mit"
+        },
+        "identifier": "https://doi.org/10.1162/qss_a_00167",
+        "dateCreated": "2019-06-06",
+        "dateModified": "2025-04-28",
+        "datePublished": "2025-04-29",
+        "downloadUrl": "https://api.github.com/repos/KnowledgeCaptureAndDiscovery/somef/zipball/master",
+        "keywords": [
+            "codemeta",
+            "extraction",
+            "metadata",
+            "readme",
+            "software"
+        ],
+        "codemeta:hasSourceCode": null,
+        "releaseNotes": null,
+        "programmingLanguage": [
+            "Jupyter Notebook",
+            "Python",
+            "C++",
+            "JavaScript",
+            "Shell",
+            "PHP",
+            "CMake",
+            "WDL",
+            "Common Workflow Language",
+            "Dockerfile",
+            "Makefile",
+            "CSS",
+            "Batchfile"
+        ],
+        "codemeta:developmentStatus": null,
+        "codemeta:referencePublication": {
+            "@type": "ScholarlyArticle",
+            "@id": "https://doi.org/10.1162/qss_a_00167",
+            "name": "A Framework for Creating Knowledge Graphs of Scientific Software Metadata",
+            "author": [
+                {
+                    "@type": "Person",
+                    "familyName": "Kelley",
+                    "givenName": "Aidan"
+                },
+                {
+                    "@type": "Person",
+                    "familyName": "Garijo",
+                    "givenName": "Daniel"
+                }
+            ]
+        },
+        "codemeta:readme": "https://github.com/KnowledgeCaptureAndDiscovery/somef/blob/master/README.md",
+        "image": null,
+        "logo": null,
+        "applicationCategory": null,
+        "discussionUrl": null,
+        "codemeta:issueTracker": "https://github.com/KnowledgeCaptureAndDiscovery/somef/issues"
+    }
+}

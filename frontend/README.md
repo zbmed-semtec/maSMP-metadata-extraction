@@ -13,9 +13,9 @@ To set up and run the frontend, follow these steps:
 ### 1. Navigate to the frontend folder
 Ensure you're inside the `frontend` directory of the project before proceeding with the setup.
 
-   ```sh
-   cd frontend
-   ```
+```sh
+cd frontend
+```
 
 ### 2. Install Dependencies
 Make sure you have **Node.js** installed. Then, run the following command to install the required dependencies:
@@ -28,7 +28,7 @@ npm install
 To start the development server with hot-reloading:
 
 ```sh
-npm run serve
+npm run dev
 ```
 
 ## Configuration
@@ -38,13 +38,14 @@ By default, the frontend is configured to communicate with the backend running a
 Once the frontend is running, open your browser and go to:
 
 ```
-http://localhost:8080
+http://localhost:3000
 ```
 
 ## Features
 - User-friendly UI for entering repository details
 - Calls backend API to extract metadata
 - Displays extracted metadata in a structured format
+- The extracted output can be downloaded as a JSON-LD file
 
 
 
