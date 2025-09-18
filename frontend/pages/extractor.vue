@@ -178,7 +178,12 @@ const formatValue = (value) => {
     if (value[0] && typeof value[0] === 'object') {
       return value.map((item) => {
         if (item['@type'] === 'Person') {
-          return item.givenName ? `${item.givenName} ${item.familyName || ''}`.trim() : item.url || 'N/A'
+          const name = item.givenName ? `${item.givenName} ${item.familyName || ''}`.trim() : ''
+          // Check for ORCID ID first, then fallback to URL
+          if (item['@id'] && item['@id'].includes('orcid.org')) {
+            return `<a href="${item['@id']}" target="_blank" class="fancy-link">${name || item['@id']}</a>`
+          }
+          return name || item['@id'] || item.url || 'N/A'
         }
         return item.name || item['@id'] || JSON.stringify(item)
       }).join(', ')
@@ -187,7 +192,12 @@ const formatValue = (value) => {
   }
   if (typeof value === 'object' && value !== null) {
     if (value['@type'] === 'Person') {
-      return `${value.givenName || ''} ${value.familyName || ''}`.trim() || value.url || 'N/A'
+      const name = `${value.givenName || ''} ${value.familyName || ''}`.trim()
+      // Check for ORCID ID first, then fallback to URL
+      if (value['@id'] && value['@id'].includes('orcid.org')) {
+        return `<a href="${value['@id']}" target="_blank" class="fancy-link">${name || value['@id']}</a>`
+      }
+      return name || value['@id'] || value.url || 'N/A'
     }
     if (value.name) return value.name
     if (value['@id']) return value['@id']
@@ -231,3 +241,20 @@ const downloadJson = () => {
   URL.revokeObjectURL(url)
 }
 </script>
+
+<style scoped>
+.fancy-link {
+  display: inline-block;
+  text-decoration: none;
+  color: #1976d2;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.fancy-link:hover {
+  color: #1565c0;
+  border-bottom-color: #1565c0;
+  transform: translateY(-1px);
+}
+</style>

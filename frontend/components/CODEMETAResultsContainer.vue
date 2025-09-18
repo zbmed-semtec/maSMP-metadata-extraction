@@ -91,10 +91,14 @@
         if (item && typeof item === 'object') {
           if (item['@type'] === 'Person') {
             const name = item.givenName ? `${item.givenName} ${item.familyName || ''}`.trim() : ''
+            // Check for ORCID ID first, then fallback to URL
+            if (item['@id'] && item['@id'].includes('orcid.org')) {
+              return `<a href="${item['@id']}" target="_blank" class="fancy-link">${name || item['@id']}</a>`
+            }
             if (item.url && isLink(item.url)) {
               return `<a href="${item.url}" target="_blank" class="fancy-link">${name || item.url}</a>`
             }
-            return name || item.url || 'N/A'
+            return name || item['@id'] || item.url || 'N/A'
           }
           if (item['@type'] === 'Article' && item['@id'] && isLink(item['@id'])) {
             return `<a href="${item['@id']}" target="_blank" class="fancy-link">${item['@id']}</a>`
@@ -113,10 +117,14 @@
     if (typeof value === 'object' && value !== null) {
       if (value['@type'] === 'Person') {
         const name = `${value.givenName || ''} ${value.familyName || ''}`.trim()
+        // Check for ORCID ID first, then fallback to URL
+        if (value['@id'] && value['@id'].includes('orcid.org')) {
+          return `<a href="${value['@id']}" target="_blank" class="fancy-link">${name || value['@id']}</a>`
+        }
         if (value.url && isLink(value.url)) {
           return `<a href="${value.url}" target="_blank" class="fancy-link">${name || value.url}</a>`
         }
-        return name || value.url || 'N/A'
+        return name || value['@id'] || value.url || 'N/A'
       }
       if (value['@type'] === 'Article' && value['@id'] && isLink(value['@id'])) {
         return `<a href="${value['@id']}" target="_blank" class="fancy-link">${value['@id']}</a>`
