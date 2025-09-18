@@ -167,7 +167,10 @@ const getProperties = (profile, category) => {
 
 const getPropertiesWithoutCategories = () => {
   const properties = Object.keys(filteredResults.value).filter(
-    (prop) => filteredResults.value[prop] !== null && filteredResults.value[prop] !== undefined
+    (prop) => filteredResults.value[prop] !== null && 
+            filteredResults.value[prop] !== undefined &&
+            prop !== '@context' &&
+            prop !== '@type'
   );
   console.log('CODEMETA Properties:', properties);
   return properties;
