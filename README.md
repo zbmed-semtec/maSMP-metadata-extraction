@@ -27,7 +27,7 @@ Ensure you have Docker installed on your system. You can download and install it
 Navigate to the project root directory and run the following command to build and start both the backend and frontend services:
 
 ```sh
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 This will:
@@ -36,7 +36,7 @@ This will:
 
 ### 3. Access the Application
 Once the containers are up and running, open your browser and go to:
-- **Frontend UI:** [http://localhost:8080](http://localhost:8080)
+- **Frontend UI:** [http://localhost:3000](http://localhost:3000)
 - **Backend API Documentation:**
   - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
   - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
