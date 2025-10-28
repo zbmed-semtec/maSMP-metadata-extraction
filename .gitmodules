@@ -1,0 +1,6 @@
+[submodule "libs/gitlab"]
+	path = libs/gitlab
+	url = git@github.com:Akhilan-xd/zb_med_.git
+[submodule "gitlab"]
+	path = gitlab
+	url = git@github.com:Akhilan-xd/zb_med_.git
