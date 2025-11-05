@@ -56,5 +56,5 @@ This will shut down and remove the containers but keep the built images.
 If you want to contribute to this project, feel free to fork the repository, create a new branch, and submit a pull request with your changes.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the GNU GENERAL PUBLIC LICENSE License.
 
