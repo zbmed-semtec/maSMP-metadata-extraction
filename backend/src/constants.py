@@ -170,3 +170,23 @@ to_be_removed = {
     "installUrl": None,
     "softwareHelp": None,
 }
+
+Bioschemas = {
+    "description": None,
+    "keywords": None,
+    "name": None,
+    "about": None,
+    "abstract": None,
+    "audience": None,
+    "author": None,
+    "competencyRequired": None,
+    "educationalLevel": None,
+    "identifier": None,
+    "inLanguage": None,
+    "learningResourceType": None,
+    "license": None,
+    "mentions": None,
+    "teaches": None,
+    "timeRequired": None,
+    "url": None,
+}
