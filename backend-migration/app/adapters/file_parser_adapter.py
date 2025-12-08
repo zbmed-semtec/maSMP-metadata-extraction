@@ -8,6 +8,7 @@ from app.domain.services.citation_file_parser import CitationFileParser
 from app.domain.services.readme_parser import ReadmeParser
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
 from app.adapters.github.github_file_fetcher import GitHubFileFetcher
+from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
 
 
 class FileParserAdapter:
@@ -32,6 +33,8 @@ class FileParserAdapter:
         
         if platform == "github":
             self.file_fetcher = GitHubFileFetcher(access_token)
+        elif platform == "gitlab":
+            self.file_fetcher = GitLabFileFetcher(access_token)
         else:
             raise ValueError(f"Unsupported platform: {platform}")
     

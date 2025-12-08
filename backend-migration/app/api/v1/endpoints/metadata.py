@@ -71,6 +71,7 @@ async def extract_metadata(
     
     This endpoint supports:
     - GitHub (github.com)
+    - GitLab (gitlab.com)
     
     Args:
         repo_url: URL of the repository
@@ -153,7 +154,12 @@ async def get_supported_platforms():
                 "name": "GitHub",
                 "url_pattern": "github.com",
                 "description": "GitHub repositories"
-            }
+            },
+            {
+                "name": "GitLab",
+                "url_pattern": "gitlab.com",
+                "description": "GitLab repositories"
+            }       
         ]
     }
 
