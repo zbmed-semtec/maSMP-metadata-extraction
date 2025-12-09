@@ -9,7 +9,6 @@ from app.domain.services.wayback_client import WaybackClient
 from app.domain.services.readme_parser import ReadmeParser
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
 from app.adapters.github.github_file_fetcher import GitHubFileFetcher
-from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
 
 
 class ExternalDataFetcherAdapter:
@@ -23,7 +22,7 @@ class ExternalDataFetcherAdapter:
         Initialize external data fetcher adapter.
         
         Args:
-            platform: Platform name (github or gitlab)
+            platform: Platform name (github)
             access_token: Access token
             base_url: Not used (kept for compatibility)
         """
@@ -35,8 +34,6 @@ class ExternalDataFetcherAdapter:
         
         if platform == "github":
             self.file_fetcher = GitHubFileFetcher(access_token)
-        elif platform == "gitlab":
-            self.file_fetcher = GitLabFileFetcher(access_token)
         else:
             raise ValueError(f"Unsupported platform: {platform}")
     
@@ -50,21 +47,24 @@ class ExternalDataFetcherAdapter:
     ) -> RepositoryMetadata:
         """
         Fetch external data and enrich metadata.
+        
+        Args:
+            repo_url: Repository URL
+            metadata: Current metadata object
+            doi: DOI if found
+            reference_extracted: Whether reference was already extracted
+            access_token: Access token (if not set in constructor)
+            
+        Returns:
+            Enriched metadata object
         """
         owner, repo = self.url_matcher.extract_repo_info(repo_url)
         if not owner or not repo:
             return metadata
         
-        # Fetch archive information through README
-        readme_content = None
-        
+        # Fetch archive information
         for branch in ["main", "master"]:
-            
-            if self.platform == "github":
-                readme_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/README.md"
-            else:  # gitlab
-                readme_url = f"https://gitlab.com/{owner}/{repo}/-/raw/{branch}/README.md"
-
+            readme_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/README.md"
             readme_content = self.file_fetcher.fetch_file_content(readme_url)
             
             if readme_content:
@@ -88,9 +88,9 @@ class ExternalDataFetcherAdapter:
         if not reference_extracted and doi:
             work_data = self.openalex_client.fetch_work_by_doi(doi)
             if work_data:
+                # Convert OpenAlex authors to Person objects
                 authors_data = self.openalex_client.extract_authors(work_data)
-                authors = []
-                
+                authors: list[Person] = []
                 if authors_data:
                     for author_dict in authors_data:
                         authors.append(Person(
@@ -108,3 +108,4 @@ class ExternalDataFetcherAdapter:
                 )
         
         return metadata
+

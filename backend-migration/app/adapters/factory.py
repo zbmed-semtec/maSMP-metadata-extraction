@@ -4,7 +4,6 @@ Factory pattern to select the correct platform extractor
 """
 from typing import Optional
 from app.adapters.github.github_extractor import GitHubExtractor
-from app.adapters.gitlab.gitlab_extractor import GitLabExtractor
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
 
 
@@ -31,8 +30,6 @@ class PlatformExtractorFactory:
         
         if platform == "github":
             return GitHubExtractor(access_token)
-        elif platform == "gitlab":
-            return GitLabExtractor(access_token)
         else:
             raise ValueError(f"Unsupported platform: {platform}. Supported platforms: GitHub")
 
