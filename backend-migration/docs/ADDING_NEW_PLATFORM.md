@@ -33,27 +33,32 @@ Create a new folder for your platform:
 **Reference Implementation**: Look at `app/adapters/github/` to see how GitHub is implemented. Use it as a template for your platform.
 
 The GitHub adapter contains:
+
 - `github_client.py` - API client for GitHub
 - `github_file_fetcher.py` - File downloader for GitHub
 - `github_extractor.py` - Main extractor that implements the `PlatformExtractor` protocol
 
 **What you need to do**:
+
 1. Create similar files for your platform in your adapter folder
 2. Adapt the code to work with your platform's API
 3. Make sure your extractor class implements `extract_platform_metadata(repo_url, access_token) -> RepositoryMetadata`
 
-**Important**: 
+**Important**:
+
 - Different platforms have different APIs and capabilities
 - You might need more or fewer files than GitHub
 - You might need different methods depending on what your platform supports
 - The key is to adapt the GitHub pattern to your platform's specific needs
 
 Look at the files in `app/adapters/github/` to understand the pattern:
+
 - `github_client.py` - See how it calls the GitHub API
 - `github_file_fetcher.py` - See how it downloads files
 - `github_extractor.py` - See how it implements `extract_platform_metadata()` and fills `RepositoryMetadata`
 
 **Key things to note from GitHub implementation**:
+
 - The extractor class must implement `extract_platform_metadata(repo_url, access_token) -> RepositoryMetadata`
 - It uses the API client to fetch repository data
 - It uses the file fetcher to download files (README, CITATION.cff, etc.)
@@ -61,6 +66,7 @@ Look at the files in `app/adapters/github/` to understand the pattern:
 - It returns a `RepositoryMetadata` object
 
 **Adapt it to your platform**:
+
 - Change API endpoints to match your platform
 - Change authentication method if needed
 - Adapt field mappings to your platform's API response
@@ -88,23 +94,23 @@ Add your platform to the URL detection logic.
 def detect_platform(repo_url: str) -> Optional[str]:
     """
     Detect the platform from a repository URL.
-    
+  
     Args:
         repo_url: Repository URL
-        
+  
     Returns:
         Platform name (github, gitlab, etc.) or None
     """
     parsed_url = urlparse(repo_url)
     netloc = parsed_url.netloc.lower()
-    
+  
     if "github.com" in netloc:
         return "github"
-    
+  
     # Add your platform here
     if "gitlab.com" in netloc:
         return "gitlab"
-    
+  
     return None
 ```
 
@@ -115,20 +121,20 @@ def detect_platform(repo_url: str) -> Optional[str]:
 def extract_repo_info(repo_url: str) -> Tuple[Optional[str], Optional[str]]:
     """
     Extract owner and repository name from a repository URL.
-    
+  
     Args:
         repo_url: Repository URL
-        
+  
     Returns:
         tuple: (owner, repo_name) or (None, None) if extraction fails
     """
     parsed_url = urlparse(repo_url)
     parts = parsed_url.path.strip("/").split("/")
-    
+  
     # GitHub format: /owner/repo
     # GitLab format: /owner/repo (same)
     # Some platforms: /owner/group/repo (adjust if needed)
-    
+  
     if len(parts) < 2:
         return None, None
     return parts[-2], parts[-1]
@@ -157,25 +163,25 @@ from app.domain.services.url_pattern_matcher import URLPatternMatcher
 
 class PlatformExtractorFactory:
     """Factory to create platform-specific extractors"""
-    
+  
     @staticmethod
     def create_extractor(repo_url: str, access_token: Optional[str] = None):
         """
         Create the appropriate platform extractor based on URL.
-        
+  
         Args:
             repo_url: Repository URL
             access_token: Optional access token
-            
+      
         Returns:
             Platform extractor instance
-            
+      
         Raises:
             ValueError: If platform is not supported
         """
         url_matcher = URLPatternMatcher()
         platform = url_matcher.detect_platform(repo_url)
-        
+  
         if platform == "github":
             return GitHubExtractor(access_token)
         elif platform == "gitlab":  # Add this
@@ -204,7 +210,7 @@ from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher  # Add thi
 class FileParserAdapter:
     def __init__(self, platform: str, access_token: Optional[str] = None, base_url: Optional[str] = None):
         # ... existing code ...
-        
+  
         if platform == "github":
             self.file_fetcher = GitHubFileFetcher(access_token)
         elif platform == "gitlab":  # Add this
@@ -230,7 +236,7 @@ from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher  # Add thi
 class ExternalDataFetcherAdapter:
     def __init__(self, platform: str, access_token: Optional[str] = None):
         # ... existing code ...
-        
+  
         if platform == "github":
             self.file_fetcher = GitHubFileFetcher(access_token)
         elif platform == "gitlab":  # Add this
@@ -260,11 +266,11 @@ async def extract_metadata(
 ):
     """
     Extract metadata from a code repository.
-    
+  
     This endpoint supports:
     - GitHub (github.com)
     - GitLab (gitlab.com)  # Add this
-    
+  
     # ... rest of the docstring ...
     """
     # ... in the code ...
@@ -280,28 +286,35 @@ async def extract_metadata(
 ### Step 4: Test Your Implementation
 
 1. **Test URL detection**:
+
    ```python
    from app.domain.services.url_pattern_matcher import URLPatternMatcher
    matcher = URLPatternMatcher()
    print(matcher.detect_platform("https://gitlab.com/user/repo"))  # Should return "gitlab"
    ```
-
 2. **Test factory**:
+
    ```python
    from app.adapters.factory import PlatformExtractorFactory
    extractor = PlatformExtractorFactory.create_extractor("https://gitlab.com/user/repo")
    print(type(extractor))  # Should be GitLabExtractor
    ```
-
 3. **Test extraction**:
+
    ```python
    metadata = extractor.extract_platform_metadata("https://gitlab.com/user/repo")
    print(metadata.name)  # Should print the repo name
    ```
-
 4. **Test the full flow**:
+
    ```bash
-   curl "http://localhost:8000/api/v1/metadata?repo_url=https://gitlab.com/user/repo&schema=maSMP"
+   # Run this command on the terminal to start the app
+   uvicorn app.main:app --reload --port 8000 
+   # **To run in termianl** (In another terminal use this command)
+   curl "http://localhost:8000/api/v1/metadata?repo_url=https://gitlab.com/user/repo&schema=maSMP" # Use some real-time examples
+   # **In browser**
+   http://localhost:8000/docs#/
+
    ```
 
 ---
@@ -346,4 +359,3 @@ async def extract_metadata(
 ---
 
 That's it! The rest of the code (use case, domain services, API) stays mostly the same.
-
