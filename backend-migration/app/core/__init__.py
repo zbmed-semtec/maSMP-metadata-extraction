@@ -1,0 +1,2 @@
+"""Core layer - entities only"""
+
