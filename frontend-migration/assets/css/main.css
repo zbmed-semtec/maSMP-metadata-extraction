@@ -1,52 +1,141 @@
 /* assets/css/main.css */
+/* 
+ * CSS Architecture following Atomic Design Principles
+ * 
+ * Structure:
+ * 1. Base Layer - Global resets and base styles (atoms level)
+ * 2. Components Layer - Reusable component classes (molecules/organisms level)
+ * 3. Utilities Layer - Utility classes (handled by Tailwind)
+ */
+
 @import './colors.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   BASE LAYER - Global styles and resets
+   ============================================ */
 @layer base {
+  html {
+    @apply antialiased;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-white text-gray-900 antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
   }
 }
 
+/* ============================================
+   COMPONENTS LAYER - Reusable component classes
+   Following Atomic Design: Atoms → Molecules → Organisms
+   ============================================ */
 @layer components {
+  /* Layout Components (Organisms level) */
   .container-custom {
     @apply mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 1280px;
   }
   
+  /* Card Component (Molecule level) */
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
   }
   
+  /* Button Components (Atom level) */
   .btn {
-    @apply inline-flex items-center justify-center font-medium rounded-lg;
+    @apply inline-flex items-center justify-center font-medium rounded-lg 
+           transition-colors duration-200 touch-manipulation;
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg font-medium 
-           hover:bg-primary-700 focus:outline-none focus:ring-2 
-           focus:ring-primary-500 focus:ring-offset-2 
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors duration-200;
+    @apply btn bg-primary-500 text-white px-4 py-2 
+           hover:bg-primary-600 
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium 
-           hover:bg-gray-300 focus:outline-none focus:ring-2 
-           focus:ring-gray-500 focus:ring-offset-2 
-           transition-colors duration-200;
+    @apply btn bg-secondary-200 text-secondary-800 px-4 py-2 
+           hover:bg-secondary-300 
+           focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2;
   }
   
+  .btn-accent {
+    @apply btn bg-accent-500 text-white px-4 py-2 
+           hover:bg-accent-600 
+           focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  /* Input Components (Atom level) */
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg bg-white
            focus:outline-none focus:ring-2 focus:ring-primary-500 
-           focus:border-transparent transition-all duration-200;
+           focus:border-primary-300 transition-all duration-200;
   }
   
   .label {
     @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+}
+
+/* ============================================
+   UTILITIES LAYER - Reusable utility classes
+   ============================================ */
+@layer utilities {
+  /* Scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Touch utilities */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+
+  /* Animation utilities */
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
   }
 }
