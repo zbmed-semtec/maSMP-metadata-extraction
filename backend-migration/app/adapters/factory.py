@@ -34,5 +34,5 @@ class PlatformExtractorFactory:
         elif platform == "gitlab":
             return GitLabExtractor(access_token)
         else:
-            raise ValueError(f"Unsupported platform: {platform}. Supported platforms: GitHub")
+            raise ValueError(f"Unsupported platform: {platform}. Supported platforms: GitHub, GitLab")
 
