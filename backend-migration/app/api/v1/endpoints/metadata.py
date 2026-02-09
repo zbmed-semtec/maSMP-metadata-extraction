@@ -25,34 +25,6 @@ class MetadataResponse(BaseModel):
     message: str
     results: Dict[str, Any]
 
-
-def create_use_case(access_token: Optional[str] = None) -> ExtractMetadataUseCase:
-    """
-    Dependency injection factory for ExtractMetadataUseCase.
-    This is where Layer 4 creates all the tools and gives them to Layer 2.
-    """
-    # Detect platform from URL (we'll get it from the request)
-    # For now, we'll create a placeholde-r - the actual platform will be determined per request
-    
-    # Create LLM extractor (optional - can be None if not configured)
-    llm_extractor = LLMExtractor()  # TODO: Add API key from config
-    
-    # Create JSON-LD builder
-    jsonld_builder = JSONLDBuilder()
-    
-    # Note: Platform extractor, file parser, and external data fetcher
-    # are created per-request since they depend on the repo_url
-    # We'll create them in the endpoint handler
-    
-    return ExtractMetadataUseCase(
-        platform_extractor=None,  # Will be set per request
-        file_parser=None,  # Will be set per request
-        external_data_fetcher=None,  # Will be set per request
-        llm_extractor=llm_extractor,
-        jsonld_builder=jsonld_builder
-    )
-
-
 @router.get("/metadata", response_model=MetadataResponse)
 async def extract_metadata(
     repo_url: HttpUrl = Query(
