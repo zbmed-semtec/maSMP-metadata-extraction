@@ -16,6 +16,10 @@ from app.domain.services.url_pattern_matcher import URLPatternMatcher
 
 router = APIRouter(prefix="/api/v1", tags=["Metadata"])
 
+# Create stateless services once at module level (they don't depend on request data)
+llm_extractor = LLMExtractor()  # TODO: Add API key from config
+jsonld_builder = JSONLDBuilder()
+
 
 class MetadataResponse(BaseModel):
     """Response model for metadata extraction"""
@@ -29,7 +33,7 @@ class MetadataResponse(BaseModel):
 async def extract_metadata(
     repo_url: HttpUrl = Query(
         ...,
-        description="URL of the code repository (GitHub)"
+        description="URL of the code repository (GitHub, GitLab)"
     ),
     schema: str = Query(
         "maSMP",
@@ -43,6 +47,7 @@ async def extract_metadata(
     
     This endpoint supports:
     - GitHub (github.com)
+    - GitLab (gitlab.com)
     
     Args:
         repo_url: URL of the repository
@@ -59,7 +64,7 @@ async def extract_metadata(
         if not platform:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported repository platform. Supported: GitHub"
+                detail=f"Unsupported repository platform. Supported: GitHub, GitLab"
             )
         
         # Create platform-specific adapters
@@ -68,9 +73,7 @@ async def extract_metadata(
         external_data_fetcher = ExternalDataFetcherAdapter(platform, access_token)
         
         # Create use case with all dependencies
-        llm_extractor = LLMExtractor()  # TODO: Add API key from config
-        jsonld_builder = JSONLDBuilder()
-        
+        # Note: llm_extractor and jsonld_builder are created at module level since they're stateless
         use_case = ExtractMetadataUseCase(
             platform_extractor=platform_extractor,
             file_parser=file_parser,
@@ -125,6 +128,11 @@ async def get_supported_platforms():
                 "name": "GitHub",
                 "url_pattern": "github.com",
                 "description": "GitHub repositories"
+            },
+            {
+                "name": "GitLab",
+                "url_pattern": "gitlab.com",
+                "description": "GitLab repositories"
             }
         ]
     }
