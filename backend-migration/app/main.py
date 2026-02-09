@@ -5,7 +5,7 @@ FastAPI application entry point
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
-from app.api.v1.endpoints import metadata
+from app.api.endpoints import metadata
 
 
 app = FastAPI(
@@ -34,6 +34,6 @@ async def root():
         "message": "Welcome to the Metadata Extractor API",
         "version": settings.api_version,
         "docs": "/docs",
-        "health": "/api/v1/health"
+        "health": "/api/health"
     }
 
