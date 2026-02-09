@@ -4,13 +4,13 @@
     :disabled="disabled"
     :class="[
       'btn',
-      variant === 'primary' ? 'btn-primary' : 'btn-secondary',
+      variant === 'primary' ? 'btn-primary' : 
+      variant === 'accent' ? 'btn-accent' : 'btn-secondary',
       size === 'small'
-        ? 'px-3 py-1.5 text-sm'
+        ? 'px-3 py-1.5 text-xs sm:text-sm'
         : size === 'large'
-          ? 'px-6 py-3 text-lg'
+          ? 'px-5 py-2.5 sm:px-6 sm:py-3 text-base sm:text-lg'
           : '',
-      disabled ? 'opacity-50 cursor-not-allowed' : '',
       customClass,
     ]"
     @click="$emit('click', $event)"
@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 type ButtonType = 'button' | 'submit' | 'reset'
-type ButtonVariant = 'primary' | 'secondary'
+type ButtonVariant = 'primary' | 'secondary' | 'accent'
 type ButtonSize = 'small' | 'medium' | 'large'
 
 interface Props {

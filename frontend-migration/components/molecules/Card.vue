@@ -1,5 +1,5 @@
 <template>
-  <div :class="['card', padding, customClass]">
+  <div :class="['card', padding || 'p-4 sm:p-6', customClass]">
     <div
       v-if="title || $slots.header"
       class="mb-4 pb-4 border-b border-gray-200"
@@ -7,7 +7,7 @@
       <slot name="header">
         <h3
           v-if="title"
-          class="text-lg font-semibold text-gray-900"
+          class="text-base sm:text-lg font-semibold text-secondary-800"
         >
           {{ title }}
         </h3>
@@ -35,7 +35,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  padding: 'p-6',
+  padding: '',
   customClass: '',
 })
 </script>
