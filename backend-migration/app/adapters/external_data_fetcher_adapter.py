@@ -2,7 +2,7 @@
 Layer 3: Adapters
 External data fetcher adapter - implements ExternalDataFetcher protocol
 """
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from app.core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
 from app.domain.services.openalex_client import OpenAlexClient
 from app.domain.services.wayback_client import WaybackClient
@@ -10,6 +10,16 @@ from app.domain.services.readme_parser import ReadmeParser
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
 from app.adapters.github.github_file_fetcher import GitHubFileFetcher
 from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
+from app.domain.extraction_sources import (
+    SOURCE_ZENODO_BADGE,
+    SOURCE_WAYBACK,
+    SOURCE_OPENALEX,
+    CONFIDENCE_ARCHIVE,
+    CONFIDENCE_OPENALEX,
+)
+
+if TYPE_CHECKING:
+    from app.application.use_cases.extract_metadata import ExtractionMetadataCollector
 
 
 class ExternalDataFetcherAdapter:
@@ -46,7 +56,8 @@ class ExternalDataFetcherAdapter:
         metadata: RepositoryMetadata,
         doi: Optional[str] = None,
         reference_extracted: bool = False,
-        access_token: Optional[str] = None
+        access_token: Optional[str] = None,
+        extraction_metadata: Optional["ExtractionMetadataCollector"] = None,
     ) -> RepositoryMetadata:
         """
         Fetch external data and enrich metadata.
@@ -54,57 +65,55 @@ class ExternalDataFetcherAdapter:
         owner, repo = self.url_matcher.extract_repo_info(repo_url)
         if not owner or not repo:
             return metadata
-        
-        # Fetch archive information through README
-        readme_content = None
-        
+
         for branch in ["main", "master"]:
-            
             if self.platform == "github":
                 readme_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/README.md"
-            else:  # gitlab
+            else:
                 readme_url = f"https://gitlab.com/{owner}/{repo}/-/raw/{branch}/README.md"
 
             readme_content = self.file_fetcher.fetch_file_content(readme_url)
-            
             if readme_content:
-                # Check for Zenodo badges
                 zenodo_urls = self.url_matcher.check_zenodo_badge(readme_content)
                 if zenodo_urls:
                     metadata.archivedAt = zenodo_urls[0]
+                    if extraction_metadata is not None:
+                        extraction_metadata.record("archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
                     break
-                
-                # Check Wayback Machine and Software Heritage
                 archive_url = self.wayback_client.find_archive(repo_url)
                 if archive_url:
                     metadata.archivedAt = archive_url
+                    if extraction_metadata is not None:
+                        extraction_metadata.record("archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
                     break
-        
-        # Enrich with OpenAlex data if DOI is available
+
         if doi:
             metadata = self.openalex_client.enrich_metadata(metadata, doi)
-        
-        # Extract DOI reference if not already extracted
+            if extraction_metadata is not None:
+                for field in ("alternateName", "keywords", "author"):
+                    if getattr(metadata, field, None) is not None:
+                        extraction_metadata.record(field, SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
+
         if not reference_extracted and doi:
             work_data = self.openalex_client.fetch_work_by_doi(doi)
             if work_data:
                 authors_data = self.openalex_client.extract_authors(work_data)
                 authors = []
-                
                 if authors_data:
                     for author_dict in authors_data:
                         authors.append(Person(
                             type=author_dict.get("@type", "Person"),
                             familyName=author_dict.get("familyName"),
                             givenName=author_dict.get("givenName"),
-                            id=author_dict.get("@id")
+                            id=author_dict.get("@id"),
                         ))
-                
                 metadata.codemeta_referencePublication = ReferencePublication(
                     type="ScholarlyArticle",
                     id=f"https://doi.org/{doi}",
                     name=work_data.get("title"),
-                    author=authors if authors else None
+                    author=authors if authors else None,
                 )
-        
+                if extraction_metadata is not None:
+                    extraction_metadata.record("codemeta_referencePublication", SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
+
         return metadata
