@@ -1,40 +1,43 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <!-- Hero Section -->
-    <section class="py-12 sm:py-16 lg:py-20 xl:py-24">
+  <div class="min-h-full flex flex-col bg-gray-50">
+    <!-- Hero Section: two matching cards -->
+    <section class="shrink-0 pt-5 pb-8 sm:pt-6 sm:pb-10">
       <div class="container-custom">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-start">
-          <!-- Left Section: Application Info -->
-          <div class="flex flex-col justify-center space-y-6">
-            <div>
-              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary-800 mb-4 leading-tight">
-                CoMET-RS
-              </h1>
-              <p class="text-xl sm:text-2xl text-primary-600 mb-4 font-semibold">
-                Code Metadata Extraction Tool for Research Software
-              </p>
-            </div>
-            
-            <p class="text-lg text-gray-600 leading-relaxed">
-              Automatically extract comprehensive metadata from code repositories to generate 
-              machine-actionable Software Management Plans (maSMP) and CodeMeta schemas.
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+          <!-- Left card: less space above heading, more below button -->
+          <div class="rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col pt-4 px-5 pb-6 sm:pt-5 sm:px-6 sm:pb-7">
+            <h1 class="text-xl sm:text-2xl font-bold text-secondary-800 tracking-tight mb-2.5">
+              About CoMET-RS
+            </h1>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+              The Code Metadata Extraction Tool for Research Software (CoMET-RS) is a web application that automatically extracts metadata from a code repository and displays it in a user-friendly interface. 
             </p>
-            
-            <div class="pt-2">
-              <NuxtLink
-                to="/dashboard"
-                class="btn-primary text-lg px-10 py-4 inline-block shadow-lg hover:shadow-xl transition-shadow"
-              >
-                Get Started
-              </NuxtLink>
-            </div>
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+              It generates metadata conforming to machine-actionable Software Management Plans (maSMPs) and CodeMeta schemas, helping standardize documentation, improve interoperability, and reduce maintenance effort.
+            </p>
+            <NuxtLink
+              to="/dashboard"
+              class="inline-flex items-center gap-2 rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-600 hover:shadow w-fit"
+            >
+              Get Started
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </NuxtLink>
           </div>
 
-          <!-- Right Section: Platform Integration Carousel -->
-          <div class="w-full">
+          <!-- Right card: same style as left -->
+          <div class="w-full min-h-[200px]">
             <PlatformCarousel v-model="currentPlatform" :platforms="platforms" />
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Extraction pipeline: uses remaining space, centered -->
+    <section class="flex-1 flex flex-col justify-center px-4 pb-8 sm:pb-10">
+      <div class="container-custom">
+        <ExtractionPipeline />
       </div>
     </section>
   </div>
@@ -69,11 +72,6 @@ const platforms = [
   {
     name: 'Codeberg',
     logo: '/Codeberg_logo.png',
-    active: false,
-  },
-  {
-    name: 'Zenodo',
-    logo: null,
     active: false,
   },
 ]
