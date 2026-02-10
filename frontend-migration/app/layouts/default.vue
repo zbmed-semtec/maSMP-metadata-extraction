@@ -3,7 +3,7 @@
     <header role="banner" class="shrink-0">
       <Navigation />
     </header>
-    <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white" role="main">
+    <main class="flex-1 min-h-0 overflow-y-auto bg-white" role="main">
       <slot />
     </main>
     <footer role="contentinfo" class="shrink-0">
