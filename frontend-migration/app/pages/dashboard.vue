@@ -117,8 +117,10 @@
         </form>
       </Card>
 
-      <!-- Results: loading overlay + result panel -->
-      <ExtractionProgress v-if="isLoading" :current-step="progressStep" />
+      <!-- Results: loading overlay + result panel (teleport so overlay covers full page including header/footer) -->
+      <Teleport to="body">
+        <ExtractionProgress v-if="isLoading" :current-step="progressStep" />
+      </Teleport>
       <Card
         v-if="extractionResult && !isLoading"
         padding="p-6 sm:p-8"
