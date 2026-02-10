@@ -133,7 +133,13 @@ async def extract_metadata_enriched(
 
 def _format_sse(event: str, data: dict) -> str:
     """Format a Server-Sent Event message."""
-    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+    def _json_default(o):
+        if isinstance(o, HttpUrl):
+            return str(o)
+        raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+
+    return f"event: {event}\ndata: {json.dumps(data, default=_json_default)}\n\n"
 
 
 async def _stream_metadata_events(
