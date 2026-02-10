@@ -1,41 +1,63 @@
 <template>
-  <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <header class="bg-secondary-800 text-white sticky top-0 z-50 shadow-md">
     <div class="container-custom">
       <div class="flex items-center justify-between h-14 sm:h-16">
-        <Logo />
+        <NuxtLink
+          to="/"
+          class="flex items-center gap-2 font-bold text-lg sm:text-xl text-white hover:text-cyan-200 transition-colors shrink-0"
+        >
+          <span>CoMET-RS</span>
+        </NuxtLink>
 
-        <!-- Desktop navigation -->
-        <div class="hidden md:flex items-center space-x-1">
+        <!-- Desktop nav: all 4 links visible from md up -->
+        <nav class="hidden md:flex items-center gap-1 sm:gap-2">
           <NuxtLink
-            v-for="item in navItems"
-            :key="item.path"
-            :to="item.path"
-            class="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
-            :class="
-              isActive(item.path)
-                ? 'bg-primary-100 text-primary-700'
-                : 'text-secondary-700 hover:bg-primary-50 hover:text-primary-600'
-            "
+            to="/"
+            class="px-3 sm:px-4 py-2 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path === '/' }"
           >
-            {{ item.label }}
+            Home
           </NuxtLink>
-        </div>
+          <NuxtLink
+            to="/dashboard"
+            class="px-3 sm:px-4 py-2 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path.startsWith('/dashboard') }"
+          >
+            Extract Metadata
+          </NuxtLink>
+          <NuxtLink
+            to="/fair-assessment"
+            class="px-3 sm:px-4 py-2 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path.startsWith('/fair-assessment') }"
+          >
+            FAIR Assessment
+          </NuxtLink>
+          <NuxtLink
+            to="/best-practices"
+            class="px-3 sm:px-4 py-2 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path.startsWith('/best-practices') }"
+          >
+            Best Practices
+          </NuxtLink>
+        </nav>
 
-        <!-- Mobile menu button -->
+        <!-- Mobile: hamburger button -->
         <button
           type="button"
-          class="md:hidden p-2 rounded-lg text-secondary-700 hover:bg-primary-50"
-          aria-label="Toggle menu"
-          @click="mobileMenuOpen = !mobileMenuOpen"
+          class="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+          aria-label="Open menu"
+          :aria-expanded="menuOpen"
+          @click="menuOpen = !menuOpen"
         >
           <svg
             class="w-6 h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
-              v-if="!mobileMenuOpen"
+              v-if="!menuOpen"
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
@@ -52,46 +74,51 @@
         </button>
       </div>
 
-      <!-- Mobile navigation -->
+      <!-- Mobile dropdown: all 4 links when menu is open -->
       <div
-        v-if="mobileMenuOpen"
-        class="md:hidden py-4 border-t border-gray-200"
+        v-show="menuOpen"
+        class="md:hidden py-3 border-t border-white/20"
       >
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.path"
-          :to="item.path"
-          class="block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors touch-manipulation"
-          :class="
-            isActive(item.path)
-              ? 'bg-primary-100 text-primary-700'
-              : 'text-secondary-700 hover:bg-primary-50 hover:text-primary-600'
-          "
-          @click="mobileMenuOpen = false"
-        >
-          {{ item.label }}
-        </NuxtLink>
+        <nav class="flex flex-col gap-1">
+          <NuxtLink
+            to="/"
+            class="px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path === '/' }"
+            @click="menuOpen = false"
+          >
+            Home
+          </NuxtLink>
+          <NuxtLink
+            to="/dashboard"
+            class="px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path.startsWith('/dashboard') }"
+            @click="menuOpen = false"
+          >
+            Extract Metadata
+          </NuxtLink>
+          <NuxtLink
+            to="/fair-assessment"
+            class="px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path.startsWith('/fair-assessment') }"
+            @click="menuOpen = false"
+          >
+            FAIR Assessment
+          </NuxtLink>
+          <NuxtLink
+            to="/best-practices"
+            class="px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-colors"
+            :class="{ 'bg-white/15 text-white': route.path.startsWith('/best-practices') }"
+            @click="menuOpen = false"
+          >
+            Best Practices
+          </NuxtLink>
+        </nav>
       </div>
     </div>
-  </nav>
+  </header>
 </template>
 
 <script setup lang="ts">
 const route = useRoute()
-const mobileMenuOpen = ref(false)
-
-const navItems = [
-  { path: '/', label: 'Home' },
-  { path: '/dashboard', label: 'Dashboard' },
-  { path: '/fair-assessment', label: 'FAIR Assessment' },
-  { path: '/best-practices', label: 'Best Practices' },
-]
-
-const isActive = (path: string) => {
-  if (path === '/') {
-    return route.path === '/'
-  }
-  return route.path.startsWith(path)
-}
+const menuOpen = ref(false)
 </script>
-
