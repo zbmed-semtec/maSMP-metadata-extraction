@@ -34,9 +34,9 @@
       </div>
     </section>
 
-    <!-- Extraction pipeline: uses remaining space, centered -->
-    <section class="flex-1 flex flex-col justify-center px-4 pb-8 sm:pb-10">
-      <div class="container-custom">
+    <!-- Extraction pipeline: same width as About + Integrated Platforms above -->
+    <section class="flex-1 flex flex-col justify-center pb-8 sm:pb-10">
+      <div class="container-custom w-full">
         <ExtractionPipeline />
       </div>
     </section>

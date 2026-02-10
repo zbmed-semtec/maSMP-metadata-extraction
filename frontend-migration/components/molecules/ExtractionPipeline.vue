@@ -1,13 +1,13 @@
 <template>
-  <section class="rounded-xl border border-gray-200 bg-white shadow-sm p-4 sm:p-8 md:p-10 min-w-0 overflow-hidden">
+  <section class="w-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 sm:p-8 md:p-10 min-w-0 overflow-hidden">
     <h2 class="text-xl sm:text-2xl font-bold text-secondary-800 mb-4 sm:mb-8 text-center md:text-left">
       Extraction pipeline
     </h2>
 
-    <!-- Mobile: vertical list (no horizontal overflow) -->
-    <div class="md:hidden flex flex-col gap-0">
+    <!-- Mobile: vertical list – circle with label next to it, row centered -->
+    <div class="md:hidden flex flex-col items-center w-full">
       <template v-for="(step, index) in pipelineSteps" :key="step.id">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center gap-3 w-full">
           <div class="flex flex-col items-center flex-shrink-0">
             <div
               class="w-11 h-11 rounded-full border-2 flex items-center justify-center pipeline-dot overflow-hidden"
@@ -17,11 +17,11 @@
             </div>
             <div
               v-if="index < pipelineSteps.length - 1"
-              class="w-0.5 mt-1 mb-0.5 min-h-[12px] bg-primary-300 pipeline-connector-vertical rounded-full"
+              class="w-0.5 mt-1 mb-0.5 min-h-[12px] bg-primary-300 rounded-full"
             />
           </div>
           <span
-            class="text-sm font-medium pt-1 flex-1 min-w-0"
+            class="text-sm font-medium pt-0.5 text-left flex-1 min-w-0"
             :class="[step.disabled ? 'text-gray-400 opacity-50' : 'text-secondary-700']"
           >
             {{ step.label }}
