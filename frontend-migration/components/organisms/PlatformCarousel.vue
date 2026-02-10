@@ -1,15 +1,15 @@
 <template>
   <div 
-    class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 md:p-8"
+    class="rounded-xl border border-gray-200 bg-white shadow-sm p-5 sm:p-6 h-full flex flex-col"
     @mouseenter="pauseAutoPlay"
     @mouseleave="resumeAutoPlay"
   >
-    <h2 class="text-xl sm:text-2xl font-bold text-secondary-800 mb-6 sm:mb-8">
+    <h2 class="text-xl sm:text-2xl font-bold text-secondary-800 mb-4 sm:mb-5">
       Integrated Platforms
     </h2>
     
     <!-- Logo Display Area -->
-    <div class="relative flex items-center justify-center mb-6 sm:mb-8 h-32 sm:h-36 md:h-40 bg-white rounded-lg shadow-inner">
+    <div class="relative flex items-center justify-center mb-4 sm:mb-5 h-28 sm:h-32 md:h-36 bg-gray-50 rounded-lg border border-gray-100">
       <CarouselNavButton
         direction="prev"
         size="large"
@@ -24,9 +24,9 @@
           :src="platforms[currentIndex].logo"
           :alt="platforms[currentIndex].name"
           :class="[
-            'h-16 sm:h-20 md:h-20 w-auto transition-all duration-300 max-w-[160px] sm:max-w-[180px] md:max-w-[200px] object-contain',
-            platforms[currentIndex].name === 'GitLab' ? 'max-w-[120px] sm:max-w-[140px] md:max-w-[160px]' : '',
-            platforms[currentIndex].active ? 'opacity-100' : 'grayscale opacity-50'
+            'h-14 sm:h-16 md:h-20 w-auto transition-all duration-300 max-w-[140px] sm:max-w-[160px] md:max-w-[180px] object-contain',
+            platforms[currentIndex].name === 'GitLab' ? 'max-w-[100px] sm:max-w-[120px] md:max-w-[140px]' : '',
+            platforms[currentIndex].active ? 'opacity-100' : 'opacity-60'
           ]"
         />
         <div
