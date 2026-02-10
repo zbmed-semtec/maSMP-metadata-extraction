@@ -38,15 +38,33 @@
           </button>
         </nav>
       </div>
-      <div v-for="category in categories" :key="category" class="space-y-3">
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-600">
-          {{ category }}
-        </h3>
-        <ResultTable
-          :rows="rowsByCategory(activeTab, category)"
-          :show-source="true"
-          :show-confidence="true"
-        />
+      <div class="space-y-8">
+        <section
+          v-for="cat in categoryConfig"
+          :key="cat.key"
+          class="rounded-xl border-2 overflow-hidden"
+          :class="cat.sectionClass"
+        >
+          <header
+            class="flex items-center gap-3 px-4 py-3 font-semibold"
+            :class="cat.headerClass"
+          >
+            <span
+              class="rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+              :class="cat.badgeClass"
+            >
+              {{ cat.key }}
+            </span>
+            <span :class="cat.titleClass">{{ cat.label }}</span>
+          </header>
+          <div class="border-t bg-white" :class="cat.borderClass">
+            <ResultTable
+              :rows="rowsByCategory(activeTab, cat.key)"
+              :show-source="true"
+              :show-confidence="true"
+            />
+          </div>
+        </section>
       </div>
     </template>
 
@@ -71,7 +89,36 @@ const props = defineProps<{
   result: ExtractionStreamResult
 }>()
 
-const categories = ['Required', 'Recommended', 'Optional'] as const
+const categoryConfig = [
+  {
+    key: 'Required',
+    label: 'Must-have properties for this profile',
+    sectionClass: 'border-amber-200 bg-amber-50/30',
+    headerClass: 'bg-amber-50/80 text-amber-900',
+    badgeClass: 'bg-amber-200 text-amber-800',
+    titleClass: 'text-amber-900',
+    borderClass: 'border-amber-100'
+  },
+  {
+    key: 'Recommended',
+    label: 'Recommended for richer metadata',
+    sectionClass: 'border-primary-200 bg-primary-50/20',
+    headerClass: 'bg-primary-50/80 text-primary-900',
+    badgeClass: 'bg-primary-200 text-primary-800',
+    titleClass: 'text-primary-900',
+    borderClass: 'border-primary-100'
+  },
+  {
+    key: 'Optional',
+    label: 'Additional optional properties',
+    sectionClass: 'border-slate-200 bg-slate-50/60',
+    headerClass: 'bg-slate-100/80 text-slate-700',
+    badgeClass: 'bg-slate-200 text-slate-600',
+    titleClass: 'text-slate-700',
+    borderClass: 'border-slate-100'
+  }
+] as const
+
 const masmpTabs = [
   { key: 'maSMP:SoftwareSourceCode', label: 'Software source code' },
   { key: 'maSMP:SoftwareApplication', label: 'Software application' }
