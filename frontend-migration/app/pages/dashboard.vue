@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-full bg-gray-50 py-6 sm:py-8">
-    <div class="container-custom w-full">
+    <div class="container-custom w-full space-y-8">
       <Card padding="p-6 sm:p-8" custom-class="rounded-xl">
         <form class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5" @submit.prevent="onExtract">
           <!-- Row 1: Repository URL | Schema -->
@@ -116,11 +116,22 @@
           </p>
         </form>
       </Card>
+
+      <!-- Results: loading overlay + result panel -->
+      <ExtractionProgress v-if="isLoading" :current-step="progressStep" />
+      <Card
+        v-if="extractionResult && !isLoading"
+        padding="p-6 sm:p-8"
+        custom-class="rounded-xl"
+      >
+        <MetadataResults :result="extractionResult" />
+      </Card>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { ExtractionStreamResult, ExtractionProgress } from '../../composables/useApi'
 import { useApi } from '../../composables/useApi'
 
 const repoUrl = ref('')
@@ -129,6 +140,8 @@ const accessToken = ref('')
 const isLoading = ref(false)
 const error = ref('')
 const showTokenTip = ref(false)
+const progressStep = ref<ExtractionProgress | null>(null)
+const extractionResult = ref<ExtractionStreamResult | null>(null)
 
 useHead({
   title: 'Extract metadata - CoMET-RS',
@@ -136,24 +149,25 @@ useHead({
 
 const onExtract = async () => {
   error.value = ''
+  extractionResult.value = null
+  progressStep.value = null
   isLoading.value = true
   try {
-    const { extractMetadata } = useApi()
-    const { data, error: err } = await extractMetadata(
+    const { extractMetadataStream } = useApi()
+    const result = await extractMetadataStream(
       repoUrl.value,
       schema.value,
-      accessToken.value || undefined
+      accessToken.value || undefined,
+      (p) => { progressStep.value = p }
     )
-    if (err) {
-      error.value = err
-      return
-    }
-    // TODO: show results (e.g. navigate to results or display in same page)
-    if (data) {
-      // placeholder: could set result state or navigate
-    }
+    extractionResult.value = result
+    // Keep overlay visible briefly so the user sees the last step (e.g. jsonld_build) as completed
+    await new Promise((r) => setTimeout(r, 500))
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Extraction failed'
   } finally {
     isLoading.value = false
+    progressStep.value = null
   }
 }
 </script>
