@@ -1,25 +1,22 @@
 <template>
   <div class="min-h-full bg-gray-50 py-6 sm:py-8">
     <div class="container-custom w-full">
-      <div class="rounded-xl border border-gray-200 bg-white shadow-sm p-6 sm:p-8">
+      <Card padding="p-6 sm:p-8" custom-class="rounded-xl">
         <form class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5" @submit.prevent="onExtract">
           <!-- Row 1: Repository URL | Schema -->
           <div>
-            <label for="repo-url" class="block text-sm font-medium text-secondary-800 mb-1.5">
-              Repository URL
-            </label>
-            <input
+            <Input
               id="repo-url"
               v-model="repoUrl"
               type="url"
               required
+              label="Repository URL"
               placeholder="https://github.com/owner/repo"
-              class="input-field w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-secondary-800 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
           <div>
-            <label for="schema" class="block text-sm font-medium text-secondary-800 mb-1.5">
+            <label for="schema" class="label block text-sm font-medium text-secondary-800 mb-1.5">
               Schema
             </label>
             <select
@@ -34,7 +31,7 @@
 
           <!-- Row 2: Access token | Extract button -->
           <div class="relative">
-            <label for="access-token" class="block text-sm font-medium text-secondary-800 mb-1.5">
+            <label for="access-token" class="label block text-sm font-medium text-secondary-800 mb-1.5">
               Access token
               <button
                 type="button"
@@ -47,13 +44,11 @@
                 </svg>
               </button>
             </label>
-            <input
+            <Input
               id="access-token"
               v-model="accessToken"
               type="password"
               placeholder="Optional for public repos"
-              autocomplete="off"
-              class="input-field w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-secondary-800 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
 
             <!-- Info tip popover -->
@@ -107,20 +102,20 @@
           </div>
 
           <div class="flex items-end">
-            <button
+            <Button
               type="submit"
               :disabled="isLoading"
-              class="w-full rounded-lg bg-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none"
+              custom-class="w-full"
             >
               {{ isLoading ? 'Extracting…' : 'Extract' }}
-            </button>
+            </Button>
           </div>
 
           <p v-if="error" class="text-sm text-red-600 sm:col-span-2">
             {{ error }}
           </p>
         </form>
-      </div>
+      </Card>
     </div>
   </div>
 </template>
