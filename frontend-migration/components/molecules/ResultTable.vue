@@ -10,10 +10,18 @@
             <th scope="col" class="result-table-value px-4 py-3 font-medium text-gray-700">
               Value
             </th>
-            <th v-if="showSource" scope="col" class="result-table-source px-4 py-3 font-medium text-gray-700">
+            <th
+              v-if="showSource"
+              scope="col"
+              class="result-table-source px-4 py-3 font-medium text-gray-700 hidden sm:table-cell"
+            >
               Source
             </th>
-            <th v-if="showConfidence" scope="col" class="result-table-confidence px-4 py-3 font-medium text-gray-700">
+            <th
+              v-if="showConfidence"
+              scope="col"
+              class="result-table-confidence px-4 py-3 font-medium text-gray-700 hidden sm:table-cell"
+            >
               Confidence
             </th>
           </tr>
@@ -27,8 +35,8 @@
             <td class="result-table-property px-4 py-3 font-medium text-secondary-800">
               {{ row.property }}
             </td>
-            <td class="result-table-value max-w-0 px-4 py-3 text-gray-700 break-words align-top">
-              <span class="inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
+            <td class="result-table-value max-w-0 px-4 py-3 text-gray-700 align-top">
+              <span class="inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5 break-words">
                 <!-- Author / contributor row: links in blue, non-links in rose -->
                 <template v-if="(row.authorItems ?? row.contributorItems)?.length">
                   <template v-for="(author, ai) in (row.authorItems ?? row.contributorItems)" :key="ai">
@@ -126,8 +134,28 @@
                   </template>
                 </template>
               </span>
+
+              <!-- Mobile: inline source & confidence chips below the value -->
+              <div
+                v-if="(showSource || showConfidence) && (row.source || row.confidence)"
+                class="mt-2 flex flex-wrap gap-1.5 sm:hidden"
+              >
+                <span
+                  v-if="showSource"
+                  class="inline-flex items-center rounded-md px-2 py-0.5 text-[0.7rem] font-medium ring-1"
+                  :class="sourceTagClasses(row.source)"
+                >
+                  {{ formatSourceLabel(row.source) }}
+                </span>
+                <span
+                  v-if="showConfidence"
+                  class="inline-flex items-center rounded-md bg-primary-50 px-2 py-0.5 text-[0.7rem] font-medium text-primary-700"
+                >
+                  {{ row.confidence }}
+                </span>
+              </div>
             </td>
-            <td v-if="showSource" class="result-table-source px-4 py-3">
+            <td v-if="showSource" class="result-table-source px-4 py-3 hidden sm:table-cell">
               <span
                 class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1"
                 :class="sourceTagClasses(row.source)"
@@ -135,7 +163,7 @@
                 {{ formatSourceLabel(row.source) }}
               </span>
             </td>
-            <td v-if="showConfidence" class="result-table-confidence px-4 py-3">
+            <td v-if="showConfidence" class="result-table-confidence px-4 py-3 hidden sm:table-cell">
               <span
                 class="inline-flex items-center rounded-md bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700"
               >
@@ -270,5 +298,20 @@ function formatSourceLabel(source: string): string {
 }
 .result-table-confidence {
   width: 6.5rem;
+}
+
+@media (max-width: 640px) {
+  .result-table {
+    font-size: 0.8125rem;
+  }
+  .result-table-property {
+    width: 7rem;
+  }
+  .result-table-source {
+    width: 6rem;
+  }
+  .result-table-confidence {
+    width: 5rem;
+  }
 }
 </style>
