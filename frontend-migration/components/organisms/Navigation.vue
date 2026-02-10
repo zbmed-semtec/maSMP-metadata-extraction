@@ -2,12 +2,7 @@
   <header class="bg-secondary-800 text-white sticky top-0 z-50 shadow-md">
     <div class="container-custom">
       <div class="flex items-center justify-between h-14 sm:h-16">
-        <NuxtLink
-          to="/"
-          class="flex items-center gap-2 font-bold text-lg sm:text-xl text-white hover:text-cyan-200 transition-colors shrink-0"
-        >
-          <span>CoMET-RS</span>
-        </NuxtLink>
+        <Logo inverted />
 
         <!-- Desktop nav: all 4 links visible from md up -->
         <nav class="hidden md:flex items-center gap-1 sm:gap-2">
