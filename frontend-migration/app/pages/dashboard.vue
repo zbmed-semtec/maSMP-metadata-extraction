@@ -128,6 +128,18 @@
       >
         <MetadataResults :result="extractionResult" />
       </Card>
+      <Card
+        v-else-if="error && !isLoading"
+        padding="p-6 sm:p-8"
+        custom-class="rounded-xl border-red-200 bg-red-50/50"
+      >
+        <p class="text-red-700 font-medium">
+          Extraction failed
+        </p>
+        <p class="mt-2 text-sm text-red-600">
+          {{ error }}
+        </p>
+      </Card>
     </div>
   </div>
 </template>
