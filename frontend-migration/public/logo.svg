@@ -1,0 +1,21 @@
+<svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon block -->
+  <rect x="2" y="2" width="36" height="36" rx="8" fill="#0EA5E9"/>
+  <!-- Inner grid suggesting "metadata" cells -->
+  <rect x="10" y="10" width="8" height="8" rx="2" fill="white" opacity="0.95"/>
+  <rect x="22" y="10" width="8" height="8" rx="2" fill="white" opacity="0.85"/>
+  <rect x="10" y="22" width="8" height="8" rx="2" fill="white" opacity="0.85"/>
+  <rect x="22" y="22" width="8" height="8" rx="2" fill="white" opacity="0.95"/>
+  <!-- Connector line to hint "links/relations" -->
+  <path d="M30 14L34 14C36.2091 14 38 15.7909 38 18C38 20.2091 36.2091 22 34 22H32" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- Text brand -->
+  <text x="48" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="18" font-weight="700" fill="#0F172A">
+    maSMP
+  </text>
+  <text x="48" y="34" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="10" font-weight="400" fill="#6B7280">
+    Metadata Extractor
+  </text>
+</svg>
+
