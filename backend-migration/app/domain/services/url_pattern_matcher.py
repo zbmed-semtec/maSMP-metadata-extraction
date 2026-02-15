@@ -36,13 +36,16 @@ class URLPatternMatcher:
             repo_url: Repository URL
             
         Returns:
-            Platform name (github) or None
+            Platform name (github), (gitlab) or None
         """
         parsed_url = urlparse(repo_url)
         netloc = parsed_url.netloc.lower()
         
         if "github.com" in netloc:
             return "github"
+        
+        if "gitlab.com" in netloc:
+            return "gitlab"
         
         return None
     
