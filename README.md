@@ -18,37 +18,36 @@ The frontend application provides a web interface for users to input repository 
 ---
 
 ## Running the Project with Docker
-To simplify deployment, you can use **Docker** and **Docker Compose** to run the entire project.
+To simplify deployment, you can use **Docker** and **Docker Compose** to run the entire project (Nuxt frontend + FastAPI backend from `frontend-migration` and `backend-migration`).
 
 ### 1. Install Docker
 Ensure you have Docker installed on your system. You can download and install it from [Docker’s official website](https://www.docker.com/get-started).
 
 ### 2. Build and Run the Containers
-Navigate to the project root directory and run the following command to build and start both the backend and frontend services:
+From the project root, build and start both services:
 
 ```sh
-docker-compose up --build
+docker compose up --build
 ```
 
 This will:
-- Build and start the **backend** and **frontend** containers.
-- Automatically set up communication between the two services.
+- Build and start the **backend** (FastAPI) and **frontend** (Nuxt) containers.
+- Set up networking so the frontend can call the backend API.
 
 ### 3. Access the Application
-Once the containers are up and running, open your browser and go to:
-- **Frontend UI:** [http://localhost:8080](http://localhost:8080)
-- **Backend API Documentation:**
-  - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-  - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+Once the containers are running:
+- **Frontend UI:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:8001](http://localhost:8001)
+- **API docs (Swagger):** [http://localhost:8001/docs](http://localhost:8001/docs)
 
 ### 4. Stopping the Containers
-To stop the running containers, use:
+To stop the running containers:
 
 ```sh
-docker-compose down
+docker compose down
 ```
 
-This will shut down and remove the containers but keep the built images.
+This shuts down and removes the containers but keeps the built images.
 
 ---
 

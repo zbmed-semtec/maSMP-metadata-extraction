@@ -1,75 +1,123 @@
-# Nuxt Minimal Starter
+# CoMET-RS Setup Guide
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This README provides step-by-step instructions to install dependencies, configure the environment, and run both the frontend and backend services.
 
-## Setup
+---
 
-Make sure to install dependencies:
+## Installing Node Version Manager (NVM)
+
+### Bash Install NVM
 
 ```bash
-# npm
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+
+### Source the terminal
+
+```bash
+source ~/.bashrc
+```
+
+---
+
+## Install Node.js
+
+### Install Node v20.20.0
+
+```bash
+nvm install 20.20.0
+nvm use 20.20.0
+```
+
+### Set npm version to 10.8.2
+
+```bash
+npm install -g npm@10.8.2
+```
+
+### Verify versions
+
+```bash
+node -v
+npm -v
+```
+
+---
+
+## Frontend Setup
+
+### Install dependencies
+
+```bash
+cd ~/maSMP-metadata-extraction/frontend-migration
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+---
 
-Start the development server on `http://localhost:3000`:
+## Environment Configuration
+
+### Configure API URL
 
 ```bash
-# npm
+cp .env.example .env
+```
+
+Then edit `.env` and set:
+
+```env
+API_BASE_URL=http://127.0.0.1:8000
+```
+
+> Default is already `http://127.0.0.1:8000`, which matches your backend on port 8000.
+
+---
+
+## Start the Frontend Dev Server
+
+```bash
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+The app will be available at:
 
-Build the application for production:
+```
+http://localhost:3000
+```
+
+---
+
+## Backend Setup (Separate Terminal)
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+cd ~/maSMP-metadata-extraction/backend-migration
+uvicorn app.main:app --reload --host 127.0.0.1 --port 9000
 ```
 
-Locally preview production build:
+---
+
+## Frontend Run Command (Separate Terminal)
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+cd ~/maSMP-metadata-extraction/frontend-migration
+npm install
+npm run dev
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+---
+
+## Notes
+
+* Frontend runs on: **[http://localhost:3000](http://localhost:3000)**
+* Backend runs on: **[http://127.0.0.1:9000](http://127.0.0.1:9000)**
+* API base URL configured to: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
+
+---
+
+## Project Structure
+
+```
+maSMP-metadata-extraction/
+├── backend-migration/
+└── frontend-migration/
+```
