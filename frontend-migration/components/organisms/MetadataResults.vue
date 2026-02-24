@@ -159,7 +159,7 @@ export interface BibCardItem {
   url?: string
 }
 
-function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
+function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string | string[]; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
   const data = profileData(profileKey)
   const enriched = enrichedForProfile(profileKey)
   const skip = new Set(['@context', '@type'])

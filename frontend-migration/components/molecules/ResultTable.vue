@@ -138,15 +138,18 @@
               <!-- Mobile: inline source & confidence chips below the value -->
               <div
                 v-if="(showSource || showConfidence) && (row.source || row.confidence)"
-                class="mt-2 flex flex-wrap gap-1.5 sm:hidden"
+                class="mt-2 flex flex-wrap gap-2 sm:hidden"
               >
-                <span
-                  v-if="showSource"
-                  class="inline-flex items-center rounded-md px-2 py-0.5 text-[0.7rem] font-medium ring-1"
-                  :class="sourceTagClasses(row.source)"
-                >
-                  {{ formatSourceLabel(row.source) }}
-                </span>
+                <template v-if="showSource">
+                  <span
+                    v-for="(src, si) in normalizeSources(row.source)"
+                    :key="si"
+                    class="inline-flex items-center rounded-md px-2 py-0.5 text-[0.7rem] font-medium ring-1"
+                    :class="sourceTagClasses(src)"
+                  >
+                    {{ formatSourceLabel(src) }}
+                  </span>
+                </template>
                 <span
                   v-if="showConfidence"
                   class="inline-flex items-center rounded-md bg-primary-50 px-2 py-0.5 text-[0.7rem] font-medium text-primary-700"
@@ -156,12 +159,16 @@
               </div>
             </td>
             <td v-if="showSource" class="result-table-source px-4 py-3 hidden sm:table-cell">
-              <span
-                class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1"
-                :class="sourceTagClasses(row.source)"
-              >
-                {{ formatSourceLabel(row.source) }}
-              </span>
+              <div class="flex flex-wrap gap-1.5">
+                <span
+                  v-for="(src, si) in normalizeSources(row.source)"
+                  :key="si"
+                  class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1"
+                  :class="sourceTagClasses(src)"
+                >
+                  {{ formatSourceLabel(src) }}
+                </span>
+              </div>
             </td>
             <td v-if="showConfidence" class="result-table-confidence px-4 py-3 hidden sm:table-cell">
               <span
@@ -188,7 +195,7 @@ withDefaults(
     rows: {
       property: string
       value: string
-      source: string
+      source: string | string[]
       confidence: string
       authorItems?: { name: string; url?: string }[]
       contributorItems?: { name: string; url?: string }[]
@@ -249,6 +256,13 @@ function parseList(text: string): string[] | null {
   const maxItemLength = 120
   const looksLikeList = items.every(item => item.length <= maxItemLength)
   return looksLikeList ? items : null
+}
+
+/** Normalize source field (string or string[]) into an array of strings for display. */
+function normalizeSources(source: string | string[] | undefined): string[] {
+  if (Array.isArray(source)) return source.filter(Boolean)
+  if (!source) return []
+  return [source]
 }
 
 function sourceTagClasses(source: string): string {
