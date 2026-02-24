@@ -104,7 +104,9 @@ class FileParserAdapter:
             for branch in ["main", "master"]:
                 readme_content = self.file_fetcher.fetch_file_from_repo(owner, repo, "README.md", branch)
                 if readme_content:
-                    metadata = self.readme_parser.parse_readme(readme_content, metadata)
+                    metadata, identifier_set_by_readme = self.readme_parser.parse_readme(
+                        readme_content, metadata
+                    )
                     if metadata.codemeta_referencePublication:
                         reference_extracted = True
                     if extraction_metadata is not None:
@@ -114,6 +116,8 @@ class FileParserAdapter:
                             extraction_metadata.record("codemeta_referencePublication", SOURCE_README_PARSER, CONFIDENCE_README)
                         if metadata.author is not None:
                             extraction_metadata.record("author", SOURCE_README_PARSER, CONFIDENCE_README)
+                        if identifier_set_by_readme:
+                            extraction_metadata.record("identifier", SOURCE_README_PARSER, CONFIDENCE_README)
                     break
 
         return metadata, doi, reference_extracted
