@@ -87,15 +87,34 @@ class ExternalDataFetcherAdapter:
                         extraction_metadata.record("archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
                     break
 
-        if doi:
-            metadata = self.openalex_client.enrich_metadata(metadata, doi)
-            if extraction_metadata is not None:
-                for field in ("alternateName", "keywords", "author"):
-                    if getattr(metadata, field, None) is not None:
-                        extraction_metadata.record(field, SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
+        # --- OpenAlex enrichment ------------------------------------------------
+        # Always attempt enrichment: OpenAlexClient can derive DOI from metadata.identifier
+        # when explicit `doi` is not provided.
+        metadata = self.openalex_client.enrich_metadata(metadata, doi)
+        if extraction_metadata is not None:
+            for field in ("alternateName", "keywords", "author"):
+                if getattr(metadata, field, None) is not None:
+                    extraction_metadata.record(field, SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
 
-        if not reference_extracted and doi:
-            work_data = self.openalex_client.fetch_work_by_doi(doi)
+        # Build an effective DOI for reference publication if we don't already have one
+        effective_doi: Optional[str] = doi
+        if not effective_doi:
+            id_value = metadata.identifier
+            candidate: Optional[str] = None
+            if isinstance(id_value, list):
+                candidate = next(
+                    (v for v in id_value if isinstance(v, str) and "doi.org" in v),
+                    None,
+                )
+            elif isinstance(id_value, str) and "doi.org" in id_value:
+                candidate = id_value
+
+            if candidate:
+                # Strip URL prefix to get bare DOI for OpenAlex
+                effective_doi = candidate.replace("https://doi.org/", "")
+
+        if not reference_extracted and effective_doi:
+            work_data = self.openalex_client.fetch_work_by_doi(effective_doi)
             if work_data:
                 authors_data = self.openalex_client.extract_authors(work_data)
                 authors = []
@@ -109,7 +128,7 @@ class ExternalDataFetcherAdapter:
                         ))
                 metadata.codemeta_referencePublication = ReferencePublication(
                     type="ScholarlyArticle",
-                    id=f"https://doi.org/{doi}",
+                    id=f"https://doi.org/{effective_doi}",
                     name=work_data.get("title"),
                     author=authors if authors else None,
                 )

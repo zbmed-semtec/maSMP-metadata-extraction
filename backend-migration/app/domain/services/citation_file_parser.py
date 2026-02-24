@@ -37,17 +37,31 @@ class CitationFileParser:
             existing = metadata.keywords or []
             metadata.keywords = list(set(existing) | set(cff_data["keywords"]))
         
-        # Extract DOI
-        doi = None
-        if "doi" in cff_data:
-            doi = cff_data["doi"]
-            metadata.identifier = f"https://doi.org/{doi}"
+        # Extract DOI(s)
+        doi: Optional[str] = None
+        identifier_values = list(metadata.identifier or [])
+        
+        # Top-level DOI (if present)
+        if "doi" in cff_data and cff_data["doi"]:
+            doi = str(cff_data["doi"])
+            doi_url = f"https://doi.org/{doi}"
+            if doi_url not in identifier_values:
+                identifier_values.append(doi_url)
             if not metadata.citation:
                 metadata.citation = []
             metadata.citation.append({
                 "@type": "Article",
-                "@id": f"https://doi.org/{doi}"
+                "@id": doi_url,
             })
+        
+        # Preferred-citation DOI (may be present even when top-level doi is absent)
+        preferred = cff_data.get("preferred-citation") or {}
+        pref_doi = preferred.get("doi")
+        if pref_doi:
+            pref_doi_str = str(pref_doi)
+            pref_doi_url = f"https://doi.org/{pref_doi_str}"
+            if pref_doi_url not in identifier_values:
+                identifier_values.append(pref_doi_url)
         
         # Extract authors
         if "authors" in cff_data:
@@ -63,12 +77,15 @@ class CitationFileParser:
                 authors.append(person)
             metadata.author = authors
         
-        # Extract preferred citation
+        if identifier_values:
+            metadata.identifier = identifier_values
+
+        # Extract preferred citation object
         reference_extracted = False
-        if "preferred-citation" in cff_data:
-            self._extract_preferred_citation(cff_data["preferred-citation"], metadata)
+        if preferred:
+            self._extract_preferred_citation(preferred, metadata)
             reference_extracted = True
-        
+
         return metadata, doi, reference_extracted
     
     def _extract_preferred_citation(self, preferred_citation: Dict[str, Any], metadata: RepositoryMetadata):

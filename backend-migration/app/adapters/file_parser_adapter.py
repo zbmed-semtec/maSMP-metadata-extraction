@@ -148,7 +148,11 @@ class FileParserAdapter:
                         if zenodo_badge_url:
                             resolved_doi = _resolve_zenodo_badge_to_doi(zenodo_badge_url)
                             if resolved_doi:
-                                metadata.identifier = resolved_doi
+                                # Merge resolved DOI into identifier list
+                                existing_ids = list(metadata.identifier or [])
+                                if resolved_doi not in existing_ids:
+                                    existing_ids.append(resolved_doi)
+                                metadata.identifier = existing_ids
                                 identifier_set_by_readme = True
                     if metadata.codemeta_referencePublication:
                         reference_extracted = True

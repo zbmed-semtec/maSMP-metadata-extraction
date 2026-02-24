@@ -103,9 +103,16 @@ class OpenAlexClient:
             Enriched metadata object
         """
         if not doi:
-            # Try to extract DOI from identifier
-            if metadata.identifier and "doi.org" in metadata.identifier:
-                doi = metadata.identifier.replace("https://doi.org/", "")
+            # Try to extract DOI from identifier (which may now be a list of URLs)
+            id_value = metadata.identifier
+            candidate: Optional[str] = None
+            if isinstance(id_value, list):
+                candidate = next((v for v in id_value if isinstance(v, str) and "doi.org" in v), None)
+            elif isinstance(id_value, str) and "doi.org" in id_value:
+                candidate = id_value
+
+            if candidate:
+                doi = candidate.replace("https://doi.org/", "")
             else:
                 return metadata
         
@@ -127,8 +134,11 @@ class OpenAlexClient:
         # Extract and merge authors
         openalex_authors = self.extract_authors(work_data)
         if openalex_authors:
-            existing_authors = {tuple(a.get("familyName", ""), a.get("givenName", "")): a 
-                              for a in (metadata.author or [])}
+            # Use (familyName, givenName) tuple as a stable key
+            existing_authors = {
+                (a.get("familyName", ""), a.get("givenName", "")): a
+                for a in (metadata.author or [])
+            }
             for new_author in openalex_authors:
                 key = (new_author.get("familyName", ""), new_author.get("givenName", ""))
                 if key in existing_authors and "@id" not in existing_authors[key]:

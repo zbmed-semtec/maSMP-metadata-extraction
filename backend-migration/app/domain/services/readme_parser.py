@@ -39,7 +39,12 @@ class ReadmeParser:
                 doi = match.group(1)
             else:
                 doi = f"10.5281/zenodo.{match.group(2)}"
-            metadata.identifier = f"https://doi.org/{doi}"
+            # Merge with any existing identifiers; allow multiple DOIs (article + software)
+            existing_ids = list(metadata.identifier or [])
+            doi_url = f"https://doi.org/{doi}"
+            if doi_url not in existing_ids:
+                existing_ids.append(doi_url)
+            metadata.identifier = existing_ids
             identifier_set_by_readme = True
             break
 

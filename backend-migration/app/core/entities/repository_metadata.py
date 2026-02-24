@@ -142,7 +142,10 @@ class RepositoryMetadata(BaseModel):
     masmp_changelog: Optional[str] = None
     
     # Metadata
-    identifier: Optional[str] = None
+    # identifier can have multiple values (e.g., software DOI, article DOI, SWHID)
+    # We model it as a list of strings to allow merging identifiers from
+    # different sources such as CITATION.cff and README badges.
+    identifier: Optional[List[str]] = None
     keywords: Optional[List[str]] = None
     citation: Optional[List[Dict[str, Any]]] = None
     codemeta_referencePublication: Optional[ReferencePublication] = None
