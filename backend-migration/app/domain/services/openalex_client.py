@@ -120,9 +120,14 @@ class OpenAlexClient:
         if not work_data:
             return metadata
         
-        # Extract title if not already set
-        if work_data.get("title") and not metadata.alternateName:
-            metadata.alternateName = work_data["title"]
+        # Extract title and merge into alternateName list
+        if work_data.get("title"):
+            existing_alt = list(metadata.alternateName or [])
+            title = str(work_data["title"])
+            if title and title not in existing_alt:
+                existing_alt.append(title)
+            if existing_alt:
+                metadata.alternateName = existing_alt
         
         # Extract and merge keywords
         openalex_keywords = self.extract_keywords(work_data)

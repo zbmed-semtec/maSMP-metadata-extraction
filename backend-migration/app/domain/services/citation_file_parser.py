@@ -31,8 +31,14 @@ class CitationFileParser:
         
         # Extract basic fields
         if "title" in cff_data:
-            metadata.alternateName = cff_data["title"]
-        
+            # Merge title into alternateName list (allow multiple sources)
+            existing_alt = list(metadata.alternateName or [])
+            title = str(cff_data["title"])
+            if title and title not in existing_alt:
+                existing_alt.append(title)
+            if existing_alt:
+                metadata.alternateName = existing_alt
+
         if "keywords" in cff_data and isinstance(cff_data["keywords"], list):
             existing = metadata.keywords or []
             metadata.keywords = list(set(existing) | set(cff_data["keywords"]))
