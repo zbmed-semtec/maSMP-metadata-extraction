@@ -33,9 +33,9 @@ class CitationFileParser:
         if "title" in cff_data:
             metadata.alternateName = cff_data["title"]
         
-        if "keywords" in cff_data:
-            if isinstance(cff_data["keywords"], list):
-                metadata.keywords = cff_data["keywords"]
+        if "keywords" in cff_data and isinstance(cff_data["keywords"], list):
+            existing = metadata.keywords or []
+            metadata.keywords = list(set(existing) | set(cff_data["keywords"]))
         
         # Extract DOI
         doi = None

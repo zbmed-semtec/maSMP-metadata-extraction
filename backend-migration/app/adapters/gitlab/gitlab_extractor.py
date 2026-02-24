@@ -127,9 +127,11 @@ class GitLabExtractor:
         record("hasSourceCode")
         record("codemeta_hasSourceCode")
 
-        # Keywords / Tags
-        if project.get("tag_list"):
-            metadata.keywords = project.get("tag_list")
+        # Keywords / Tags — merge with any existing from other sources
+        tag_list = project.get("tag_list") or []
+        if tag_list:
+            existing = metadata.keywords or []
+            metadata.keywords = list(set(existing) | set(tag_list))
             record("keywords")
 
         # Version control system
