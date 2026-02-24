@@ -1,33 +1,32 @@
-version: '3.8'
+# Migration stack: Nuxt frontend + FastAPI backend
+# Run: docker compose up --build
 
 services:
   backend:
     build:
-      context: ./backend
+      context: ./backend-migration
     volumes:
-      - ./backend:/app
+      - ./backend-migration:/app
     ports:
       - "8000:8000"
     networks:
       - app-network
 
-  vue:
+  frontend:
     build:
-      context: ./frontend
-      args:
-        VUE_APP_API_URL: ${VUE_APP_API_URL}
+      context: ./frontend-migration
     ports:
-      - "8080:8080"
+      - "3000:3000"
+    environment:
+      API_BASE_URL: http://localhost:8000
     volumes:
-      - ./frontend:/app
+      - ./frontend-migration:/app
       - /app/node_modules
-    env_file:
-      - ./frontend/.env.docker
     depends_on:
       - backend
     networks:
       - app-network
-  
+
 networks:
   app-network:
     driver: bridge
