@@ -1,0 +1,18 @@
+# Don't send these to Docker — they bloat context and slow every build
+node_modules
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+*.log
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+*.md
+.idea
+.vscode
+.DS_Store

@@ -1,0 +1,19 @@
+# Don't send these to Docker
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+venv
+.venv
+env
+metadata-extractor
+.env
+.env.*
+.git
+.gitignore
+*.md
+.idea
+.vscode
+htmlcov
+.coverage
+.DS_Store
