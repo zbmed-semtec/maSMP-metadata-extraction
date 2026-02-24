@@ -92,7 +92,6 @@ class RepositoryMetadata(BaseModel):
     """
     # Basic Information
     name: Optional[str] = None
-    # Multiple alternate names (e.g., from CITATION.cff title, OpenAlex title, etc.)
     alternateName: Optional[List[str]] = None
     description: Optional[str] = None
     version: Optional[str] = None
