@@ -98,11 +98,14 @@ class ReadmeParser:
                         fam = given = ""
                     return fam.strip(), given.strip()
 
-                seen = { _author_key(a) for a in existing_authors }
+                seen = {_author_key(a) for a in existing_authors}
                 for author in all_authors:
                     key = _author_key(author)
                     if key not in seen:
-                        existing_authors.append(author)
+                        # Store authors as plain dicts in metadata.author
+                        existing_authors.append(
+                            author.model_dump(by_alias=True, exclude_none=True)
+                        )
                         seen.add(key)
 
                 if existing_authors:
