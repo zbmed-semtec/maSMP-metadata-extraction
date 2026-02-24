@@ -75,8 +75,8 @@
       </h3>
       <ResultTable
         :rows="codemetaRows"
-        :show-source="false"
-        :show-confidence="false"
+        :show-source="true"
+        :show-confidence="true"
       />
     </template>
   </div>
@@ -159,7 +159,7 @@ export interface BibCardItem {
   url?: string
 }
 
-function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
+function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string | string[]; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
   const data = profileData(profileKey)
   const enriched = enrichedForProfile(profileKey)
   const skip = new Set(['@context', '@type'])
@@ -193,10 +193,14 @@ function rowsByCategory(profileKey: string, category: string): { property: strin
 const codemetaRows = computed(() => {
   const data = props.result.results
   if (!data || typeof data !== 'object' || Array.isArray(data)) return []
+
+  const enriched = (props.result.enriched_metadata?.codemeta ?? {}) as Record<string, EnrichedProperty>
   const skip = new Set(['@context', '@type'])
+
   return Object.entries(data)
     .filter(([k]) => !skip.has(k))
     .map(([prop, val]) => {
+      const meta = enriched[prop] ?? {}
       const authorItems = getAuthorItems(prop, val)
       const contributorItems = getContributorItems(prop, val)
       const namedLink = getNamedLink(prop, val)
@@ -205,8 +209,8 @@ const codemetaRows = computed(() => {
       return {
         property: formatPropertyName(prop),
         value: useSpecial ? '' : formatValueForProperty(prop, val),
-        source: '—',
-        confidence: '—',
+        source: meta.source ?? '—',
+        confidence: meta.confidence != null ? `${Math.round(Number(meta.confidence) * 100)}%` : '—',
         ...(authorItems ? { authorItems } : {}),
         ...(contributorItems ? { contributorItems } : {}),
         ...(namedLink ? { namedLink } : {}),

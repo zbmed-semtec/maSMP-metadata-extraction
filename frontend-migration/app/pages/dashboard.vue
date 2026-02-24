@@ -35,7 +35,7 @@
               Access token
               <button
                 type="button"
-                aria-label="How to get a GitHub access token"
+                aria-label="How to get a GitHub or GitLab access token"
                 class="inline-flex items-center justify-center w-4 h-4 ml-1 rounded-full border border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 align-middle"
                 @click="showTokenTip = !showTokenTip"
               >
@@ -68,7 +68,7 @@
               >
                 <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 bg-gray-50/80 rounded-t-xl">
                   <h3 id="token-tip-title" class="text-sm font-semibold text-secondary-800">
-                    GitHub access token
+                    Access token
                   </h3>
                   <button
                     type="button"
@@ -83,19 +83,63 @@
                 </div>
                 <div class="p-4 max-h-[60vh] overflow-y-auto">
                   <p class="text-sm text-gray-600 mb-3 leading-relaxed">
-                    Required for private repos; recommended for public repos to avoid API limits.
+                    Required for private repos; recommended for public repos to avoid API limits. Use a GitHub token for github.com URLs and a GitLab token for gitlab.com.
                   </p>
-                  <p class="text-xs font-medium text-secondary-800 uppercase tracking-wide mb-2">
-                    How to get one
-                  </p>
-                  <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 leading-relaxed">
-                    <li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:text-primary-700 underline underline-offset-1">GitHub Developer Settings</a></li>
-                    <li>Click <strong class="text-gray-800">"Generate new token (classic)"</strong></li>
-                    <li>Set <strong class="text-gray-800">expiration</strong> (optional)</li>
-                    <li>Enable scopes: <strong class="text-gray-800">repo</strong> (private repos), <strong class="text-gray-800">read:org</strong> (org repos)</li>
-                    <li>Click <strong class="text-gray-800">"Generate token"</strong></li>
-                    <li>Copy and store it securely, it won’t be shown again.</li>
-                  </ol>
+                  <!-- Tabs -->
+                  <div class="flex border-b border-gray-200 mb-3">
+                    <button
+                      type="button"
+                      :class="[
+                        'px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+                        tokenTipTab === 'github'
+                          ? 'border-primary-500 text-primary-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ]"
+                      @click="tokenTipTab = 'github'"
+                    >
+                      GitHub
+                    </button>
+                    <button
+                      type="button"
+                      :class="[
+                        'px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+                        tokenTipTab === 'gitlab'
+                          ? 'border-primary-500 text-primary-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ]"
+                      @click="tokenTipTab = 'gitlab'"
+                    >
+                      GitLab
+                    </button>
+                  </div>
+                  <!-- GitHub -->
+                  <div v-show="tokenTipTab === 'github'" class="space-y-2">
+                    <p class="text-xs font-medium text-secondary-800 uppercase tracking-wide mb-2">
+                      How to get one (GitHub)
+                    </p>
+                    <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 leading-relaxed">
+                      <li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:text-primary-700 underline underline-offset-1">GitHub Developer Settings</a></li>
+                      <li>Click <strong class="text-gray-800">"Generate new token (classic)"</strong></li>
+                      <li>Set <strong class="text-gray-800">expiration</strong> (optional)</li>
+                      <li>Enable scopes: <strong class="text-gray-800">repo</strong> (private repos), <strong class="text-gray-800">read:org</strong> (org repos)</li>
+                      <li>Click <strong class="text-gray-800">"Generate token"</strong></li>
+                      <li>Copy and store it securely, it won’t be shown again.</li>
+                    </ol>
+                  </div>
+                  <!-- GitLab -->
+                  <div v-show="tokenTipTab === 'gitlab'" class="space-y-2">
+                    <p class="text-xs font-medium text-secondary-800 uppercase tracking-wide mb-2">
+                      How to get one (GitLab)
+                    </p>
+                    <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1.5 leading-relaxed">
+                      <li>Go to <a href="https://gitlab.com/-/user_settings/personal_access_tokens" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:text-primary-700 underline underline-offset-1">GitLab Access Tokens</a> (or Profile → Edit profile → Access Tokens)</li>
+                      <li>Click <strong class="text-gray-800">"Add new token"</strong></li>
+                      <li>Give the token a name and set <strong class="text-gray-800">expiration</strong> (optional)</li>
+                      <li>Enable scopes: <strong class="text-gray-800">read_api</strong> (public repos), <strong class="text-gray-800">read_repository</strong> (private repos)</li>
+                      <li>Click <strong class="text-gray-800">"Create personal access token"</strong></li>
+                      <li>Copy and store it securely, it won’t be shown again.</li>
+                    </ol>
+                  </div>
                 </div>
               </div>
             </Teleport>
@@ -154,6 +198,7 @@ const accessToken = ref('')
 const isLoading = ref(false)
 const error = ref('')
 const showTokenTip = ref(false)
+const tokenTipTab = ref<'github' | 'gitlab'>('github')
 const progressStep = ref<ExtractionProgress | null>(null)
 const extractionResult = ref<ExtractionStreamResult | null>(null)
 

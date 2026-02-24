@@ -13,6 +13,7 @@ from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
 from app.domain.extraction_sources import (
     SOURCE_ZENODO_BADGE,
     SOURCE_WAYBACK,
+    SOURCE_SOFTWARE_HERITAGE,
     SOURCE_OPENALEX,
     CONFIDENCE_ARCHIVE,
     CONFIDENCE_OPENALEX,
@@ -75,27 +76,75 @@ class ExternalDataFetcherAdapter:
             readme_content = self.file_fetcher.fetch_file_content(readme_url)
             if readme_content:
                 zenodo_urls = self.url_matcher.check_zenodo_badge(readme_content)
+                found_any = False
+
+                # Merge all Zenodo archive URLs from badges
                 if zenodo_urls:
-                    metadata.archivedAt = zenodo_urls[0]
-                    if extraction_metadata is not None:
-                        extraction_metadata.record("archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
-                    break
-                archive_url = self.wayback_client.find_archive(repo_url)
-                if archive_url:
-                    metadata.archivedAt = archive_url
-                    if extraction_metadata is not None:
-                        extraction_metadata.record("archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
+                    existing_archives = list(metadata.archivedAt or [])
+                    for url in zenodo_urls:
+                        if url not in existing_archives:
+                            existing_archives.append(url)
+                    if existing_archives:
+                        metadata.archivedAt = existing_archives
+                        found_any = True
+                        if extraction_metadata is not None:
+                            extraction_metadata.record("archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
+
+                # Also try Software Heritage and Wayback, even if Zenodo was found
+                swh_url = self.wayback_client.check_software_heritage(repo_url)
+                if swh_url:
+                    existing_archives = list(metadata.archivedAt or [])
+                    if swh_url not in existing_archives:
+                        existing_archives.append(swh_url)
+                    if existing_archives:
+                        metadata.archivedAt = existing_archives
+                        found_any = True
+                        if extraction_metadata is not None:
+                            extraction_metadata.record("archivedAt", SOURCE_SOFTWARE_HERITAGE, CONFIDENCE_ARCHIVE)
+
+                wayback_url = self.wayback_client.check_archive_url(repo_url)
+                if wayback_url:
+                    existing_archives = list(metadata.archivedAt or [])
+                    if wayback_url not in existing_archives:
+                        existing_archives.append(wayback_url)
+                    if existing_archives:
+                        metadata.archivedAt = existing_archives
+                        found_any = True
+                        if extraction_metadata is not None:
+                            extraction_metadata.record("archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
+
+                # Stop after first branch where we found any archive info
+                if found_any:
                     break
 
-        if doi:
-            metadata = self.openalex_client.enrich_metadata(metadata, doi)
-            if extraction_metadata is not None:
-                for field in ("alternateName", "keywords", "author"):
-                    if getattr(metadata, field, None) is not None:
-                        extraction_metadata.record(field, SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
+        # --- OpenAlex enrichment ------------------------------------------------
+        # Always attempt enrichment: OpenAlexClient can derive DOI from metadata.identifier
+        # when explicit `doi` is not provided.
+        metadata = self.openalex_client.enrich_metadata(metadata, doi)
+        if extraction_metadata is not None:
+            for field in ("alternateName", "keywords", "author"):
+                if getattr(metadata, field, None) is not None:
+                    extraction_metadata.record(field, SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
 
-        if not reference_extracted and doi:
-            work_data = self.openalex_client.fetch_work_by_doi(doi)
+        # Build an effective DOI for reference publication if we don't already have one
+        effective_doi: Optional[str] = doi
+        if not effective_doi:
+            id_value = metadata.identifier
+            candidate: Optional[str] = None
+            if isinstance(id_value, list):
+                candidate = next(
+                    (v for v in id_value if isinstance(v, str) and "doi.org" in v),
+                    None,
+                )
+            elif isinstance(id_value, str) and "doi.org" in id_value:
+                candidate = id_value
+
+            if candidate:
+                # Strip URL prefix to get bare DOI for OpenAlex
+                effective_doi = candidate.replace("https://doi.org/", "")
+
+        if not reference_extracted and effective_doi:
+            work_data = self.openalex_client.fetch_work_by_doi(effective_doi)
             if work_data:
                 authors_data = self.openalex_client.extract_authors(work_data)
                 authors = []
@@ -109,7 +158,7 @@ class ExternalDataFetcherAdapter:
                         ))
                 metadata.codemeta_referencePublication = ReferencePublication(
                     type="ScholarlyArticle",
-                    id=f"https://doi.org/{doi}",
+                    id=f"https://doi.org/{effective_doi}",
                     name=work_data.get("title"),
                     author=authors if authors else None,
                 )

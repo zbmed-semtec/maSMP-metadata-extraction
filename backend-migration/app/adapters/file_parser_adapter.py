@@ -2,7 +2,11 @@
 Layer 3: Adapters
 File parser adapter - implements FileParser protocol
 """
+import re
 from typing import Optional, Tuple, TYPE_CHECKING
+
+import requests
+
 from app.core.entities.repository_metadata import RepositoryMetadata
 from app.domain.services.citation_file_parser import CitationFileParser
 from app.domain.services.readme_parser import ReadmeParser
@@ -20,6 +24,37 @@ from app.domain.extraction_sources import (
 
 if TYPE_CHECKING:
     from app.application.use_cases.extract_metadata import ExtractionMetadataCollector
+
+# Zenodo badge URLs in raw README (image or link); link redirects to DOI
+# e.g. [![DOI](https://zenodo.org/badge/190487675.svg)](https://zenodo.org/badge/latestdoi/198487675)
+_ZENODO_BADGE_URL_PATTERN = re.compile(
+    r"https://zenodo\.org/badge/(?:latestdoi/)?\d+(?:\.svg)?",
+    re.IGNORECASE,
+)
+
+
+def _find_zenodo_badge_url(content: str) -> Optional[str]:
+    """Find first Zenodo badge URL in raw README. Prefer latestdoi (link) over badge/ID.svg (image)."""
+    latestdoi_matches = re.findall(
+        r"https://zenodo\.org/badge/latestdoi/\d+",
+        content,
+        re.IGNORECASE,
+    )
+    if latestdoi_matches:
+        return latestdoi_matches[0]
+    match = _ZENODO_BADGE_URL_PATTERN.search(content)
+    return match.group(0) if match else None
+
+
+def _resolve_zenodo_badge_to_doi(badge_url: str) -> Optional[str]:
+    """Resolve Zenodo badge URL (e.g. .../latestdoi/123) to final DOI URL via redirect."""
+    try:
+        response = requests.get(badge_url, allow_redirects=True, timeout=10)
+        if response.url and "doi.org" in response.url:
+            return response.url
+    except Exception:
+        pass
+    return None
 
 
 class FileParserAdapter:
@@ -104,7 +139,21 @@ class FileParserAdapter:
             for branch in ["main", "master"]:
                 readme_content = self.file_fetcher.fetch_file_from_repo(owner, repo, "README.md", branch)
                 if readme_content:
-                    metadata = self.readme_parser.parse_readme(readme_content, metadata)
+                    metadata, identifier_set_by_readme = self.readme_parser.parse_readme(
+                        readme_content, metadata
+                    )
+                    # Raw README often has Zenodo badge URLs (not the DOI string); resolve them
+                    if not identifier_set_by_readme:
+                        zenodo_badge_url = _find_zenodo_badge_url(readme_content)
+                        if zenodo_badge_url:
+                            resolved_doi = _resolve_zenodo_badge_to_doi(zenodo_badge_url)
+                            if resolved_doi:
+                                # Merge resolved DOI into identifier list
+                                existing_ids = list(metadata.identifier or [])
+                                if resolved_doi not in existing_ids:
+                                    existing_ids.append(resolved_doi)
+                                metadata.identifier = existing_ids
+                                identifier_set_by_readme = True
                     if metadata.codemeta_referencePublication:
                         reference_extracted = True
                     if extraction_metadata is not None:
@@ -114,6 +163,8 @@ class FileParserAdapter:
                             extraction_metadata.record("codemeta_referencePublication", SOURCE_README_PARSER, CONFIDENCE_README)
                         if metadata.author is not None:
                             extraction_metadata.record("author", SOURCE_README_PARSER, CONFIDENCE_README)
+                        if identifier_set_by_readme:
+                            extraction_metadata.record("identifier", SOURCE_README_PARSER, CONFIDENCE_README)
                     break
 
         return metadata, doi, reference_extracted

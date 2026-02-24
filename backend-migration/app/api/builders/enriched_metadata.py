@@ -20,30 +20,51 @@ def build_enriched_metadata(
     """
     Build enriched_metadata for the API response: per-profile, per-property annotations only.
     No value (get that from results); only confidence, source, category.
-    Only built for maSMP schema; for CODEMETA returns empty dict.
+    - For maSMP: per-profile (SoftwareSourceCode / SoftwareApplication), with category.
+    - For CODEMETA: flat \"codemeta\" profile without categories.
     """
-    if schema != "maSMP":
-        return {}
+    # maSMP profiles
+    if schema == "maSMP":
+        result: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
-    result: Dict[str, Dict[str, Dict[str, Any]]] = {}
+        for profile_key in ("maSMP:SoftwareSourceCode", "maSMP:SoftwareApplication"):
+            profile_data = jsonld_document.get(profile_key)
+            if not isinstance(profile_data, dict):
+                continue
 
-    for profile_key in ("maSMP:SoftwareSourceCode", "maSMP:SoftwareApplication"):
-        profile_data = jsonld_document.get(profile_key)
-        if not isinstance(profile_data, dict):
-            continue
+            result[profile_key] = {}
+            skip_keys = {"@context", "@type"}
 
-        result[profile_key] = {}
+            for prop_key in profile_data.keys():
+                if prop_key in skip_keys:
+                    continue
+                entity_key = _jsonld_key_to_entity_key(prop_key)
+                record = extraction_metadata.get(entity_key, {})
+                result[profile_key][prop_key] = {
+                    "confidence": record.get("confidence"),
+                    "source": record.get("source"),
+                    "category": get_category_for_key(profile_key, prop_key),
+                }
+
+        return result
+
+    # CODEMETA: flat profile, no category semantics (UI still shows source & confidence)
+    if schema == "CODEMETA":
+        result: Dict[str, Dict[str, Dict[str, Any]]] = {"codemeta": {}}
         skip_keys = {"@context", "@type"}
 
-        for prop_key in profile_data.keys():
+        for prop_key in jsonld_document.keys():
             if prop_key in skip_keys:
                 continue
             entity_key = _jsonld_key_to_entity_key(prop_key)
             record = extraction_metadata.get(entity_key, {})
-            result[profile_key][prop_key] = {
+            result["codemeta"][prop_key] = {
                 "confidence": record.get("confidence"),
                 "source": record.get("source"),
-                "category": get_category_for_key(profile_key, prop_key),
+                "category": None,
             }
 
-    return result
+        return result
+
+    # Other schemas not yet annotated
+    return {}

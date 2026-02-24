@@ -3,24 +3,51 @@ Layer 3: Domain Services
 README parser - extracts metadata from README files
 """
 import re
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from app.core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
+
+
+# Pattern for DOI URLs (e.g. in badges or links: https://doi.org/10.1234/xyz or https://zenodo.org/records/123)
+_DOI_URL_PATTERN = re.compile(
+    r"https://(?:doi\.org/([^\s\)\]\"']+)|zenodo\.org/records?/(\d+))",
+    re.IGNORECASE,
+)
 
 
 class ReadmeParser:
     """Parses README files to extract metadata"""
-    
-    def parse_readme(self, readme_content: str, metadata: RepositoryMetadata) -> RepositoryMetadata:
+
+    def parse_readme(
+        self, readme_content: str, metadata: RepositoryMetadata
+    ) -> Tuple[RepositoryMetadata, bool]:
         """
-        Parse README content to extract citations and authors.
-        
+        Parse README content to extract citations, authors, and identifier (DOI from badges/links).
+
         Args:
             readme_content: Content of the README file
             metadata: Current metadata object
-            
+
         Returns:
-            Updated metadata object
+            (updated_metadata, identifier_was_set_from_readme)
+            identifier_was_set_from_readme is True when a DOI was found in the README and used to set metadata.identifier.
         """
+        identifier_set_by_readme = False
+
+        # Extract identifier from DOI badge or link in README (e.g. Zenodo/DOI badge)
+        for match in _DOI_URL_PATTERN.finditer(readme_content):
+            if match.group(1):
+                doi = match.group(1)
+            else:
+                doi = f"10.5281/zenodo.{match.group(2)}"
+            # Merge with any existing identifiers; allow multiple DOIs (article + software)
+            existing_ids = list(metadata.identifier or [])
+            doi_url = f"https://doi.org/{doi}"
+            if doi_url not in existing_ids:
+                existing_ids.append(doi_url)
+            metadata.identifier = existing_ids
+            identifier_set_by_readme = True
+            break
+
         # Extract BibTeX citations
         citations = re.findall(r'```bibtex([\s\S]*?)```', readme_content)
         
@@ -56,19 +83,32 @@ class ReadmeParser:
                     author=authors if authors else None
                 )
             
-            # Update authors if not already set
-            if all_authors and not metadata.author:
-                # Remove duplicates based on name
-                seen = set()
-                unique_authors = []
+            # Merge authors from README with any existing authors, keeping unique by name
+            if all_authors:
+                existing_authors = list(metadata.author or [])
+
+                def _author_key(a: Any) -> tuple[str, str]:
+                    if isinstance(a, Person):
+                        fam = a.familyName or ""
+                        given = a.givenName or ""
+                    elif isinstance(a, dict):
+                        fam = (a.get("familyName") or a.get("family-names") or "") or ""
+                        given = (a.get("givenName") or a.get("given-names") or "") or ""
+                    else:
+                        fam = given = ""
+                    return fam.strip(), given.strip()
+
+                seen = { _author_key(a) for a in existing_authors }
                 for author in all_authors:
-                    key = (author.familyName, author.givenName)
+                    key = _author_key(author)
                     if key not in seen:
+                        existing_authors.append(author)
                         seen.add(key)
-                        unique_authors.append(author)
-                metadata.author = unique_authors
-        
-        return metadata
+
+                if existing_authors:
+                    metadata.author = existing_authors
+
+        return metadata, identifier_set_by_readme
     
     def extract_license_copyright(self, license_content: str) -> Optional[str]:
         """

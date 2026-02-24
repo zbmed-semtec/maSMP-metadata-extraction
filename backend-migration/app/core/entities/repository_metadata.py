@@ -18,7 +18,7 @@ class Person(BaseModel):
     email: Optional[str] = None
     
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class VersionControlSystem(BaseModel):
@@ -34,7 +34,7 @@ class VersionControlSystem(BaseModel):
     name: Optional[str] = None  # Name (e.g., "Git")
     
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
     
     @classmethod
     def create_git(cls, vcs_type: str = "SoftwareSourceCode") -> "VersionControlSystem":
@@ -65,7 +65,7 @@ class License(BaseModel):
     url: Optional[HttpUrl] = None  # License URL (e.g., "https://api.github.com/licenses/mit")
     
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class ReferencePublication(BaseModel):
@@ -79,9 +79,10 @@ class ReferencePublication(BaseModel):
     id: Optional[str] = Field(default=None, alias="@id")  # DOI URL (e.g., "https://doi.org/10.1162/qss_a_00167")
     name: Optional[str] = None  # Publication title
     author: Optional[List[Person]] = None  # List of authors (Person objects)
-    
+
     class Config:
-        allow_population_by_field_name = True
+        # Use field names as well as aliases like "@type" and "@id"
+        populate_by_name = True
 
 
 class RepositoryMetadata(BaseModel):
@@ -92,7 +93,7 @@ class RepositoryMetadata(BaseModel):
     """
     # Basic Information
     name: Optional[str] = None
-    alternateName: Optional[str] = None
+    alternateName: Optional[List[str]] = None
     description: Optional[str] = None
     version: Optional[str] = None
     softwareVersion: Optional[str] = None
@@ -142,7 +143,10 @@ class RepositoryMetadata(BaseModel):
     masmp_changelog: Optional[str] = None
     
     # Metadata
-    identifier: Optional[str] = None
+    # identifier can have multiple values (e.g., software DOI, article DOI, SWHID)
+    # We model it as a list of strings to allow merging identifiers from
+    # different sources such as CITATION.cff and README badges.
+    identifier: Optional[List[str]] = None
     keywords: Optional[List[str]] = None
     citation: Optional[List[Dict[str, Any]]] = None
     codemeta_referencePublication: Optional[ReferencePublication] = None
@@ -160,7 +164,8 @@ class RepositoryMetadata(BaseModel):
     codemeta_developmentStatus: Optional[str] = None
     
     # Archive Information
-    archivedAt: Optional[str] = None
+    # Multiple archive locations (e.g., Zenodo badge URL, Wayback snapshot, etc.)
+    archivedAt: Optional[List[str]] = None
     
     # Additional maSMP fields
     masmp_intendedUse: Optional[str] = None
@@ -181,7 +186,10 @@ class RepositoryMetadata(BaseModel):
     class Config:
         """Pydantic configuration"""
         # Allow fields with @ prefix (like @type, @id)
-        allow_population_by_field_name = True
+        populate_by_name = True
         # Store extra fields that don't match the model
         extra = "allow"
+        # Ensure assignments to fields (especially HttpUrl) are validated
+        # so that serialization does not emit warnings
+        validate_assignment = True
 
