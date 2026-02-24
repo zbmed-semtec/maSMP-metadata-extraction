@@ -163,7 +163,8 @@ class RepositoryMetadata(BaseModel):
     codemeta_developmentStatus: Optional[str] = None
     
     # Archive Information
-    archivedAt: Optional[str] = None
+    # Multiple archive locations (e.g., Zenodo badge URL, Wayback snapshot, etc.)
+    archivedAt: Optional[List[str]] = None
     
     # Additional maSMP fields
     masmp_intendedUse: Optional[str] = None

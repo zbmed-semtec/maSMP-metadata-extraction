@@ -289,7 +289,8 @@ function formatSourceLabel(source: string): string {
   if (s === 'license_file') return 'License File'
   if (s === 'readme_parser') return 'Readme'
   if (s === 'zenodo_badge') return 'Zenodo Badge'
-  if (s === 'wayback') return 'Wayback'
+  if (s === 'wayback') return 'Wayback Machine'
+  if (s === 'software_heritage') return 'Software Heritage'
   if (s === 'openalex') return 'OpenAlex'
   if (s === 'llm') return 'LLM'
   return source

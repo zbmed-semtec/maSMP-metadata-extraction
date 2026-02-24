@@ -13,6 +13,7 @@ from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
 from app.domain.extraction_sources import (
     SOURCE_ZENODO_BADGE,
     SOURCE_WAYBACK,
+    SOURCE_SOFTWARE_HERITAGE,
     SOURCE_OPENALEX,
     CONFIDENCE_ARCHIVE,
     CONFIDENCE_OPENALEX,
@@ -75,16 +76,45 @@ class ExternalDataFetcherAdapter:
             readme_content = self.file_fetcher.fetch_file_content(readme_url)
             if readme_content:
                 zenodo_urls = self.url_matcher.check_zenodo_badge(readme_content)
+                found_any = False
+
+                # Merge all Zenodo archive URLs from badges
                 if zenodo_urls:
-                    metadata.archivedAt = zenodo_urls[0]
-                    if extraction_metadata is not None:
-                        extraction_metadata.record("archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
-                    break
-                archive_url = self.wayback_client.find_archive(repo_url)
-                if archive_url:
-                    metadata.archivedAt = archive_url
-                    if extraction_metadata is not None:
-                        extraction_metadata.record("archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
+                    existing_archives = list(metadata.archivedAt or [])
+                    for url in zenodo_urls:
+                        if url not in existing_archives:
+                            existing_archives.append(url)
+                    if existing_archives:
+                        metadata.archivedAt = existing_archives
+                        found_any = True
+                        if extraction_metadata is not None:
+                            extraction_metadata.record("archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
+
+                # Also try Software Heritage and Wayback, even if Zenodo was found
+                swh_url = self.wayback_client.check_software_heritage(repo_url)
+                if swh_url:
+                    existing_archives = list(metadata.archivedAt or [])
+                    if swh_url not in existing_archives:
+                        existing_archives.append(swh_url)
+                    if existing_archives:
+                        metadata.archivedAt = existing_archives
+                        found_any = True
+                        if extraction_metadata is not None:
+                            extraction_metadata.record("archivedAt", SOURCE_SOFTWARE_HERITAGE, CONFIDENCE_ARCHIVE)
+
+                wayback_url = self.wayback_client.check_archive_url(repo_url)
+                if wayback_url:
+                    existing_archives = list(metadata.archivedAt or [])
+                    if wayback_url not in existing_archives:
+                        existing_archives.append(wayback_url)
+                    if existing_archives:
+                        metadata.archivedAt = existing_archives
+                        found_any = True
+                        if extraction_metadata is not None:
+                            extraction_metadata.record("archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
+
+                # Stop after first branch where we found any archive info
+                if found_any:
                     break
 
         # --- OpenAlex enrichment ------------------------------------------------

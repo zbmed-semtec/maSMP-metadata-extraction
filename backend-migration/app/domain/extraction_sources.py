@@ -10,6 +10,7 @@ SOURCE_LICENSE_FILE = "license_file"
 SOURCE_README_PARSER = "readme_parser"
 SOURCE_ZENODO_BADGE = "zenodo_badge"
 SOURCE_WAYBACK = "wayback"
+SOURCE_SOFTWARE_HERITAGE = "software_heritage"
 SOURCE_OPENALEX = "openalex"
 SOURCE_LLM = "llm"  # for future LLM extraction
 
