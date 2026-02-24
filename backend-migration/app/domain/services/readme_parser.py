@@ -48,9 +48,6 @@ class ReadmeParser:
             identifier_set_by_readme = True
             break
 
-        # Store README content
-        metadata.codemeta_readme = readme_content
-
         # Extract BibTeX citations
         citations = re.findall(r'```bibtex([\s\S]*?)```', readme_content)
         
