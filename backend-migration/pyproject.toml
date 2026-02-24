@@ -6,10 +6,10 @@ requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "metadata-extractor"
-version = "1.0.0"
-description = "Extract metadata from code repositories (GitHub)"
-readme = "README.md"
+name = "comet-rs"
+version = "0.1.0"
+description = "CLI and library for extracting maSMP/CODEMETA metadata (and sources) from code repositories"
+readme = "README_PYPI.md"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.104.0",
@@ -29,6 +29,8 @@ dev = [
     "ruff>=0.1.6",
 ]
 
+[project.scripts]
+comet-rs = "app.cli:main"
 
 [tool.setuptools]
 packages = ["app"]

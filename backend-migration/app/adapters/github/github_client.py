@@ -9,6 +9,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# If rate-limit wait would exceed this (seconds), we raise instead of blocking.
+MAX_RATE_LIMIT_WAIT_SECONDS = 60
+
+
+class GitHubRateLimitError(Exception):
+    """Raised when GitHub rate limit is exceeded and wait time would be too long."""
+
+    def __init__(self, retry_after_seconds: float, message: Optional[str] = None):
+        self.retry_after_seconds = retry_after_seconds
+        super().__init__(
+            message
+            or (
+                "GitHub API rate limit exceeded. "
+                "Use a personal access token (--token or GITHUB_TOKEN) for 5,000 requests/hour, "
+                f"or try again in {int(retry_after_seconds)}s."
+            )
+        )
+
 
 class GitHubClient:
     """Client for GitHub API with rate limiting"""
@@ -55,7 +73,10 @@ class GitHubClient:
                 else:
                     sleep_time = initial_backoff
                     initial_backoff *= backoff_rate
-                
+
+                if sleep_time > MAX_RATE_LIMIT_WAIT_SECONDS:
+                    raise GitHubRateLimitError(sleep_time)
+
                 logger.warning(f"Rate limit exceeded. Sleeping for {sleep_time} seconds.")
                 time.sleep(sleep_time)
                 continue

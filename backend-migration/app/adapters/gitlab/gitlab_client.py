@@ -10,6 +10,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# If rate-limit wait would exceed this (seconds), we raise instead of blocking.
+MAX_RATE_LIMIT_WAIT_SECONDS = 60
+
+
+class GitLabRateLimitError(Exception):
+    """Raised when GitLab rate limit is exceeded and wait time would be too long."""
+
+    def __init__(self, retry_after_seconds: float, message: Optional[str] = None):
+        self.retry_after_seconds = retry_after_seconds
+        super().__init__(
+            message
+            or (
+                "GitLab API rate limit exceeded. "
+                "Use a personal access token (--token or GITLAB_TOKEN) for higher limits, "
+                f"or try again in {int(retry_after_seconds)}s."
+            )
+        )
+
 
 class GitLabClient:
     """
@@ -66,6 +84,9 @@ class GitLabClient:
                 else:
                     sleep_time = initial_backoff
                     initial_backoff *= backoff_rate
+
+                if sleep_time > MAX_RATE_LIMIT_WAIT_SECONDS:
+                    raise GitLabRateLimitError(sleep_time)
 
                 logger.warning(f"Rate limit hit. Sleeping {sleep_time} seconds.")
                 time.sleep(sleep_time)
