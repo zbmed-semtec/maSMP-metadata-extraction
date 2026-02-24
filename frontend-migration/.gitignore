@@ -1,0 +1,14 @@
+node_modules
+.nuxt
+.output
+.nitro
+.cache
+dist
+
+# Local env files
+.env
+.env.*
+
+# Logs
+*.log
+
