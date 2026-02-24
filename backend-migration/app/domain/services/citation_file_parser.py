@@ -69,19 +69,41 @@ class CitationFileParser:
             if pref_doi_url not in identifier_values:
                 identifier_values.append(pref_doi_url)
         
-        # Extract authors
+        # Extract authors (merge with any existing authors, keep unique by name)
         if "authors" in cff_data:
-            authors = []
+            new_authors = []
             for author in cff_data["authors"]:
                 person = {
                     "@type": "Person",
                     "familyName": author.get("family-names"),
-                    "givenName": author.get("given-names")
+                    "givenName": author.get("given-names"),
                 }
                 if "orcid" in author:
                     person["@id"] = author["orcid"]
-                authors.append(person)
-            metadata.author = authors
+                new_authors.append(person)
+
+            existing_authors = list(metadata.author or [])
+
+            def _author_key(a: Any) -> tuple[str, str]:
+                if isinstance(a, dict):
+                    fam = (a.get("familyName") or a.get("family-names") or "") or ""
+                    given = (a.get("givenName") or a.get("given-names") or "") or ""
+                elif isinstance(a, Person):
+                    fam = a.familyName or ""
+                    given = a.givenName or ""
+                else:
+                    fam = given = ""
+                return fam.strip(), given.strip()
+
+            seen = { _author_key(a) for a in existing_authors }
+            for a in new_authors:
+                key = _author_key(a)
+                if key not in seen:
+                    existing_authors.append(a)
+                    seen.add(key)
+
+            if existing_authors:
+                metadata.author = existing_authors
         
         if identifier_values:
             metadata.identifier = identifier_values

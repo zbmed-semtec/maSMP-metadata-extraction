@@ -83,17 +83,30 @@ class ReadmeParser:
                     author=authors if authors else None
                 )
             
-            # Update authors if not already set
-            if all_authors and not metadata.author:
-                # Remove duplicates based on name
-                seen = set()
-                unique_authors = []
+            # Merge authors from README with any existing authors, keeping unique by name
+            if all_authors:
+                existing_authors = list(metadata.author or [])
+
+                def _author_key(a: Any) -> tuple[str, str]:
+                    if isinstance(a, Person):
+                        fam = a.familyName or ""
+                        given = a.givenName or ""
+                    elif isinstance(a, dict):
+                        fam = (a.get("familyName") or a.get("family-names") or "") or ""
+                        given = (a.get("givenName") or a.get("given-names") or "") or ""
+                    else:
+                        fam = given = ""
+                    return fam.strip(), given.strip()
+
+                seen = { _author_key(a) for a in existing_authors }
                 for author in all_authors:
-                    key = (author.familyName, author.givenName)
+                    key = _author_key(author)
                     if key not in seen:
+                        existing_authors.append(author)
                         seen.add(key)
-                        unique_authors.append(author)
-                metadata.author = unique_authors
+
+                if existing_authors:
+                    metadata.author = existing_authors
 
         return metadata, identifier_set_by_readme
     
