@@ -95,8 +95,8 @@ def test_gitlab_extractor_populates_core_fields(monkeypatch):
     assert str(metadata.issueTracker) == "https://gitlab.com/owner/repo/-/issues"
     assert str(metadata.codemeta_issueTracker) == "https://gitlab.com/owner/repo/-/issues"
     assert str(metadata.discussionUrl) == "https://gitlab.com/owner/repo/-/discussions"
-    assert metadata.hasSourceCode == metadata.url
-    assert metadata.codemeta_hasSourceCode == metadata.url
+    assert metadata.hasSourceCode == "https://gitlab.com/owner/repo"
+    assert metadata.codemeta_hasSourceCode == "https://gitlab.com/owner/repo"
     assert metadata.keywords and set(metadata.keywords) == {"gitlab", "metadata"}
     assert metadata.programmingLanguage and set(metadata.programmingLanguage) == {"Python", "Go"}
     assert metadata.contributor and metadata.contributor[0]["name"] == "Dummy User"
