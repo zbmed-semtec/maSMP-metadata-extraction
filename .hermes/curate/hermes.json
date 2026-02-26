@@ -1,0 +1,53 @@
+{
+  "@context": [
+    "https://doi.org/10.5063/schema/codemeta-2.0",
+    {
+      "hermes": "https://software-metadata.pub/ns/hermes/"
+    }
+  ],
+  "@type": "SoftwareSourceCode",
+  "author": [
+    {
+      "@id": "https://orcid.org/0009-0005-7305-3052",
+      "@type": "Person",
+      "familyName": "Venkatesh",
+      "givenName": "Suhasini"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-5037-0443",
+      "@type": "Person",
+      "familyName": "Qui\u00f1ones",
+      "givenName": "Nelson"
+    },
+    {
+      "@id": "https://orcid.org/0009-0004-1529-0095",
+      "@type": "Person",
+      "familyName": "Solanki",
+      "givenName": "Dhwani"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-1018-0370",
+      "@type": "Person",
+      "familyName": "Rebholz-Schuhmann",
+      "givenName": "Dietrich"
+    },
+    {
+      "@id": "https://orcid.org/0000-0003-3986-0510",
+      "@type": "Person",
+      "familyName": "Castro",
+      "givenName": "Leyla Jael"
+    }
+  ],
+  "datePublished": "2025-01-07",
+  "identifier": "https://doi.org/10.5281/zenodo.14918499",
+  "keywords": [
+    "metadata-extraction",
+    "software-management-plan",
+    "github",
+    "machine-actionable"
+  ],
+  "license": "https://spdx.org/licenses/GPL-3.0",
+  "name": "maSMP Metadata Extraction",
+  "url": "https://github.com/zbmed-semtec/maSMP-metadata-extraction",
+  "version": "0.1.0-beta"
+}
