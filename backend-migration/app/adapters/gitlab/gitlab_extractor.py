@@ -74,11 +74,14 @@ class GitLabExtractor:
 
         # Basic information
         metadata.name = project.get("name")
+        
         metadata.description = project.get("description")
         metadata.url = project.get("web_url")
         metadata.codeRepository = project.get("http_url_to_repo")
         if metadata.name is not None:
             record("name")
+        if metadata.author is not None:
+            record("author")
         if metadata.description is not None:
             record("description")
         if metadata.url is not None:
@@ -202,5 +205,14 @@ class GitLabExtractor:
                 metadata.has_release = False
         except Exception:
             metadata.has_release = False
+
+        # Author
+        try:
+            author = project.get("namespace", {})
+            if author:
+                metadata.author = [{"@type": "Person", "name": author.get("name"), "email": author.get("email")}]
+                record("author")
+        except Exception:
+            pass
 
         return metadata
