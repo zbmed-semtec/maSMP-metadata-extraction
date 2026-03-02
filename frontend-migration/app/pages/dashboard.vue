@@ -189,18 +189,39 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import type { ExtractionStreamResult, ExtractionProgress } from '../../composables/useApi'
 import { useApi } from '../../composables/useApi'
+import { useExtractionStore } from '../../stores/extraction'
 
-const repoUrl = ref('')
-const schema = ref<'maSMP' | 'CodeMeta'>('maSMP')
-const accessToken = ref('')
+const extractionStore = useExtractionStore()
+
+const repoUrl = computed({
+  get: () => extractionStore.repoUrl,
+  set: (v: string) => { extractionStore.repoUrl = v },
+})
+
+const schema = computed<'maSMP' | 'CodeMeta'>({
+  get: () => extractionStore.schema,
+  set: (v) => { extractionStore.schema = v },
+})
+
+const accessToken = computed({
+  get: () => extractionStore.accessToken,
+  set: (v: string) => { extractionStore.accessToken = v },
+})
 const isLoading = ref(false)
-const error = ref('')
+const error = computed({
+  get: () => extractionStore.error,
+  set: (v: string) => { extractionStore.error = v },
+})
 const showTokenTip = ref(false)
 const tokenTipTab = ref<'github' | 'gitlab'>('github')
 const progressStep = ref<ExtractionProgress | null>(null)
-const extractionResult = ref<ExtractionStreamResult | null>(null)
+const extractionResult = computed<ExtractionStreamResult | null>({
+  get: () => extractionStore.result,
+  set: (v) => { extractionStore.result = v as ExtractionStreamResult | null },
+})
 
 useHead({
   title: 'Extract metadata - CoMET-RS',
@@ -219,7 +240,8 @@ const onExtract = async () => {
       accessToken.value || undefined,
       (p) => { progressStep.value = p }
     )
-    extractionResult.value = result
+    extractionStore.setForm(repoUrl.value, schema.value, accessToken.value)
+    extractionStore.setResult(result)
     // Keep overlay visible briefly so the user sees the last step (e.g. jsonld_build) as completed
     await new Promise((r) => setTimeout(r, 500))
   } catch (e) {
