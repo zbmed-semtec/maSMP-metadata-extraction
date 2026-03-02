@@ -38,9 +38,16 @@ class ExtractionMetadataCollector(Protocol):
 
 @dataclass(frozen=True)
 class ExtractMetadataResult:
-    """Result of the extract metadata use case: JSON-LD document and optional extraction metadata."""
+    """
+    Result of the extract metadata use case.
+
+    Exposes both the final JSON-LD document (for API/CLI consumers) and
+    the internal RepositoryMetadata instance so that other services
+    (e.g. FAIRness assessment) can perform schema-independent analysis.
+    """
     jsonld_document: dict
     extraction_metadata: Dict[str, Dict[str, Any]]  # entity_field -> {source, confidence}
+    metadata: RepositoryMetadata
 
 
 # Protocol definitions for dependency injection (Layer 2 doesn't know about concrete implementations)
@@ -219,5 +226,6 @@ class ExtractMetadataUseCase:
         return ExtractMetadataResult(
             jsonld_document=jsonld_document,
             extraction_metadata=extraction_metadata,
+            metadata=metadata,
         )
 

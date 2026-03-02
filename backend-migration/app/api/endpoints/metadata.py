@@ -11,10 +11,15 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import HttpUrl
 
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
+from app.api.schemas.metadata import (
+    FairnessResponse,
+    MetadataEnrichedResponse,
+    MetadataPlainResponse,
+)
+from app.api.services import fairness_service
 from app.api.services.metadata_service import run_extraction, run_extraction_with_progress
-from app.api.schemas.metadata import MetadataPlainResponse, MetadataEnrichedResponse
 from app.application.use_cases.extract_metadata import EXTRACTION_STEPS
+from app.domain.services.url_pattern_matcher import URLPatternMatcher
 
 # Step ID -> human-readable label for SSE progress events
 STEP_LABELS = {step_id: label for step_id, label in EXTRACTION_STEPS}
@@ -255,6 +260,62 @@ async def extract_metadata_stream(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@router.get("/fairness", response_model=FairnessResponse)
+async def get_fairness(
+    repo_url: HttpUrl = Query(
+        ...,
+        description="URL of the code repository (GitHub, GitLab)",
+    ),
+    schema: str = Query(
+        "maSMP",
+        description="Schema to analyze against",
+        enum=["maSMP", "CODEMETA"],
+    ),
+    access_token: Optional[str] = Query(
+        None,
+        description="Optional access token for private repositories",
+    ),
+) -> FairnessResponse:
+    """
+    Compute a FAIRness report for a repository.
+
+    Returns the underlying JSON-LD plus FAIRness scores for F/A/I/R principles.
+    """
+    try:
+        url_matcher = URLPatternMatcher()
+        platform = url_matcher.detect_platform(str(repo_url))
+        if not platform:
+            raise HTTPException(
+                status_code=400,
+                detail="Unsupported repository platform. Supported: GitHub, GitLab",
+            )
+
+        jsonld_document, fairness_report = fairness_service.run_fairness_assessment(
+            repo_url=str(repo_url),
+            schema=schema,
+            access_token=access_token,
+            with_enrichment=False,
+        )
+
+        # Convert dataclass to plain dict
+        from dataclasses import asdict
+
+        fairness_dict = asdict(fairness_report)
+
+        return FairnessResponse(
+            status="success",
+            schema_=schema,
+            code_url=repo_url,
+            message="FAIRness assessment completed.",
+            results=jsonld_document,
+            fairness=fairness_dict,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.get("/health")
