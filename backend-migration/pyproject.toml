@@ -33,7 +33,7 @@ dev = [
 comet-rs = "app.cli:main"
 
 [tool.setuptools]
-packages = ["app"]
+packages = ["app", "comet_rs"]
 
 [tool.black]
 line-length = 100
