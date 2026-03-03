@@ -104,33 +104,44 @@
                 </template>
                 <!-- Default: URLs, lists, plain text -->
                 <template v-else>
-                  <template v-for="(part, i) in parseValue(row.value)" :key="i">
-                    <a
-                      v-if="part.type === 'url'"
-                      :href="part.href"
-                      :title="part.href"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1 text-blue-700 no-underline ring-1 ring-blue-200/60 hover:bg-blue-100 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-full min-w-0"
-                    >
-                      <span class="truncate">{{ formatUrlLabel(part.href) }}</span>
-                      <svg class="h-3.5 w-3.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                    <template v-else-if="parseList(part.content)">
-                      <span
-                        v-for="(item, j) in parseList(part.content)"
-                        :key="j"
-                        class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-sm text-green-700 ring-1 ring-green-200/60"
-                      >
-                        {{ item }}
-                      </span>
-                    </template>
+                  <!-- For description, always show as a single text block (no list / pill splitting) -->
+                  <template v-if="isDescription(row.property)">
                     <span
-                      v-else
                       class="inline-block rounded-md bg-green-50 px-2.5 py-1.5 text-green-800 ring-1 ring-green-200/70 whitespace-pre-wrap break-words"
-                    >{{ part.content }}</span>
+                    >
+                      {{ row.value }}
+                    </span>
+                  </template>
+                  <!-- All other properties keep the richer URL + list formatting -->
+                  <template v-else>
+                    <template v-for="(part, i) in parseValue(row.value)" :key="i">
+                      <a
+                        v-if="part.type === 'url'"
+                        :href="part.href"
+                        :title="part.href"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1 text-blue-700 no-underline ring-1 ring-blue-200/60 hover:bg-blue-100 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-full min-w-0"
+                      >
+                        <span class="truncate">{{ formatUrlLabel(part.href) }}</span>
+                        <svg class="h-3.5 w-3.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                      <template v-else-if="parseList(part.content)">
+                        <span
+                          v-for="(item, j) in parseList(part.content)"
+                          :key="j"
+                          class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-sm text-green-700 ring-1 ring-green-200/60"
+                        >
+                          {{ item }}
+                        </span>
+                      </template>
+                      <span
+                        v-else
+                        class="inline-block rounded-md bg-green-50 px-2.5 py-1.5 text-green-800 ring-1 ring-green-200/70 whitespace-pre-wrap break-words"
+                      >{{ part.content }}</span>
+                    </template>
                   </template>
                 </template>
               </span>
@@ -232,6 +243,10 @@ function parseValue(value: string): ValuePart[] {
     parts.push({ type: 'text', content: value.slice(lastIndex) })
   }
   return parts.length ? parts : [{ type: 'text', content: value }]
+}
+
+function isDescription(property: string): boolean {
+  return (property || '').trim().toLowerCase() === 'description'
 }
 
 function formatUrlLabel(href: string): string {
