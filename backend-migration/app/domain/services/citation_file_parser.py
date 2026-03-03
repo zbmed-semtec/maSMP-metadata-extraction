@@ -55,10 +55,40 @@ class CitationFileParser:
                 identifier_values.append(doi_url)
             if not metadata.citation:
                 metadata.citation = []
-            metadata.citation.append({
+
+            # Build a rich citation object matching the expected JSON-LD shape.
+            citation_entry: Dict[str, Any] = {
                 "@type": "Article",
                 "@id": doi_url,
-            })
+            }
+            title = cff_data.get("title")
+            if title:
+                citation_entry["title"] = str(title)
+            authors_field = cff_data.get("authors") or []
+            author_list: List[Dict[str, Any]] = []
+            for author in authors_field:
+                if not isinstance(author, dict):
+                    continue
+                given = author.get("given-names")
+                family = author.get("family-names")
+                if not given and not family and not author.get("orcid"):
+                    continue
+                person: Dict[str, Any] = {
+                    "@type": "Person",
+                }
+                if given:
+                    person["givenName"] = given
+                if family:
+                    person["familyName"] = family
+                orcid = author.get("orcid")
+                if orcid:
+                    # Preserve raw ORCID; downstream can render as link.
+                    person["@id"] = orcid
+                author_list.append(person)
+            if author_list:
+                citation_entry["author"] = author_list
+
+            metadata.citation.append(citation_entry)
         
         # Preferred-citation DOI (may be present even when top-level doi is absent)
         preferred = cff_data.get("preferred-citation") or {}
@@ -137,4 +167,36 @@ class CitationFileParser:
             name=preferred_citation.get("title"),
             author=authors if authors else None
         )
+
+        # Also expose the preferred citation in the generic `citation` list, using the
+        # same JSON-LD-friendly structure expected by downstream consumers.
+        doi_value = preferred_citation.get("doi")
+        if doi_value:
+            doi_url = f"https://doi.org/{doi_value}"
+            if not metadata.citation:
+                metadata.citation = []
+
+            citation_entry: Dict[str, Any] = {
+                "@type": "Article",
+                "@id": doi_url,
+            }
+            title = preferred_citation.get("title")
+            if title:
+                citation_entry["title"] = str(title)
+
+            if authors:
+                citation_authors: List[Dict[str, Any]] = []
+                for a in authors:
+                    person: Dict[str, Any] = {"@type": "Person"}
+                    if a.givenName:
+                        person["givenName"] = a.givenName
+                    if a.familyName:
+                        person["familyName"] = a.familyName
+                    if a.id:
+                        person["@id"] = a.id
+                    citation_authors.append(person)
+                if citation_authors:
+                    citation_entry["author"] = citation_authors
+
+            metadata.citation.append(citation_entry)
 
