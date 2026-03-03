@@ -142,6 +142,10 @@ def test_extract_metadata_usecase_happy_path():
     assert result.jsonld_document["name"] == "FromPlatform"
     assert result.jsonld_document["description"] == "FromFiles"
 
+    # Internal metadata is exposed for downstream services (e.g. FAIRness)
+    assert isinstance(result.metadata, RepositoryMetadata)
+    assert result.metadata.name == "FromPlatform"
+
     # Extraction metadata was aggregated from all steps
     meta = result.extraction_metadata
     assert "name" in meta and meta["name"]["source"] == ["platform"]

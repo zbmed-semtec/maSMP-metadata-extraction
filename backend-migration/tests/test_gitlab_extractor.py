@@ -106,6 +106,11 @@ def test_gitlab_extractor_populates_core_fields(monkeypatch):
     assert metadata.has_release is True
     assert metadata.codemeta_readme == "https://gitlab.com/owner/repo/-/blob/main/README.md"
     assert metadata.masmp_changelog == "https://gitlab.com/owner/repo/-/blob/main/CHANGELOG.md"
+    assert metadata.softwareRequirements
+    assert any(
+        url == "https://gitlab.com/owner/repo/-/blob/main/requirements.txt"
+        for url in metadata.softwareRequirements
+    )
 
     # Verify recordings
     recorded_fields = {field for (field, source) in collector.calls if source == SOURCE_GITLAB_API}
@@ -132,6 +137,7 @@ def test_gitlab_extractor_populates_core_fields(monkeypatch):
         "license",
         "codemeta_readme",
         "masmp_changelog",
+        "softwareRequirements",
         "softwareVersion",
         "version",
     ]:

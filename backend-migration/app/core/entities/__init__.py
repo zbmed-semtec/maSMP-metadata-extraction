@@ -4,8 +4,18 @@ from app.core.entities.repository_metadata import (
     Person,
     VersionControlSystem,
     License,
-    ReferencePublication
+    ReferencePublication,
 )
+from app.core.entities.fairness import FairnessIndicator, FairnessReport, FairPrinciple
 
-__all__ = ["RepositoryMetadata", "Person", "VersionControlSystem", "License", "ReferencePublication"]
+__all__ = [
+    "RepositoryMetadata",
+    "Person",
+    "VersionControlSystem",
+    "License",
+    "ReferencePublication",
+    "FairnessIndicator",
+    "FairnessReport",
+    "FairPrinciple",
+]
 
