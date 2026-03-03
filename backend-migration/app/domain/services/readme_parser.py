@@ -117,8 +117,7 @@ class ReadmeParser:
                             author.model_dump(by_alias=True, exclude_none=True)
                         )
                         seen.add(key)
-                        unique_authors.append(author)
-                metadata.author = unique_authors
+                metadata.author = existing_authors
 
         return metadata, identifier_set_by_readme
     
