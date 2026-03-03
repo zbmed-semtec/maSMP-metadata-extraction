@@ -27,10 +27,6 @@ class ReadmeParser:
     def parse_readme(
         self, readme_content: str, metadata: RepositoryMetadata
     ) -> Tuple[RepositoryMetadata, bool]:
-
-    def parse_readme(
-        self, readme_content: str, metadata: RepositoryMetadata
-    ) -> Tuple[RepositoryMetadata, bool]:
         """
         Parse README content to extract citations, authors, and identifier (DOI from badges/links).
 
