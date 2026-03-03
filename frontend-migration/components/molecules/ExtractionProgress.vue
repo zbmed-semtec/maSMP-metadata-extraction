@@ -138,9 +138,9 @@ const steps = computed(() =>
 
 function stepLabel(stepId: string): string {
   const labels: Record<string, string> = {
-    platform: 'Extracting from platform API (GitHub/GitLab)',
+    platform: 'Extracting from platform API',
     file_parsing: 'Parsing repository files',
-    external_data: 'Fetching external data (OpenAlex, Wayback)',
+    external_data: 'Fetching external data',
     llm: 'Extracting with LLM',
     jsonld_build: 'Building JSON-LD document'
   }

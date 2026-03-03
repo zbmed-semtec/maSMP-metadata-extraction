@@ -10,9 +10,9 @@ from app.core.entities.repository_metadata import RepositoryMetadata
 
 # Step IDs for progress streaming (used by SSE endpoint and frontend)
 EXTRACTION_STEPS = [
-    ("platform", "Extracting from platform API (GitHub/GitLab)"),
+    ("platform", "Extracting from platform API"),
     ("file_parsing", "Parsing repository files"),
-    ("external_data", "Fetching external data (OpenAlex, Wayback)"),
+    ("external_data", "Fetching external data"),
     ("llm", "Extracting with LLM"),
     ("jsonld_build", "Building JSON-LD document"),
 ]

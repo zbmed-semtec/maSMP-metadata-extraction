@@ -203,4 +203,13 @@ class GitLabExtractor:
         except Exception:
             metadata.has_release = False
 
+        # Author
+        try:
+            author = project.get("namespace", {})
+            if author:
+                metadata.author = [{"@type": "Person", "name": author.get("name"), "email": author.get("email")}]
+                record("author")
+        except Exception:
+            pass
+
         return metadata

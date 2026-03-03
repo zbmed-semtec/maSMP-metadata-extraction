@@ -119,11 +119,24 @@ class ExternalDataFetcherAdapter:
 
         # --- OpenAlex enrichment ------------------------------------------------
         # Always attempt enrichment: OpenAlexClient can derive DOI from metadata.identifier
-        # when explicit `doi` is not provided.
+        # when explicit `doi` is not provided. Only record OpenAlex as a source if it
+        # actually changed any of the tracked fields.
+        before = {
+            "alternateName": list(metadata.alternateName or []),
+            "keywords": list(metadata.keywords or []),
+            "author": list(metadata.author or []),
+        }
+
         metadata = self.openalex_client.enrich_metadata(metadata, doi)
+
         if extraction_metadata is not None:
+            after = {
+                "alternateName": list(metadata.alternateName or []),
+                "keywords": list(metadata.keywords or []),
+                "author": list(metadata.author or []),
+            }
             for field in ("alternateName", "keywords", "author"):
-                if getattr(metadata, field, None) is not None:
+                if after[field] != before[field]:
                     extraction_metadata.record(field, SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
 
         # Build an effective DOI for reference publication if we don't already have one
