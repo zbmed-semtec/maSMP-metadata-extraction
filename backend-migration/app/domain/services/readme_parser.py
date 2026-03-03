@@ -3,8 +3,15 @@ Layer 3: Domain Services
 README parser - extracts metadata from README files
 """
 import re
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, Tuple
 from app.core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
+
+
+# Pattern for DOI URLs (e.g. in badges or links: https://doi.org/10.1234/xyz or https://zenodo.org/records/123)
+_DOI_URL_PATTERN = re.compile(
+    r"https://(?:doi\.org/([^\s\)\]\"']+)|zenodo\.org/records?/(\d+))",
+    re.IGNORECASE,
+)
 
 
 # Pattern for DOI URLs (e.g. in badges or links: https://doi.org/10.1234/xyz or https://zenodo.org/records/123)
@@ -23,9 +30,12 @@ class ReadmeParser:
         """
         Parse README content to extract citations, authors, and identifier (DOI from badges/links).
 
+        Parse README content to extract citations, authors, and identifier (DOI from badges/links).
+
         Args:
             readme_content: Content of the README file
             metadata: Current metadata object
+
 
         Returns:
             (updated_metadata, identifier_was_set_from_readme)
@@ -107,9 +117,7 @@ class ReadmeParser:
                             author.model_dump(by_alias=True, exclude_none=True)
                         )
                         seen.add(key)
-
-                if existing_authors:
-                    metadata.author = existing_authors
+                metadata.author = existing_authors
 
         return metadata, identifier_set_by_readme
     

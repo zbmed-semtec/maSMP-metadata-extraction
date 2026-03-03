@@ -140,7 +140,9 @@ class FileParserAdapter:
                 readme_content = self.file_fetcher.fetch_file_from_repo(owner, repo, "README.md", branch)
                 if readme_content:
                     metadata, identifier_set_by_readme = self.readme_parser.parse_readme(
+                        
                         readme_content, metadata
+                    
                     )
                     # Raw README often has Zenodo badge URLs (not the DOI string); resolve them
                     if not identifier_set_by_readme:

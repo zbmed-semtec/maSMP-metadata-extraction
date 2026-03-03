@@ -95,8 +95,8 @@ def test_gitlab_extractor_populates_core_fields(monkeypatch):
     assert str(metadata.issueTracker) == "https://gitlab.com/owner/repo/-/issues"
     assert str(metadata.codemeta_issueTracker) == "https://gitlab.com/owner/repo/-/issues"
     assert str(metadata.discussionUrl) == "https://gitlab.com/owner/repo/-/discussions"
-    assert metadata.hasSourceCode == "https://gitlab.com/owner/repo"
-    assert metadata.codemeta_hasSourceCode == "https://gitlab.com/owner/repo"
+    assert metadata.hasSourceCode == str(metadata.url)
+    assert metadata.codemeta_hasSourceCode == str(metadata.url)
     assert metadata.keywords and set(metadata.keywords) == {"gitlab", "metadata"}
     assert metadata.programmingLanguage and set(metadata.programmingLanguage) == {"Python", "Go"}
     assert metadata.contributor and metadata.contributor[0]["name"] == "Dummy User"
@@ -106,6 +106,11 @@ def test_gitlab_extractor_populates_core_fields(monkeypatch):
     assert metadata.has_release is True
     assert metadata.codemeta_readme == "https://gitlab.com/owner/repo/-/blob/main/README.md"
     assert metadata.masmp_changelog == "https://gitlab.com/owner/repo/-/blob/main/CHANGELOG.md"
+    assert metadata.softwareRequirements
+    assert any(
+        url == "https://gitlab.com/owner/repo/-/blob/main/requirements.txt"
+        for url in metadata.softwareRequirements
+    )
 
     # Verify recordings
     recorded_fields = {field for (field, source) in collector.calls if source == SOURCE_GITLAB_API}
@@ -132,6 +137,7 @@ def test_gitlab_extractor_populates_core_fields(monkeypatch):
         "license",
         "codemeta_readme",
         "masmp_changelog",
+        "softwareRequirements",
         "softwareVersion",
         "version",
     ]:

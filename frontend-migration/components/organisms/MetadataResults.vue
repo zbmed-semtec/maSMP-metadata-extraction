@@ -223,13 +223,20 @@ function formatPropertyName(key: string): string {
   return key.replace(/^[^:]+:/, '').replace(/([A-Z])/g, ' $1').trim() || key
 }
 
-/** If property is reference publication (ScholarlyArticle etc.), return bib card data; else null. */
+/** If property is reference publication or citation, return bib card data; else null. */
 function getBibCard(prop: string, val: unknown): BibCardItem | null {
-  const propLower = (formatPropertyName(prop) || prop).toLowerCase().replace(/\s+/g, '')
-  const refKeys = ['referencepublication', 'referencePublication', 'codemetareferencepublication']
-  if (!refKeys.some(k => propLower.includes(k))) return null
-  if (val == null || typeof val !== 'object' || Array.isArray(val)) return null
-  const ref = val as Record<string, unknown>
+  const propLowerRaw = (formatPropertyName(prop) || prop).toLowerCase().replace(/\s+/g, '')
+  const refKeys = ['referencepublication', 'referencePublication', 'codemetareferencepublication', 'citation']
+  if (!refKeys.some(k => propLowerRaw.includes(k))) return null
+
+  // For citation list, use the first entry.
+  let refVal: unknown = val
+  if (Array.isArray(val) && val.length > 0) {
+    refVal = val[0]
+  }
+  if (refVal == null || typeof refVal !== 'object' || Array.isArray(refVal)) return null
+
+  const ref = refVal as Record<string, unknown>
   const title = (ref.name ?? ref.title ?? '') as string
   if (!title || typeof title !== 'string' || !title.trim()) return null
   const authors = formatRefAuthors(ref.author)
@@ -260,10 +267,10 @@ function formatRefAuthors(author: unknown): string {
   return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
 }
 
-/** If property is license (or similar) with object { name, url? }, return single named link; else null. */
+/** If property is license / identifier / version control system with object { name, url? }, return single named link; else null. */
 function getNamedLink(prop: string, val: unknown): NamedLinkItem | null {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
-  if (propLower !== 'license' && propLower !== 'identifier') return null
+  if (propLower !== 'license' && propLower !== 'identifier' && propLower !== 'version control system') return null
   if (val == null || typeof val !== 'object' || Array.isArray(val)) return null
   const o = val as Record<string, unknown>
   const name = (o.name ?? o.title ?? '') as string

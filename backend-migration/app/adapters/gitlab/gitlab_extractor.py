@@ -189,6 +189,71 @@ class GitLabExtractor:
                 record("masmp_changelog")
                 break
 
+        # Software requirements files (root-level and nested)
+        requirement_files = {
+            "requirements.txt",
+            "environment.yml",
+            "environment.yaml",
+            "Pipfile",
+            "pyproject.toml",
+            "setup.cfg",
+            "setup.py",
+            "package.json",
+            "package-lock.json",
+            "pnpm-lock.yaml",
+        }
+        requirement_urls: list[str] = []
+        seen_paths: set[str] = set()
+
+        list_contents = getattr(self.file_fetcher, "list_repo_contents", None)
+
+        def _walk_requirements(path: str, depth: int) -> None:
+            # Limit recursion depth to avoid traversing huge trees
+            if depth > 3 or not callable(list_contents):
+                return
+            try:
+                contents = list_contents(owner, repo, path)  # type: ignore[misc]
+            except Exception:
+                return
+            if not contents:
+                return
+            for item in contents:
+                item_type = item.get("type")
+                name = item.get("name")
+                item_path = item.get("path") or name
+                if not name or not item_path:
+                    continue
+                if item_type in ("file", "blob") and (
+                    name in requirement_files or name.endswith(".lock")
+                ):
+                    if item_path in seen_paths:
+                        continue
+                    for branch in ["main", "master"]:
+                        file_url = f"https://gitlab.com/{owner}/{repo}/-/blob/{branch}/{item_path}"
+                        if self.file_fetcher.is_file_reachable(file_url):
+                            requirement_urls.append(file_url)
+                            seen_paths.add(item_path)
+                            break
+                elif item_type in ("dir", "tree") and depth < 3:
+                    _walk_requirements(item_path, depth + 1)
+
+        if callable(list_contents):
+            _walk_requirements("", 0)
+        else:
+            # Fallback: only probe common filenames at repository root
+            for branch in ["main", "master"]:
+                for filename in requirement_files:
+                    if filename in seen_paths:
+                        continue
+                    file_url = f"https://gitlab.com/{owner}/{repo}/-/blob/{branch}/{filename}"
+                    if self.file_fetcher.is_file_reachable(file_url):
+                        requirement_urls.append(file_url)
+                        seen_paths.add(filename)
+
+        if requirement_urls:
+            metadata.softwareRequirements = requirement_urls
+            record("softwareRequirements")
+
         # Releases
         try:
             latest_release = self.client.get_latest_release(project_id)
@@ -202,5 +267,14 @@ class GitLabExtractor:
                 metadata.has_release = False
         except Exception:
             metadata.has_release = False
+
+        # Author
+        try:
+            author = project.get("namespace", {})
+            if author:
+                metadata.author = [{"@type": "Person", "name": author.get("name"), "email": author.get("email")}]
+                record("author")
+        except Exception:
+            pass
 
         return metadata

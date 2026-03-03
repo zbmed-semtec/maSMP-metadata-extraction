@@ -81,12 +81,20 @@ class JSONLDBuilder:
     
     def _add_fields_to_jsonld(self, jsonld: Dict[str, Any], metadata: RepositoryMetadata, allowed_fields: set):
         """Add metadata fields to JSON-LD document"""
-        # Convert metadata to dict, excluding has_release (internal flag)
-        metadata_dict = metadata.dict(exclude_none=True, exclude={"has_release"}, by_alias=True)
-        
+        # Convert metadata to a plain dict, excluding has_release (internal flag)
+        metadata_dict = metadata.model_dump(exclude_none=True, exclude={"has_release"}, by_alias=True)
+
         for key, value in metadata_dict.items():
-            # Map field names (e.g., codemeta_readme -> codemeta:readme)
-            jsonld_key = key.replace("_", ":")
+            # Map field names to JSON-LD keys.
+            # - codemeta_* -> codemeta:*  (e.g. codemeta_readme -> codemeta:readme)
+            # - masmp_*    -> maSMP:*     (e.g. masmp_versionControlSystem -> maSMP:versionControlSystem)
+            # - everything else keeps its key name (e.g. name, author)
+            if key.startswith("codemeta_"):
+                jsonld_key = key.replace("_", ":", 1)
+            elif key.startswith("masmp_"):
+                jsonld_key = "maSMP:" + key[len("masmp_"):]
+            else:
+                jsonld_key = key
             if jsonld_key in allowed_fields or key in allowed_fields:
                 # Skip empty lists
                 if isinstance(value, list) and not value:

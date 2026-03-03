@@ -144,7 +144,7 @@ class GitLabClient:
         Returns:
             dict | None: License spec or None if unavailable.
         """
-        url = f"{self.BASE_URL}/projects/{project_id}/license"
+        url = f"{self.BASE_URL}/projects/{project_id}?license=true"
         try:
             return self.rate_limit_get(url)
         except requests.HTTPError:

@@ -1,6 +1,6 @@
 """
 maSMP profile property categories (required / recommended / optional).
-Keys match JSON-LD output (e.g. masmp:versionControlSystem, codemeta:readme).
+Keys match JSON-LD output (e.g. maSMP:versionControlSystem, codemeta:readme).
 """
 from typing import Dict, List
 
@@ -21,8 +21,8 @@ MASMP_SOFTWARE_SOURCE_CODE: Dict[str, List[str]] = {
         "identifier",
         "keywords",
         "codemeta:readme",
-        "masmp:versionControlSystem",
-        "masmp:intendedUse",
+        "maSMP:versionControlSystem",
+        "maSMP:intendedUse",
         "archivedAt",
     ],
 }

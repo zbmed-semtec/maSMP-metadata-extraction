@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import asdict
 from typing import Any, Dict, List, Tuple
 
 from fastapi.encoders import jsonable_encoder
@@ -9,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from app.adapters.github.github_client import GitHubRateLimitError
 from app.adapters.gitlab.gitlab_client import GitLabRateLimitError
 from app.api.services.metadata_service import run_extraction
+from app.api.services.fairness_service import run_fairness_assessment
 
 
 def _print_json(data: Any) -> None:
@@ -153,6 +155,26 @@ def _extract_property_command(args: argparse.Namespace) -> None:
     _print_json(output)
 
 
+def _fairness_command(args: argparse.Namespace) -> None:
+    """
+    Compute a FAIRness report for a repository and print JSON.
+    """
+    jsonld_document, fairness_report = run_fairness_assessment(
+        repo_url=args.url,
+        schema=args.schema,
+        access_token=args.token,
+        with_enrichment=False,
+    )
+
+    result = {
+        "schema": args.schema,
+        "code_url": args.url,
+        "results": jsonld_document,
+        "fairness": asdict(fairness_report),
+    }
+    _print_json(result)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="comet-rs",
@@ -212,6 +234,23 @@ def main() -> None:
         help="GitHub/GitLab token (or set GITHUB_TOKEN / GITLAB_TOKEN). Raises rate limits when unset.",
     )
     extract_prop_parser.set_defaults(func=_extract_property_command)
+
+    # comet-rs fairness {GIT_URL} {SCHEMA}
+    fairness_parser = subparsers.add_parser(
+        "fairness",
+        help="Compute a FAIRness report (F/A/I/R scores) for a repository.",
+    )
+    fairness_parser.add_argument("url", help="Repository URL (GitHub, GitLab).")
+    fairness_parser.add_argument(
+        "schema",
+        choices=["maSMP", "CODEMETA"],
+        help="Schema to analyze against.",
+    )
+    fairness_parser.add_argument(
+        "--token",
+        help="GitHub/GitLab token (or set GITHUB_TOKEN / GITLAB_TOKEN). Raises rate limits when unset.",
+    )
+    fairness_parser.set_defaults(func=_fairness_command)
 
     args = parser.parse_args()
 
