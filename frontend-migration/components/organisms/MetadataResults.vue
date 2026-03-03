@@ -75,8 +75,8 @@
       </h3>
       <ResultTable
         :rows="codemetaRows"
-        :show-source="false"
-        :show-confidence="false"
+        :show-source="true"
+        :show-confidence="true"
       />
     </template>
   </div>
@@ -159,7 +159,7 @@ export interface BibCardItem {
   url?: string
 }
 
-function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
+function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string | string[]; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
   const data = profileData(profileKey)
   const enriched = enrichedForProfile(profileKey)
   const skip = new Set(['@context', '@type'])
@@ -193,10 +193,14 @@ function rowsByCategory(profileKey: string, category: string): { property: strin
 const codemetaRows = computed(() => {
   const data = props.result.results
   if (!data || typeof data !== 'object' || Array.isArray(data)) return []
+
+  const enriched = (props.result.enriched_metadata?.codemeta ?? {}) as Record<string, EnrichedProperty>
   const skip = new Set(['@context', '@type'])
+
   return Object.entries(data)
     .filter(([k]) => !skip.has(k))
     .map(([prop, val]) => {
+      const meta = enriched[prop] ?? {}
       const authorItems = getAuthorItems(prop, val)
       const contributorItems = getContributorItems(prop, val)
       const namedLink = getNamedLink(prop, val)
@@ -205,8 +209,8 @@ const codemetaRows = computed(() => {
       return {
         property: formatPropertyName(prop),
         value: useSpecial ? '' : formatValueForProperty(prop, val),
-        source: '—',
-        confidence: '—',
+        source: meta.source ?? '—',
+        confidence: meta.confidence != null ? `${Math.round(Number(meta.confidence) * 100)}%` : '—',
         ...(authorItems ? { authorItems } : {}),
         ...(contributorItems ? { contributorItems } : {}),
         ...(namedLink ? { namedLink } : {}),
@@ -219,13 +223,20 @@ function formatPropertyName(key: string): string {
   return key.replace(/^[^:]+:/, '').replace(/([A-Z])/g, ' $1').trim() || key
 }
 
-/** If property is reference publication (ScholarlyArticle etc.), return bib card data; else null. */
+/** If property is reference publication or citation, return bib card data; else null. */
 function getBibCard(prop: string, val: unknown): BibCardItem | null {
-  const propLower = (formatPropertyName(prop) || prop).toLowerCase().replace(/\s+/g, '')
-  const refKeys = ['referencepublication', 'referencePublication', 'codemetareferencepublication']
-  if (!refKeys.some(k => propLower.includes(k))) return null
-  if (val == null || typeof val !== 'object' || Array.isArray(val)) return null
-  const ref = val as Record<string, unknown>
+  const propLowerRaw = (formatPropertyName(prop) || prop).toLowerCase().replace(/\s+/g, '')
+  const refKeys = ['referencepublication', 'referencePublication', 'codemetareferencepublication', 'citation']
+  if (!refKeys.some(k => propLowerRaw.includes(k))) return null
+
+  // For citation list, use the first entry.
+  let refVal: unknown = val
+  if (Array.isArray(val) && val.length > 0) {
+    refVal = val[0]
+  }
+  if (refVal == null || typeof refVal !== 'object' || Array.isArray(refVal)) return null
+
+  const ref = refVal as Record<string, unknown>
   const title = (ref.name ?? ref.title ?? '') as string
   if (!title || typeof title !== 'string' || !title.trim()) return null
   const authors = formatRefAuthors(ref.author)
@@ -256,10 +267,10 @@ function formatRefAuthors(author: unknown): string {
   return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
 }
 
-/** If property is license (or similar) with object { name, url? }, return single named link; else null. */
+/** If property is license / identifier / version control system with object { name, url? }, return single named link; else null. */
 function getNamedLink(prop: string, val: unknown): NamedLinkItem | null {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
-  if (propLower !== 'license' && propLower !== 'identifier') return null
+  if (propLower !== 'license' && propLower !== 'identifier' && propLower !== 'version control system') return null
   if (val == null || typeof val !== 'object' || Array.isArray(val)) return null
   const o = val as Record<string, unknown>
   const name = (o.name ?? o.title ?? '') as string

@@ -115,9 +115,11 @@ class GitHubExtractor:
         record("hasSourceCode")
         record("codemeta_hasSourceCode")
         
-        # Keywords (topics)
-        if repo_data.get("topics"):
-            metadata.keywords = repo_data.get("topics")
+        # Keywords (topics) — merge with any existing from other sources
+        topics = repo_data.get("topics") or []
+        if topics:
+            existing = metadata.keywords or []
+            metadata.keywords = list(set(existing) | set(topics))
             record("keywords")
         
         # Version control system
