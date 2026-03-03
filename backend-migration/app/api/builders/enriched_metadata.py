@@ -8,7 +8,14 @@ from app.domain.schemas.masmp_profiles import get_category_for_key
 
 
 def _jsonld_key_to_entity_key(jsonld_key: str) -> str:
-    """Convert JSON-LD key (e.g. codemeta:readme) to entity field name (codemeta_readme)."""
+    """Convert JSON-LD key (e.g. codemeta:readme, maSMP:versionControlSystem) to entity field name."""
+    # Codemeta keys: codemeta:readme -> codemeta_readme
+    if jsonld_key.startswith("codemeta:"):
+        return jsonld_key.replace(":", "_", 1)
+    # maSMP keys: maSMP:versionControlSystem -> masmp_versionControlSystem
+    if jsonld_key.startswith("maSMP:"):
+        return "masmp_" + jsonld_key.split(":", 1)[1]
+    # Fallback: simple colon-to-underscore mapping
     return jsonld_key.replace(":", "_")
 
 
@@ -40,9 +47,20 @@ def build_enriched_metadata(
                     continue
                 entity_key = _jsonld_key_to_entity_key(prop_key)
                 record = extraction_metadata.get(entity_key, {})
+
+                # Default source/confidence from extraction metadata
+                source = record.get("source")
+                confidence = record.get("confidence")
+
+                # Version control system is a constant, schema-level recommendation
+                # rather than something inferred from external data.
+                if prop_key == "maSMP:versionControlSystem":
+                    source = "Constant"
+                    confidence = 1.0
+
                 result[profile_key][prop_key] = {
-                    "confidence": record.get("confidence"),
-                    "source": record.get("source"),
+                    "confidence": confidence,
+                    "source": source,
                     "category": get_category_for_key(profile_key, prop_key),
                 }
 

@@ -260,10 +260,10 @@ function formatRefAuthors(author: unknown): string {
   return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
 }
 
-/** If property is license (or similar) with object { name, url? }, return single named link; else null. */
+/** If property is license / identifier / version control system with object { name, url? }, return single named link; else null. */
 function getNamedLink(prop: string, val: unknown): NamedLinkItem | null {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
-  if (propLower !== 'license' && propLower !== 'identifier') return null
+  if (propLower !== 'license' && propLower !== 'identifier' && propLower !== 'version control system') return null
   if (val == null || typeof val !== 'object' || Array.isArray(val)) return null
   const o = val as Record<string, unknown>
   const name = (o.name ?? o.title ?? '') as string
