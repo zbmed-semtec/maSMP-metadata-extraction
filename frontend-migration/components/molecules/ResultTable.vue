@@ -112,6 +112,26 @@
                       {{ row.value }}
                     </span>
                   </template>
+                  <!-- For certain properties (e.g. copyright holder), keep a single text block but make URLs clickable -->
+                  <template v-else-if="isTextBlockWithLinks(row.property)">
+                    <span
+                      class="inline-block rounded-md bg-green-50 px-2.5 py-1.5 text-green-800 ring-1 ring-green-200/70 whitespace-pre-wrap break-words"
+                    >
+                      <template v-for="(part, i) in parseValue(row.value)" :key="i">
+                        <a
+                          v-if="part.type === 'url'"
+                          :href="part.href"
+                          :title="part.href"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-blue-700 underline decoration-blue-400 hover:text-blue-800 hover:decoration-blue-600"
+                        >
+                          {{ formatUrlLabel(part.href) }}
+                        </a>
+                        <span v-else>{{ part.content }}</span>
+                      </template>
+                    </span>
+                  </template>
                   <!-- All other properties keep the richer URL + list formatting -->
                   <template v-else>
                     <template v-for="(part, i) in parseValue(row.value)" :key="i">
@@ -247,6 +267,14 @@ function parseValue(value: string): ValuePart[] {
 
 function isDescription(property: string): boolean {
   return (property || '').trim().toLowerCase() === 'description'
+}
+
+/** Properties that should render as a single text block with inline clickable URLs. */
+function isTextBlockWithLinks(property: string): boolean {
+  const key = (property || '').trim().toLowerCase().replace(/\s+/g, ' ')
+  // Extend this list if other long-text properties should keep paragraph-style layout
+  const textBlockProps = ['copyright holder']
+  return textBlockProps.includes(key)
 }
 
 function formatUrlLabel(href: string): string {
