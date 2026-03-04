@@ -145,14 +145,34 @@
             </Teleport>
           </div>
 
-          <div class="flex items-end">
-            <Button
-              type="submit"
-              :disabled="isLoading"
-              custom-class="w-full"
+          <!-- Row: Extract button (73.5%) + FAIRness checkbox (26.5%).
+               On mobile: stack vertically (button then checkbox).
+               On >=sm: show side-by-side with 73.5/26.5 split. -->
+          <div class="flex flex-col sm:flex-row items-end gap-2">
+            <div class="w-full sm:flex-[0_0_73.5%]">
+              <Button
+                type="submit"
+                :disabled="isLoading"
+                custom-class="w-full justify-center"
+              >
+                {{ isLoading ? 'Extracting…' : 'Extract' }}
+              </Button>
+            </div>
+
+            <label
+              for="run-fairness"
+              class="inline-flex items-center justify-start gap-2 w-full sm:flex-[0_0_26.5%]"
             >
-              {{ isLoading ? 'Extracting…' : 'Extract' }}
-            </Button>
+              <input
+                id="run-fairness"
+                v-model="runFairness"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span class="text-sm text-secondary-800">
+                Assess FAIRness
+              </span>
+            </label>
           </div>
 
           <p v-if="error" class="text-sm text-red-600 sm:col-span-2">
@@ -170,7 +190,142 @@
         padding="p-6 sm:p-8"
         custom-class="rounded-xl"
       >
-        <MetadataResults :result="extractionResult" />
+        <div class="space-y-6">
+          <div
+            v-if="fairness || fairnessError"
+            class="border-b border-gray-200"
+          >
+            <nav class="-mb-px flex gap-4" aria-label="Result views">
+              <button
+                v-for="tab in resultsTabs"
+                :key="tab.key"
+                type="button"
+                :class="[
+                  'border-b-2 px-1 py-2 text-sm font-medium transition-colors',
+                  activeResultsTab === tab.key
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                ]"
+                @click="activeResultsTab = tab.key"
+              >
+                {{ tab.label }}
+              </button>
+            </nav>
+          </div>
+
+          <div v-if="activeResultsTab === 'metadata' || !fairness">
+            <MetadataResults :result="extractionResult" />
+          </div>
+
+          <div v-else class="space-y-6">
+            <div class="space-y-1">
+              <h2 class="text-lg sm:text-xl font-semibold text-secondary-800">
+                FAIRness summary
+              </h2>
+              <p class="mt-1 text-sm text-gray-600">
+                Overall FAIRness score and per-principle scores for the selected repository.
+              </p>
+              <p class="mt-1 text-xs text-gray-500">
+                Based on FAIRness indicators derived from 10 FAIR best practices for research software
+                (description, identifier, download URL, versioning, documentation, license, citation,
+                metadata, installation, requirements).
+              </p>
+            </div>
+
+            <div
+              v-if="fairnessError"
+              class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              {{ fairnessError }}
+            </div>
+
+            <div v-if="fairness">
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+                <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center">
+                  <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                    Overall
+                  </p>
+                  <p class="text-xl font-semibold text-primary-600">
+                    {{ (fairness.overall_score * 100).toFixed(0) }}%
+                  </p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center">
+                  <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                    Findable
+                  </p>
+                  <p class="text-xl font-semibold text-primary-600">
+                    {{ (fairness.findable * 100).toFixed(0) }}%
+                  </p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center">
+                  <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                    Accessible
+                  </p>
+                  <p class="text-xl font-semibold text-primary-600">
+                    {{ (fairness.accessible * 100).toFixed(0) }}%
+                  </p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center">
+                  <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                    Interoperable
+                  </p>
+                  <p class="text-xl font-semibold text-primary-600">
+                    {{ (fairness.interoperable * 100).toFixed(0) }}%
+                  </p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center">
+                  <p class="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                    Reusable
+                  </p>
+                  <p class="text-xl font-semibold text-primary-600">
+                    {{ (fairness.reusable * 100).toFixed(0) }}%
+                  </p>
+                </div>
+              </div>
+
+              <div v-if="groupedIndicators" class="space-y-6">
+                <section v-if="groupedIndicators.documentation.length">
+                  <h3 class="text-sm font-semibold text-secondary-800 mb-3">
+                    Documentation &amp; governance
+                  </h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <FairnessIndicatorDonut
+                      v-for="indicator in groupedIndicators.documentation"
+                      :key="indicator.id"
+                      :indicator="indicator"
+                    />
+                  </div>
+                </section>
+
+                <section v-if="groupedIndicators.findability.length">
+                  <h3 class="text-sm font-semibold text-secondary-800 mb-3">
+                    Findability &amp; metadata
+                  </h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <FairnessIndicatorDonut
+                      v-for="indicator in groupedIndicators.findability"
+                      :key="indicator.id"
+                      :indicator="indicator"
+                    />
+                  </div>
+                </section>
+
+                <section v-if="groupedIndicators.access.length">
+                  <h3 class="text-sm font-semibold text-secondary-800 mb-3">
+                    Access &amp; releases
+                  </h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <FairnessIndicatorDonut
+                      v-for="indicator in groupedIndicators.access"
+                      :key="indicator.id"
+                      :indicator="indicator"
+                    />
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
       </Card>
       <Card
         v-else-if="error && !isLoading"
@@ -189,18 +344,76 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import type { ExtractionStreamResult, ExtractionProgress } from '../../composables/useApi'
 import { useApi } from '../../composables/useApi'
+import { useExtractionStore } from '../../stores/extraction'
+import { useFairnessStore } from '../../stores/fairness'
 
-const repoUrl = ref('')
-const schema = ref<'maSMP' | 'CodeMeta'>('maSMP')
-const accessToken = ref('')
+const extractionStore = useExtractionStore()
+const fairnessStore = useFairnessStore()
+
+const repoUrl = computed({
+  get: () => extractionStore.repoUrl,
+  set: (v: string) => { extractionStore.repoUrl = v },
+})
+
+const schema = computed<'maSMP' | 'CodeMeta'>({
+  get: () => extractionStore.schema,
+  set: (v) => { extractionStore.schema = v },
+})
+
+const accessToken = computed({
+  get: () => extractionStore.accessToken,
+  set: (v: string) => { extractionStore.accessToken = v },
+})
+
+const runFairness = ref(true)
+
 const isLoading = ref(false)
-const error = ref('')
+const error = computed({
+  get: () => extractionStore.error,
+  set: (v: string) => { extractionStore.error = v },
+})
 const showTokenTip = ref(false)
 const tokenTipTab = ref<'github' | 'gitlab'>('github')
 const progressStep = ref<ExtractionProgress | null>(null)
-const extractionResult = ref<ExtractionStreamResult | null>(null)
+const extractionResult = computed<ExtractionStreamResult | null>({
+  get: () => extractionStore.result,
+  set: (v) => { extractionStore.result = v as ExtractionStreamResult | null },
+})
+
+const fairness = computed(() => fairnessStore.fairness)
+const fairnessError = computed(() => fairnessStore.error)
+
+const resultsTabs = [
+  { key: 'metadata' as const, label: 'Metadata' },
+  { key: 'fairness' as const, label: 'FAIRness' },
+]
+const activeResultsTab = ref<'metadata' | 'fairness'>('metadata')
+
+const groupedIndicators = computed(() => {
+  const indicators = (fairness.value?.indicators || []) as any[]
+  const byIds = (ids: string[]) => indicators.filter((i) => ids.includes(i.id))
+  return {
+    documentation: byIds([
+      'bp1_description_present',
+      'bp5_usage_documentation',
+      'bp6_license_declared',
+      'bp7_explicit_citation',
+      'bp9_install_instructions',
+      'bp10_software_requirements',
+    ]),
+    findability: byIds([
+      'bp2_persistent_identifier',
+      'bp8_software_metadata',
+    ]),
+    access: byIds([
+      'bp3_download_url_available',
+      'bp4_semver_like_version',
+    ]),
+  }
+})
 
 useHead({
   title: 'Extract metadata - CoMET-RS',
@@ -210,18 +423,35 @@ const onExtract = async () => {
   error.value = ''
   extractionResult.value = null
   progressStep.value = null
+  fairnessStore.clear()
+  activeResultsTab.value = 'metadata'
   isLoading.value = true
   try {
-    const { extractMetadataStream } = useApi()
+    const { extractMetadataStream, getFairness } = useApi()
     const result = await extractMetadataStream(
       repoUrl.value,
       schema.value,
       accessToken.value || undefined,
       (p) => { progressStep.value = p }
     )
-    extractionResult.value = result
+    extractionStore.setForm(repoUrl.value, schema.value, accessToken.value)
+    extractionStore.setResult(result)
     // Keep overlay visible briefly so the user sees the last step (e.g. jsonld_build) as completed
     await new Promise((r) => setTimeout(r, 500))
+
+    if (runFairness.value) {
+      const { data, error: fairnessError } = await getFairness(
+        repoUrl.value,
+        schema.value,
+        accessToken.value || undefined
+      )
+      if (fairnessError) {
+        fairnessStore.setError(fairnessError)
+      } else if (data && (data as any).fairness) {
+        fairnessStore.setForm(repoUrl.value, schema.value, accessToken.value)
+        fairnessStore.setFairness((data as any).fairness)
+      }
+    }
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Extraction failed'
   } finally {

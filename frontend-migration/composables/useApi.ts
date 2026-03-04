@@ -67,6 +67,31 @@ export const useApi = () => {
     }
   }
 
+  const getFairness = async (
+    repoUrl: string,
+    schema: string = 'maSMP',
+    accessToken?: string
+  ) => {
+    try {
+      const response = await api.get('/api/fairness', {
+        params: {
+          repo_url: repoUrl,
+          schema: schema === 'CodeMeta' ? 'CODEMETA' : schema,
+          access_token: accessToken,
+        },
+      })
+      return { data: response.data, error: null as string | null }
+    } catch (error: any) {
+      return {
+        data: null as any,
+        error:
+          error.response?.data?.detail ||
+          error.message ||
+          'An error occurred while computing FAIRness',
+      }
+    }
+  }
+
   /**
    * Extract metadata with live progress via SSE.
    * Calls onProgress for each step; returns full enriched result on success.
@@ -138,6 +163,7 @@ export const useApi = () => {
   return {
     api,
     extractMetadata,
-    extractMetadataStream
+    extractMetadataStream,
+    getFairness,
   }
 }

@@ -27,7 +27,7 @@ Python 3.10+ is required.
 ### Extract full metadata
 
 ```bash
-comet-rs extract https://github.com/KnowledgeCaptureAndDiscovery/somef maSMP --with-enrichment
+comet-rs extract https://github.com/zbmed-semtec/maSMP-metadata-extraction maSMP --with-enrichment
 ```
 
 Outputs JSON with:
@@ -40,7 +40,7 @@ Outputs JSON with:
 ### Extract a single property (value + source)
 
 ```bash
-comet-rs extract_property https://github.com/KnowledgeCaptureAndDiscovery/somef author
+comet-rs extract_property https://github.com/zbmed-semtec/maSMP-metadata-extraction author
 ```
 
 Example output:
@@ -51,7 +51,7 @@ Example output:
   "property_value": [
     {
       "@type": "Person",
-      "familyName": "Garijo",
+      "familyName": "",
       "givenName": "Daniel",
       "@id": "https://orcid.org/0000-0003-0454-7145"
     }
@@ -66,6 +66,19 @@ By default, `extract_property` uses the **maSMP** schema. To use CODEMETA:
 ```bash
 comet-rs extract_property https://github.com/owner/repo name --schema CODEMETA
 ```
+
+### Compute a FAIRness assessment
+
+```bash
+comet-rs fairness https://github.com/zbmed-semtec/maSMP-metadata-extraction maSMP
+```
+
+Outputs JSON with:
+
+- `schema`: `maSMP` or `CODEMETA`
+- `code_url`: repository URL
+- `results`: JSON‑LD document used for the assessment
+- `fairness`: full FAIRness report (overall score, per‑principle scores, and indicator details)
 
 ---
 
@@ -90,18 +103,19 @@ Tokens only need minimal read scopes (`repo` / `read:org` on GitHub, `read_api` 
 
 ## Python API
 
-You can also call the extractor directly from Python.
+You can also call the extractor directly from Python using the `comet_rs` package.
 
 ### Full extraction
 
 ```python
 import os
-from app.api.services.metadata_service import run_extraction
 
-jsonld_document, enriched = run_extraction(
-    repo_url="https://github.com/KnowledgeCaptureAndDiscovery/somef",
+import comet_rs
+
+jsonld_document, enriched = comet_rs.extract_metadata(
+    "https://github.com/zbmed-semtec/maSMP-metadata-extraction",
     schema="maSMP",                              # or "CODEMETA"
-    access_token=os.getenv("GITHUB_TOKEN"),     # or GITLAB_TOKEN for GitLab
+    token=os.getenv("GITHUB_TOKEN"),            # or GITLAB_TOKEN for GitLab
     with_enrichment=True,                       # False for JSON‑LD only
 )
 
@@ -111,16 +125,41 @@ jsonld_document, enriched = run_extraction(
 
 ### Extract a single property in Python
 
-For maSMP:
+```python
+import comet_rs
+
+extracted_at, matches = comet_rs.extract_property(
+    "https://github.com/zbmed-semtec/maSMP-metadata-extraction",
+    "author",                     # JSON-LD key or entity field name
+    schema="maSMP",               # or "CODEMETA"
+    token=os.getenv("GITHUB_TOKEN"),
+)
+
+for match in matches:
+    print("Profile:", match["profile"])
+    print("Value:", match["value"])
+    print("Source:", match.get("source"))
+    print("Confidence:", match.get("confidence"))
+```
+
+### FAIRness assessment in Python
 
 ```python
-profile = jsonld_document.get("maSMP:SoftwareSourceCode", {})
-prop_name = "author"
-value = profile.get(prop_name)
-meta = (enriched or {}).get("maSMP:SoftwareSourceCode", {}).get(prop_name, {})
+import os
 
-source = meta.get("source")
-confidence = meta.get("confidence")
+import comet_rs
+
+jsonld_document, fairness_report = comet_rs.assess_fairness(
+    "https://github.com/zbmed-semtec/maSMP-metadata-extraction",
+    schema="maSMP",               # or "CODEMETA"
+    token=os.getenv("GITHUB_TOKEN"),
+)
+
+print("Overall score:", fairness_report.overall_score)
+print("Findable score:", fairness_report.findable.score)
+print("Accessible score:", fairness_report.accessible.score)
+print("Interoperable score:", fairness_report.interoperable.score)
+print("Reusable score:", fairness_report.reusable.score)
 ```
 
 ---

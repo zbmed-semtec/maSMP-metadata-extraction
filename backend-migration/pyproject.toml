@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "comet-rs"
-version = "0.1.0"
+version = "0.1.1"
 description = "CLI and library for extracting maSMP/CODEMETA metadata (and sources) from code repositories"
 readme = "README_PYPI.md"
 requires-python = ">=3.10"
@@ -33,7 +33,9 @@ dev = [
 comet-rs = "app.cli:main"
 
 [tool.setuptools]
-packages = ["app"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "comet_rs*"]
 
 [tool.black]
 line-length = 100
