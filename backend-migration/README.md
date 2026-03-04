@@ -39,6 +39,11 @@ The application follows a 4-layer clean architecture (onion architecture):
 ## Installation
 
 ```bash
+conda create -n metadata-extractor
+conda activate metadata-extractor
+```
+
+```bash
 pip install -r requirements.txt
 ```
 
