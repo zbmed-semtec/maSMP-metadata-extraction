@@ -1,69 +1,75 @@
 # CoMET-RS Frontend (Nuxt 3)
 
-This is the **CoMET-RS** web UI for running metadata extraction against the maSMP backend. It is a Nuxt 3 + Tailwind CSS application that talks to the `backend-migration` FastAPI service.
+This is the **CoMET-RS** web UI for running metadata extraction against the maSMP backend. It is a Nuxt 3 + Tailwind CSS application that talks to the `backend` FastAPI service.
 
 ---
 
 ## Prerequisites
 
-- **Node.js** ≥ 18 (last tested with Node v20.20.0)
-- **npm** (last tested with npm v10.8.2)
-- The **backend** running locally (from `backend-migration`), typically on `http://127.0.0.1:8000`
-
-Backend quick reminder:
-
-```bash
-cd backend-migration
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+- **Node.js** v20.20.0
+- **npm** v10.8.2
+- The **backend** running locally (from `backend`), typically on `http://127.0.0.1:8000`
 
 ---
 
-## 1. Install dependencies
+## Installation & Setup
 
-From the repo root or directly in this folder:
+### 1. Install Node Version Manager (NVM)
+
+Install NVM using the official installation script:
 
 ```bash
-cd frontend-migration
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
 
-# npm
+### 2. Source the terminal
+
+```bash
+source ~/.bashrc
+```
+
+### 3. Install Node v20.20.0
+
+```bash
+nvm install 20.20.0
+nvm use 20.20.0
+```
+
+### 4. Set npm version to 10.8.2
+
+```bash
+npm install -g npm@10.8.2
+```
+
+### 5. Verify versions
+
+```bash
+node -v
+npm -v
+```
+
+### 6. Install dependencies
+
+Navigate to the frontend directory and install dependencies:
+
+```bash
+cd /home/lil-e-va/zb_med/maSMP-metadata-extraction/frontend-migration
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
 ---
 
-## 2. Configure API base URL (optional)
+## Configure API URL
 
-By default the frontend expects the backend at:
+The default API base URL is already set to `http://127.0.0.1:8000`, which matches the backend running on port 8000.
 
-```ts
-// nuxt.config.ts
-runtimeConfig: {
-  public: {
-    apiBase: process.env.API_BASE_URL || 'http://127.0.0.1:8000'
-  }
-}
-```
-
-If your backend runs on a **different host/port**, set `API_BASE_URL` before starting Nuxt:
+If you need to change it, you can create a `.env` file:
 
 ```bash
-export API_BASE_URL="http://localhost:9000"  # example
+cp .env.example .env
 ```
 
-If you are running the backend from `backend-migration` on port `8000` as above, you do **not** need to set this; the default works.
-
-You can also use a `.env` file (e.g. copy from `.env.example`) and set:
+Then set in `.env`:
 
 ```env
 API_BASE_URL=http://127.0.0.1:8000
@@ -71,81 +77,32 @@ API_BASE_URL=http://127.0.0.1:8000
 
 ---
 
-## 3. Run the development server
+## Running the Application
 
-Start the Nuxt dev server with hot-reload:
+### Start the frontend development server
 
 ```bash
-cd frontend-migration
-
-# npm
+cd /home/lil-e-va/zb_med/maSMP-metadata-extraction/frontend-migration
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-By default this serves the app on **http://localhost:3000**. You can change the port if needed:
+The app will be available at **http://localhost:3000**.
+
+### Start the backend (in a separate terminal)
 
 ```bash
-npm run dev -- --port 8080
+cd /home/lil-e-va/zb_med/maSMP-metadata-extraction/backend
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Make sure:
-- Backend is running on `http://127.0.0.1:8000` (or the URL in `API_BASE_URL`)
-- Frontend dev server is running on `http://localhost:3000` (or your chosen port)
+Make sure both services are running:
+
+- Backend running on `http://127.0.0.1:8000`
+- Frontend dev server running on `http://localhost:3000`
 
 ---
 
-## 4. Production build & preview
-
-Build an optimized production bundle:
-
-```bash
-cd frontend-migration
-
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Preview the production build locally:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-By default this also serves on port **3000** (use `--port` to change it).
-
-Check out the [Nuxt deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-
----
-
-## 5. Project structure
+## Project structure
 
 Key paths:
 
@@ -156,13 +113,33 @@ Key paths:
 
 ---
 
-## 6. Troubleshooting
+## Troubleshooting
 
-- **“Extraction failed” or no results**  
-  Check that the backend from `backend-migration` is running and reachable from the browser at the URL in `API_BASE_URL` (default `http://127.0.0.1:8000`).
-
-- **CORS errors in the browser console**  
-  Ensure you are using the backend’s public host/port in `API_BASE_URL` and that the backend is listening on `0.0.0.0` (as in the example `uvicorn` command).
-
-- **Port already in use**  
+- **"Extraction failed" or no results**
+  Check that the `backend-migration` is running and reachable from the browser at the URL in `API_BASE_URL` (default `http://127.0.0.1:8000`).
+- **CORS errors in the browser console**
+  Ensure you are using the backend's public host/port in `API_BASE_URL` and that the backend is listening on the correct address.
+- **Port already in use**
   Run Nuxt on a different port, e.g. `npm run dev -- --port 8080`.
+- **Node modules or Nuxt compilation errors**
+  If you encounter issues with Node modules or Nuxt failing to start, try the following steps:
+
+  ```bash
+  # Clear Node modules and reinstall
+  rm -rf node_modules .nuxt
+  npm install
+
+  # Try running dev server again
+  npm run dev
+  ```
+  If the issue persists, ensure you are using the correct Node and npm versions:
+
+  ```bash
+  node -v  # should be v20.20.0
+  npm -v   # should be v10.8.2
+  ```
+  If versions don't match, use NVM to switch:
+
+  ```bash
+  nvm use 20.20.0
+  ```
