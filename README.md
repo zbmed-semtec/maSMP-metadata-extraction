@@ -1,4 +1,8 @@
-# Automated Metadata Extraction for Machine-Actionable Software Management Plan
+<p align="center">
+  <img src="docs/img/background.gif" width="100%">
+</p>
+
+# Code Metadata Extraction Toolkit for Research Software (CoMET-RS)
 
 This project is designed to automate the extraction of metadata from GitHub and GitLab repositories to generate a **Machine-Actionable Software Management Plan (SMP)**. It consists of two main components:
 
