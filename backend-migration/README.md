@@ -2,6 +2,10 @@
 
 This is the migrated backend using clean architecture principles.
 
+<p align="center">
+  <img src="../docs/img/backend_architecture.png" width="75%">
+</p>
+
 ## Architecture Overview
 
 The application follows a 4-layer clean architecture (onion architecture):
