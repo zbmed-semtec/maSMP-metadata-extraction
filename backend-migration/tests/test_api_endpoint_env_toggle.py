@@ -28,3 +28,21 @@ def test_debug_endpoint_absent_when_debug_group_disabled(monkeypatch):
     # System endpoint group remains registered and functional.
     health_response = client.get("/api/health")
     assert health_response.status_code == 200
+
+
+def test_system_endpoints_absent_when_system_group_disabled(monkeypatch):
+    monkeypatch.setenv("COMET_RS_INCLUDE_DEBUG_ENDPOINTS", "1")
+    monkeypatch.setenv("COMET_RS_INCLUDE_METADATA_ENDPOINTS", "1")
+    monkeypatch.setenv("COMET_RS_INCLUDE_SYSTEM_ENDPOINTS", "0")
+
+    app = FastAPI()
+    register_default_endpoints(app, config=EndpointRegistrationConfig.from_env())
+    client = TestClient(app)
+
+    # System endpoint group is not registered.
+    health_response = client.get("/api/health")
+    assert health_response.status_code == 404
+
+    # Metadata endpoint group remains registered.
+    metadata_response = client.get("/api/metadata")
+    assert metadata_response.status_code == 422
