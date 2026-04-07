@@ -5,6 +5,7 @@ Routes existing API calls into the new framework runtime layer.
 from typing import Optional, Dict, Any, Callable, List
 
 from app.framework.api.metadata_runtime import (
+    compare_legacy_and_pipeline_extraction as _framework_compare_legacy_and_pipeline_extraction,
     create_extraction_use_case as _framework_create_extraction_use_case,
     run_extraction as _framework_run_extraction,
     run_extraction_with_progress as _framework_run_extraction_with_progress,
@@ -88,4 +89,19 @@ def run_single_property_extraction(
         schema=schema,
         access_token=access_token,
         property_name=property_name,
+    )
+
+
+def compare_legacy_and_pipeline_extraction(
+    repo_url: str,
+    schema: str,
+    access_token: Optional[str],
+    with_enrichment: bool,
+) -> Dict[str, Any]:
+    """Compare legacy and pipeline runtime outputs for migration parity checks."""
+    return _framework_compare_legacy_and_pipeline_extraction(
+        repo_url=repo_url,
+        schema=schema,
+        access_token=access_token,
+        with_enrichment=with_enrichment,
     )
