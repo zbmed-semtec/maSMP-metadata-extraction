@@ -14,8 +14,15 @@ from app.framework.functions.plugin import (
     RetryPolicy,
 )
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
+from app.framework.schemas import (
+    SchemaBuildContext,
+    canonical_schema_name,
+    create_default_schema_registry,
+    resolve_schema_plugin,
+)
 
 _llm_extractor = LLMExtractor()
+_schema_registry = create_default_schema_registry()
 
 
 @dataclass(frozen=True)
@@ -256,3 +263,35 @@ class SchemaBuildPlugin(_BaseStagePlugin, FunctionPlugin):
             outputs=("jsonld_document",),
             plugin_metadata={"stage": 5, "name": "jsonld_build"},
         )
+
+    def run(self, context: FunctionContext) -> FunctionResult:
+        """
+        Build JSON-LD output using schema plugin registry.
+
+        Required payload keys:
+        - metadata
+        - schema
+        """
+        metadata = context.payload.get("metadata")
+        if metadata is None:
+            raise ValueError("schema_build requires 'metadata' in payload")
+
+        raw_schema = context.payload.get("schema")
+        if not raw_schema:
+            raise ValueError("schema_build requires 'schema' in payload")
+
+        schema = canonical_schema_name(_schema_registry, str(raw_schema))
+        plugin = resolve_schema_plugin(_schema_registry, schema)
+        has_release = bool(getattr(metadata, "has_release", False))
+        jsonld_document = plugin.build_output(
+            SchemaBuildContext(
+                metadata=metadata,
+                has_release=has_release,
+                raw_schema=str(raw_schema),
+            )
+        )
+
+        payload = dict(context.payload)
+        payload["schema"] = schema
+        payload["jsonld_document"] = jsonld_document
+        return FunctionResult(payload=payload, metadata=context.metadata)
