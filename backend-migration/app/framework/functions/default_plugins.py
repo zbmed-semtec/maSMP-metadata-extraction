@@ -3,12 +3,14 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Tuple
 
+from app.adapters.factory import PlatformExtractorFactory
 from app.framework.functions.plugin import (
     FunctionContext,
     FunctionPlugin,
     FunctionResult,
     RetryPolicy,
 )
+from app.domain.services.url_pattern_matcher import URLPatternMatcher
 
 
 @dataclass(frozen=True)
@@ -40,6 +42,40 @@ class PlatformExtractionPlugin(_BaseStagePlugin, FunctionPlugin):
             outputs=("metadata",),
             plugin_metadata={"stage": 1, "name": "platform"},
         )
+
+    def run(self, context: FunctionContext) -> FunctionResult:
+        """
+        Execute real platform extraction using existing adapters.
+
+        Required payload keys:
+        - repo_url: repository URL
+        Optional payload keys:
+        - access_token: auth token for private repos
+        - extraction_metadata_collector: collector compatible with adapter contracts
+        """
+        repo_url = context.payload.get("repo_url")
+        if not repo_url:
+            raise ValueError("platform_extraction requires 'repo_url' in payload")
+
+        access_token = context.payload.get("access_token")
+        collector = context.payload.get("extraction_metadata_collector")
+
+        matcher = URLPatternMatcher()
+        platform = matcher.detect_platform(str(repo_url))
+        if not platform:
+            raise ValueError("Unsupported repository platform. Supported: GitHub, GitLab")
+
+        extractor = PlatformExtractorFactory.create_extractor(str(repo_url), access_token)
+        metadata = extractor.extract_platform_metadata(
+            str(repo_url),
+            access_token=access_token,
+            extraction_metadata=collector,
+        )
+
+        payload = dict(context.payload)
+        payload["metadata"] = metadata
+        payload["platform"] = platform
+        return FunctionResult(payload=payload, metadata=context.metadata)
 
 
 class FileParsingPlugin(_BaseStagePlugin, FunctionPlugin):

@@ -39,5 +39,9 @@ def create_default_pipeline_definition() -> PipelineDefinition:
                 outputs=("jsonld_document",),
             ),
         ),
-        metadata={"version": 1, "compatibility": "legacy-5-step"},
+        metadata={
+            "version": 1,
+            "compatibility": "legacy-5-step",
+            "runtime_inputs": ["repo_url", "access_token", "schema", "extraction_metadata_collector"],
+        },
     )

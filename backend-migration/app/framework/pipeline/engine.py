@@ -32,7 +32,12 @@ class PipelineEngine:
             raise PipelineValidationError("Pipeline must define at least one step")
 
         seen_ids: set[str] = set()
-        available_keys: set[str] = set()
+        runtime_inputs = pipeline.metadata.get("runtime_inputs", [])
+        if runtime_inputs is None:
+            runtime_inputs = []
+        if not isinstance(runtime_inputs, list):
+            raise PipelineValidationError("Pipeline metadata 'runtime_inputs' must be a list")
+        available_keys: set[str] = {str(key) for key in runtime_inputs}
 
         for step in pipeline.steps:
             self._validate_step_id(step, seen_ids)
