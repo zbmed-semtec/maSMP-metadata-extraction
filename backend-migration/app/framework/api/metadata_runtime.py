@@ -12,10 +12,38 @@ from app.api.builders.enriched_metadata import build_enriched_metadata
 from app.application.use_cases.extract_metadata import ExtractMetadataUseCase
 from app.domain.services.llm_extractor import LLMExtractor
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
+from app.framework.schemas import SchemaEnrichmentContext, create_default_schema_registry
 
 # Stateless components (created once, reused)
 _llm_extractor = LLMExtractor()
 _jsonld_builder = JSONLDBuilder()
+_schema_registry = create_default_schema_registry()
+
+
+def _build_enriched_metadata_via_plugin(
+    jsonld_document: Dict[str, Any],
+    extraction_metadata: Dict[str, Dict[str, Any]],
+    schema: str,
+) -> Dict[str, Any]:
+    """
+    Build enrichment through schema plugins with a safe legacy fallback.
+
+    This keeps behavior stable while migrating enrichment logic to plugins.
+    """
+    plugin = _schema_registry.get(schema)
+    if plugin:
+        try:
+            return plugin.enrich_output(
+                SchemaEnrichmentContext(
+                    jsonld_document=jsonld_document,
+                    extraction_metadata=extraction_metadata,
+                    raw_schema=schema,
+                )
+            )
+        except Exception:
+            # Keep existing behavior if plugin-based enrichment fails at runtime.
+            pass
+    return build_enriched_metadata(jsonld_document, extraction_metadata, schema)
 
 
 def create_extraction_use_case(
@@ -63,10 +91,10 @@ def run_extraction(
     jsonld_document = result.jsonld_document
 
     if with_enrichment and result.extraction_metadata:
-        enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
-            schema,
+        enriched = _build_enriched_metadata_via_plugin(
+            jsonld_document=jsonld_document,
+            extraction_metadata=result.extraction_metadata,
+            schema=schema,
         )
         return jsonld_document, enriched
     return jsonld_document, None
@@ -95,10 +123,10 @@ def run_extraction_with_progress(
     jsonld_document = result.jsonld_document
 
     if with_enrichment and result.extraction_metadata:
-        enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
-            schema,
+        enriched = _build_enriched_metadata_via_plugin(
+            jsonld_document=jsonld_document,
+            extraction_metadata=result.extraction_metadata,
+            schema=schema,
         )
         return jsonld_document, enriched
     return jsonld_document, None
