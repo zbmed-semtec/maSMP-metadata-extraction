@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from app.adapters.factory import PlatformExtractorFactory
 from app.adapters.file_parser_adapter import FileParserAdapter
+from app.adapters.external_data_fetcher_adapter import ExternalDataFetcherAdapter
 from app.framework.functions.plugin import (
     FunctionContext,
     FunctionPlugin,
@@ -146,6 +147,55 @@ class ExternalEnrichmentPlugin(_BaseStagePlugin, FunctionPlugin):
             outputs=("metadata",),
             plugin_metadata={"stage": 3, "name": "external_data"},
         )
+
+    def run(self, context: FunctionContext) -> FunctionResult:
+        """
+        Execute real external enrichment using the external data fetcher adapter.
+
+        Required payload keys:
+        - repo_url
+        - metadata
+        Optional payload keys:
+        - doi
+        - reference_extracted
+        - access_token
+        - platform (if omitted, detected from repo_url)
+        - extraction_metadata_collector
+        """
+        repo_url = context.payload.get("repo_url")
+        if not repo_url:
+            raise ValueError("external_enrichment requires 'repo_url' in payload")
+
+        metadata = context.payload.get("metadata")
+        if metadata is None:
+            raise ValueError("external_enrichment requires 'metadata' in payload")
+
+        access_token = context.payload.get("access_token")
+        doi = context.payload.get("doi")
+        reference_extracted = bool(context.payload.get("reference_extracted", False))
+        collector = context.payload.get("extraction_metadata_collector")
+        platform = context.payload.get("platform")
+
+        if not platform:
+            matcher = URLPatternMatcher()
+            platform = matcher.detect_platform(str(repo_url))
+        if not platform:
+            raise ValueError("Unsupported repository platform. Supported: GitHub, GitLab")
+
+        fetcher = ExternalDataFetcherAdapter(platform=str(platform), access_token=access_token)
+        updated_metadata = fetcher.fetch_external_data(
+            str(repo_url),
+            metadata,
+            doi=doi,
+            reference_extracted=reference_extracted,
+            access_token=access_token,
+            extraction_metadata=collector,
+        )
+
+        payload = dict(context.payload)
+        payload["metadata"] = updated_metadata
+        payload["platform"] = platform
+        return FunctionResult(payload=payload, metadata=context.metadata)
 
 
 class LLMEnrichmentPlugin(_BaseStagePlugin, FunctionPlugin):
