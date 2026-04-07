@@ -84,6 +84,21 @@ Pipeline runtime is enabled by default. To force legacy runtime during rollback/
 COMET_RS_USE_PIPELINE_RUNTIME=0 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+### Endpoint Registration Controls
+
+Default endpoint groups are registered via the framework endpoint registry. You can
+toggle endpoint groups per deployment using environment variables:
+
+- `COMET_RS_INCLUDE_METADATA_ENDPOINTS` (default: `true`)
+- `COMET_RS_INCLUDE_DEBUG_ENDPOINTS` (default: `true`)
+- `COMET_RS_INCLUDE_SYSTEM_ENDPOINTS` (default: `true`)
+
+Example: disable debug endpoints while keeping metadata and system endpoints:
+
+```bash
+COMET_RS_INCLUDE_DEBUG_ENDPOINTS=0 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
 ## Documentation
 
 - **[DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md)** - Complete guide explaining the codebase, architecture, and how everything works. Perfect for new developers!
