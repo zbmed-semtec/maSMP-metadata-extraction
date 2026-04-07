@@ -382,18 +382,3 @@ async def extract_single_property(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "service": "metadata-extractor"}
-
-
-@router.get("/platforms")
-async def get_supported_platforms():
-    """Get list of supported platforms."""
-    return {
-        "platforms": [
-            {"name": "GitHub", "url_pattern": "github.com", "description": "GitHub repositories"},
-            {"name": "GitLab", "url_pattern": "gitlab.com", "description": "GitLab repositories"},
-        ]
-    }
