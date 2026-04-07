@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional, Tuple
 from app.adapters.factory import PlatformExtractorFactory
 from app.adapters.file_parser_adapter import FileParserAdapter
 from app.adapters.external_data_fetcher_adapter import ExternalDataFetcherAdapter
+from app.domain.services.llm_extractor import LLMExtractor
 from app.framework.functions.plugin import (
     FunctionContext,
     FunctionPlugin,
@@ -13,6 +14,8 @@ from app.framework.functions.plugin import (
     RetryPolicy,
 )
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
+
+_llm_extractor = LLMExtractor()
 
 
 @dataclass(frozen=True)
@@ -208,6 +211,39 @@ class LLMEnrichmentPlugin(_BaseStagePlugin, FunctionPlugin):
             outputs=("metadata",),
             plugin_metadata={"stage": 4, "name": "llm"},
         )
+
+    def run(self, context: FunctionContext) -> FunctionResult:
+        """
+        Execute LLM enrichment using existing domain LLM extractor.
+
+        Required payload keys:
+        - repo_url
+        - metadata
+        Optional payload keys:
+        - extraction_metadata_collector
+        """
+        repo_url = context.payload.get("repo_url")
+        if not repo_url:
+            raise ValueError("llm_enrichment requires 'repo_url' in payload")
+
+        metadata = context.payload.get("metadata")
+        if metadata is None:
+            raise ValueError("llm_enrichment requires 'metadata' in payload")
+
+        collector = context.payload.get("extraction_metadata_collector")
+        payload = dict(context.payload)
+
+        # Keep legacy behavior: LLM errors should not fail the entire extraction flow.
+        try:
+            payload["metadata"] = _llm_extractor.extract_with_llm(
+                metadata=metadata,
+                repo_url=str(repo_url),
+                extraction_metadata=collector,
+            )
+        except Exception:
+            payload["metadata"] = metadata
+
+        return FunctionResult(payload=payload, metadata=context.metadata)
 
 
 class SchemaBuildPlugin(_BaseStagePlugin, FunctionPlugin):
