@@ -1,6 +1,7 @@
 """Framework-internal metadata runtime with legacy-compatible behavior."""
 
 from datetime import datetime
+import os
 from typing import Any, Callable, Dict, List, Optional
 
 from app.adapters.extraction_metadata_collector import InMemoryExtractionMetadataCollector
@@ -27,6 +28,12 @@ _llm_extractor = LLMExtractor()
 _jsonld_builder = JSONLDBuilder()
 _schema_registry = create_default_schema_registry()
 _pipeline_runtime_config = PipelineRuntimeConfig()
+
+
+def _use_pipeline_runtime() -> bool:
+    """Feature flag for pipeline execution path (default: disabled)."""
+    raw = os.getenv("COMET_RS_USE_PIPELINE_RUNTIME", "0").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
 
 
 def get_active_pipeline_definition():
@@ -189,19 +196,32 @@ def run_extraction(
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """Run metadata extraction once and optionally enrich UI metadata fields."""
     schema = canonical_schema_name(_schema_registry, schema)
+    if _use_pipeline_runtime():
+        jsonld_document, extraction_metadata = run_extraction_via_pipeline(
+            repo_url=repo_url,
+            schema=schema,
+            access_token=access_token,
+        )
+        if with_enrichment and extraction_metadata:
+            enriched = _build_enriched_metadata_via_plugin(
+                jsonld_document=jsonld_document,
+                extraction_metadata=extraction_metadata,
+                schema=schema,
+            )
+            return jsonld_document, enriched
+        return jsonld_document, None
+
     use_case, _collector = create_extraction_use_case(
         repo_url=repo_url,
         access_token=access_token,
         with_enrichment=with_enrichment,
     )
-
     result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
     jsonld_document = _build_jsonld_via_plugin(
         metadata=result.metadata,
         schema=schema,
         fallback_jsonld=result.jsonld_document,
     )
-
     if with_enrichment and result.extraction_metadata:
         enriched = _build_enriched_metadata_via_plugin(
             jsonld_document=jsonld_document,
@@ -221,6 +241,22 @@ def run_extraction_with_progress(
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """Run metadata extraction with optional step-level progress callbacks."""
     schema = canonical_schema_name(_schema_registry, schema)
+    if _use_pipeline_runtime():
+        jsonld_document, extraction_metadata = run_extraction_via_pipeline(
+            repo_url=repo_url,
+            schema=schema,
+            access_token=access_token,
+            progress_callback=progress_callback,
+        )
+        if with_enrichment and extraction_metadata:
+            enriched = _build_enriched_metadata_via_plugin(
+                jsonld_document=jsonld_document,
+                extraction_metadata=extraction_metadata,
+                schema=schema,
+            )
+            return jsonld_document, enriched
+        return jsonld_document, None
+
     use_case, _collector = create_extraction_use_case(
         repo_url=repo_url,
         access_token=access_token,
