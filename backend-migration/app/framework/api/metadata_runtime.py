@@ -342,3 +342,73 @@ def run_single_property_extraction(
         )
 
     return extracted_at, results
+
+
+def compare_legacy_and_pipeline_extraction(
+    repo_url: str,
+    schema: str,
+    access_token: Optional[str],
+    with_enrichment: bool,
+) -> Dict[str, Any]:
+    """
+    Compare legacy and pipeline extraction outputs for parity checks.
+
+    Returns a compact diagnostics object with key-shape comparisons and
+    coarse equality flags. Full payloads are included for manual diffing.
+    """
+    schema = canonical_schema_name(_schema_registry, schema)
+
+    # Legacy path
+    use_case, _collector = create_extraction_use_case(
+        repo_url=repo_url,
+        access_token=access_token,
+        with_enrichment=with_enrichment,
+    )
+    legacy_result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
+    legacy_jsonld = _build_jsonld_via_plugin(
+        metadata=legacy_result.metadata,
+        schema=schema,
+        fallback_jsonld=legacy_result.jsonld_document,
+    )
+    legacy_enriched: Optional[Dict[str, Any]] = None
+    if with_enrichment and legacy_result.extraction_metadata:
+        legacy_enriched = _build_enriched_metadata_via_plugin(
+            jsonld_document=legacy_jsonld,
+            extraction_metadata=legacy_result.extraction_metadata,
+            schema=schema,
+        )
+
+    # Pipeline path
+    pipeline_jsonld, pipeline_extraction_metadata = run_extraction_via_pipeline(
+        repo_url=repo_url,
+        schema=schema,
+        access_token=access_token,
+    )
+    pipeline_enriched: Optional[Dict[str, Any]] = None
+    if with_enrichment and pipeline_extraction_metadata:
+        pipeline_enriched = _build_enriched_metadata_via_plugin(
+            jsonld_document=pipeline_jsonld,
+            extraction_metadata=pipeline_extraction_metadata,
+            schema=schema,
+        )
+
+    legacy_jsonld_keys = sorted(legacy_jsonld.keys())
+    pipeline_jsonld_keys = sorted(pipeline_jsonld.keys())
+    legacy_enriched_profiles = sorted((legacy_enriched or {}).keys())
+    pipeline_enriched_profiles = sorted((pipeline_enriched or {}).keys())
+
+    return {
+        "schema": schema,
+        "jsonld_keys_match": legacy_jsonld_keys == pipeline_jsonld_keys,
+        "enriched_profiles_match": legacy_enriched_profiles == pipeline_enriched_profiles,
+        "jsonld_exact_match": legacy_jsonld == pipeline_jsonld,
+        "enriched_exact_match": legacy_enriched == pipeline_enriched,
+        "legacy_jsonld_keys": legacy_jsonld_keys,
+        "pipeline_jsonld_keys": pipeline_jsonld_keys,
+        "legacy_enriched_profiles": legacy_enriched_profiles,
+        "pipeline_enriched_profiles": pipeline_enriched_profiles,
+        "legacy_jsonld": legacy_jsonld,
+        "pipeline_jsonld": pipeline_jsonld,
+        "legacy_enriched": legacy_enriched,
+        "pipeline_enriched": pipeline_enriched,
+    }
