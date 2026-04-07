@@ -15,7 +15,9 @@ from app.domain.services.url_pattern_matcher import URLPatternMatcher
 from app.framework.schemas import (
     SchemaBuildContext,
     SchemaEnrichmentContext,
+    canonical_schema_name,
     create_default_schema_registry,
+    resolve_schema_plugin,
 )
 
 # Stateless components (created once, reused)
@@ -34,19 +36,20 @@ def _build_enriched_metadata_via_plugin(
 
     This keeps behavior stable while migrating enrichment logic to plugins.
     """
-    plugin = _schema_registry.get(schema)
-    if plugin:
-        try:
-            return plugin.enrich_output(
-                SchemaEnrichmentContext(
-                    jsonld_document=jsonld_document,
-                    extraction_metadata=extraction_metadata,
-                    raw_schema=schema,
-                )
+    try:
+        plugin = resolve_schema_plugin(_schema_registry, schema)
+        return plugin.enrich_output(
+            SchemaEnrichmentContext(
+                jsonld_document=jsonld_document,
+                extraction_metadata=extraction_metadata,
+                raw_schema=schema,
             )
-        except Exception:
-            # Keep existing behavior if plugin-based enrichment fails at runtime.
-            pass
+        )
+    except ValueError:
+        pass
+    except Exception:
+        # Keep existing behavior if plugin-based enrichment fails at runtime.
+        pass
     return build_enriched_metadata(jsonld_document, extraction_metadata, schema)
 
 
@@ -60,20 +63,21 @@ def _build_jsonld_via_plugin(
 
     This allows plugin-backed schema output without changing current behavior.
     """
-    plugin = _schema_registry.get(schema)
-    if plugin:
-        try:
-            has_release = bool(getattr(metadata, "has_release", False))
-            return plugin.build_output(
-                SchemaBuildContext(
-                    metadata=metadata,
-                    has_release=has_release,
-                    raw_schema=schema,
-                )
+    try:
+        plugin = resolve_schema_plugin(_schema_registry, schema)
+        has_release = bool(getattr(metadata, "has_release", False))
+        return plugin.build_output(
+            SchemaBuildContext(
+                metadata=metadata,
+                has_release=has_release,
+                raw_schema=schema,
             )
-        except Exception:
-            # Keep existing output if plugin path fails.
-            pass
+        )
+    except ValueError:
+        pass
+    except Exception:
+        # Keep existing output if plugin path fails.
+        pass
     return fallback_jsonld
 
 
@@ -112,6 +116,7 @@ def run_extraction(
     with_enrichment: bool,
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """Run metadata extraction once and optionally enrich UI metadata fields."""
+    schema = canonical_schema_name(_schema_registry, schema)
     use_case, _collector = create_extraction_use_case(
         repo_url=repo_url,
         access_token=access_token,
@@ -143,6 +148,7 @@ def run_extraction_with_progress(
     progress_callback: Optional[Callable[[str, str], None]] = None,
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """Run metadata extraction with optional step-level progress callbacks."""
+    schema = canonical_schema_name(_schema_registry, schema)
     use_case, _collector = create_extraction_use_case(
         repo_url=repo_url,
         access_token=access_token,
