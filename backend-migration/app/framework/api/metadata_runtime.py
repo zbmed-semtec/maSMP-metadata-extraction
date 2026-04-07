@@ -12,7 +12,11 @@ from app.api.builders.enriched_metadata import build_enriched_metadata
 from app.application.use_cases.extract_metadata import ExtractMetadataUseCase
 from app.domain.services.llm_extractor import LLMExtractor
 from app.domain.services.url_pattern_matcher import URLPatternMatcher
-from app.framework.schemas import SchemaEnrichmentContext, create_default_schema_registry
+from app.framework.schemas import (
+    SchemaBuildContext,
+    SchemaEnrichmentContext,
+    create_default_schema_registry,
+)
 
 # Stateless components (created once, reused)
 _llm_extractor = LLMExtractor()
@@ -44,6 +48,33 @@ def _build_enriched_metadata_via_plugin(
             # Keep existing behavior if plugin-based enrichment fails at runtime.
             pass
     return build_enriched_metadata(jsonld_document, extraction_metadata, schema)
+
+
+def _build_jsonld_via_plugin(
+    metadata: Any,
+    schema: str,
+    fallback_jsonld: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Build JSON-LD via schema plugin with fallback to existing use-case output.
+
+    This allows plugin-backed schema output without changing current behavior.
+    """
+    plugin = _schema_registry.get(schema)
+    if plugin:
+        try:
+            has_release = bool(getattr(metadata, "has_release", False))
+            return plugin.build_output(
+                SchemaBuildContext(
+                    metadata=metadata,
+                    has_release=has_release,
+                    raw_schema=schema,
+                )
+            )
+        except Exception:
+            # Keep existing output if plugin path fails.
+            pass
+    return fallback_jsonld
 
 
 def create_extraction_use_case(
@@ -88,7 +119,11 @@ def run_extraction(
     )
 
     result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
-    jsonld_document = result.jsonld_document
+    jsonld_document = _build_jsonld_via_plugin(
+        metadata=result.metadata,
+        schema=schema,
+        fallback_jsonld=result.jsonld_document,
+    )
 
     if with_enrichment and result.extraction_metadata:
         enriched = _build_enriched_metadata_via_plugin(
@@ -120,7 +155,11 @@ def run_extraction_with_progress(
         access_token=access_token,
         progress_callback=progress_callback,
     )
-    jsonld_document = result.jsonld_document
+    jsonld_document = _build_jsonld_via_plugin(
+        metadata=result.metadata,
+        schema=schema,
+        fallback_jsonld=result.jsonld_document,
+    )
 
     if with_enrichment and result.extraction_metadata:
         enriched = _build_enriched_metadata_via_plugin(
