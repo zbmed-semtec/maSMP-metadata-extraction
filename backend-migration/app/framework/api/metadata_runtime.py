@@ -19,11 +19,22 @@ from app.framework.schemas import (
     create_default_schema_registry,
     resolve_schema_plugin,
 )
+from app.framework.pipeline import PipelineRuntimeConfig, resolve_pipeline_definition
 
 # Stateless components (created once, reused)
 _llm_extractor = LLMExtractor()
 _jsonld_builder = JSONLDBuilder()
 _schema_registry = create_default_schema_registry()
+_pipeline_runtime_config = PipelineRuntimeConfig()
+
+
+def get_active_pipeline_definition():
+    """
+    Resolve the active validated pipeline definition.
+
+    This is a runtime configuration entry point only; execution remains legacy for now.
+    """
+    return resolve_pipeline_definition(_pipeline_runtime_config)
 
 
 def _build_enriched_metadata_via_plugin(

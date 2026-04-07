@@ -8,6 +8,10 @@ from app.framework.pipeline.defaults import (
 )
 from app.framework.pipeline.types import PipelineDefinition, PipelineStep
 from app.framework.pipeline.yaml_loader import load_pipeline_definition_from_yaml
+from app.framework.pipeline.runtime_config import (
+    PipelineRuntimeConfig,
+    resolve_pipeline_definition,
+)
 
 __all__ = [
     "PipelineStep",
@@ -18,4 +22,6 @@ __all__ = [
     "create_validated_default_pipeline",
     "load_pipeline_definition_from_yaml",
     "load_and_validate_pipeline_from_yaml",
+    "PipelineRuntimeConfig",
+    "resolve_pipeline_definition",
 ]
