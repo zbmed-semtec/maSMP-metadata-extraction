@@ -99,6 +99,18 @@ Example: disable debug endpoints while keeping metadata and system endpoints:
 COMET_RS_INCLUDE_DEBUG_ENDPOINTS=0 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+Example: disable system endpoints (`/api/health`, `/api/platforms`) while keeping metadata + debug:
+
+```bash
+COMET_RS_INCLUDE_SYSTEM_ENDPOINTS=0 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Example: disable metadata endpoints while keeping system + debug endpoint groups:
+
+```bash
+COMET_RS_INCLUDE_METADATA_ENDPOINTS=0 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
 ## Documentation
 
 - **[DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md)** - Complete guide explaining the codebase, architecture, and how everything works. Perfect for new developers!
