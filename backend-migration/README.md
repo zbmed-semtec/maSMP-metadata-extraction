@@ -64,6 +64,26 @@ To test the migration:
    curl "http://localhost:8000/api/v1/metadata?repo_url={URL}"
    ```
 
+### Pipeline Migration Parity Checks
+
+Use the parity utility to compare legacy extraction vs framework pipeline extraction:
+
+```bash
+python scripts/check_pipeline_parity.py "https://github.com/psf/requests" --schema maSMP --with-enrichment
+```
+
+For full diagnostics (including full payloads), add `--json`:
+
+```bash
+python scripts/check_pipeline_parity.py "https://github.com/psf/requests" --schema maSMP --with-enrichment --json
+```
+
+Opt in to the new pipeline runtime path (default is legacy path):
+
+```bash
+COMET_RS_USE_PIPELINE_RUNTIME=1 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
 ## Documentation
 
 - **[DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md)** - Complete guide explaining the codebase, architecture, and how everything works. Perfect for new developers!
