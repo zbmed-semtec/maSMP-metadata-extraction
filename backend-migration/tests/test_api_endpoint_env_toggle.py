@@ -1,0 +1,30 @@
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from app.framework.api.endpoint_config import EndpointRegistrationConfig
+from app.framework.api.endpoint_registry import register_default_endpoints
+
+
+def test_debug_endpoint_absent_when_debug_group_disabled(monkeypatch):
+    monkeypatch.setenv("COMET_RS_INCLUDE_DEBUG_ENDPOINTS", "0")
+    monkeypatch.setenv("COMET_RS_INCLUDE_METADATA_ENDPOINTS", "1")
+    monkeypatch.setenv("COMET_RS_INCLUDE_SYSTEM_ENDPOINTS", "1")
+
+    app = FastAPI()
+    register_default_endpoints(app, config=EndpointRegistrationConfig.from_env())
+    client = TestClient(app)
+
+    # Debug endpoint group is not registered.
+    debug_response = client.get(
+        "/api/debug/pipeline-parity",
+        params={"repo_url": "https://github.com/example/repo", "schema": "maSMP"},
+    )
+    assert debug_response.status_code == 404
+
+    # Metadata endpoint group remains registered (missing required params => 422).
+    metadata_response = client.get("/api/metadata")
+    assert metadata_response.status_code == 422
+
+    # System endpoint group remains registered and functional.
+    health_response = client.get("/api/health")
+    assert health_response.status_code == 200
