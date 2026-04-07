@@ -80,3 +80,56 @@ def test_run_extraction_uses_legacy_when_flag_disabled(monkeypatch):
     assert calls["pipeline"] == 0
     assert jsonld_document == {"name": "from-legacy"}
     assert enriched is None
+
+
+def test_run_extraction_with_progress_uses_pipeline_callback_when_flag_enabled(monkeypatch):
+    monkeypatch.setenv("COMET_RS_USE_PIPELINE_RUNTIME", "1")
+    events = []
+
+    def progress_callback(step_id, status):  # type: ignore[no-untyped-def]
+        events.append((step_id, status))
+
+    monkeypatch.setattr(metadata_runtime, "canonical_schema_name", lambda registry, schema: schema)
+
+    def fake_run_extraction_via_pipeline(  # type: ignore[no-untyped-def]
+        repo_url,
+        schema,
+        access_token,
+        progress_callback=None,
+    ):
+        if progress_callback:
+            progress_callback("platform", "started")
+            progress_callback("platform", "completed")
+            progress_callback("jsonld_build", "started")
+            progress_callback("jsonld_build", "completed")
+        return {"name": "from-pipeline"}, {}
+
+    monkeypatch.setattr(
+        metadata_runtime,
+        "run_extraction_via_pipeline",
+        fake_run_extraction_via_pipeline,
+    )
+    monkeypatch.setattr(
+        metadata_runtime,
+        "create_extraction_use_case",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("Legacy path should not be used when pipeline flag is enabled")
+        ),
+    )
+
+    jsonld_document, enriched = metadata_runtime.run_extraction_with_progress(
+        repo_url="https://github.com/example/repo",
+        schema="maSMP",
+        access_token=None,
+        with_enrichment=False,
+        progress_callback=progress_callback,
+    )
+
+    assert jsonld_document == {"name": "from-pipeline"}
+    assert enriched is None
+    assert events == [
+        ("platform", "started"),
+        ("platform", "completed"),
+        ("jsonld_build", "started"),
+        ("jsonld_build", "completed"),
+    ]
