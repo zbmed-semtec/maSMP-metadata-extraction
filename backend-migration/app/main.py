@@ -5,7 +5,7 @@ FastAPI application entry point
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
-from app.api.endpoints import metadata
+from app.framework.api import register_default_endpoints
 
 
 app = FastAPI(
@@ -23,8 +23,8 @@ app.add_middleware(
     allow_headers=settings.cors_allow_headers,
 )
 
-# Include routers
-app.include_router(metadata.router)
+# Include routers via framework registrar
+register_default_endpoints(app)
 
 
 @app.get("/")
