@@ -31,8 +31,8 @@ _pipeline_runtime_config = PipelineRuntimeConfig()
 
 
 def _use_pipeline_runtime() -> bool:
-    """Feature flag for pipeline execution path (default: disabled)."""
-    raw = os.getenv("COMET_RS_USE_PIPELINE_RUNTIME", "0").strip().lower()
+    """Feature flag for pipeline execution path (default: enabled)."""
+    raw = os.getenv("COMET_RS_USE_PIPELINE_RUNTIME", "1").strip().lower()
     return raw in {"1", "true", "yes", "on"}
 
 

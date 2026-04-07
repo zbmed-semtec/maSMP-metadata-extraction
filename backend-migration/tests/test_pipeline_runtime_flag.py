@@ -34,8 +34,8 @@ def test_run_extraction_uses_pipeline_when_flag_enabled(monkeypatch):
     assert enriched is None
 
 
-def test_run_extraction_uses_legacy_when_flag_disabled(monkeypatch):
-    monkeypatch.delenv("COMET_RS_USE_PIPELINE_RUNTIME", raising=False)
+def test_run_extraction_uses_legacy_when_flag_forced_off(monkeypatch):
+    monkeypatch.setenv("COMET_RS_USE_PIPELINE_RUNTIME", "0")
 
     calls = {"pipeline": 0, "legacy": 0}
 
@@ -56,7 +56,7 @@ def test_run_extraction_uses_legacy_when_flag_disabled(monkeypatch):
     monkeypatch.setattr(
         metadata_runtime,
         "run_extraction_via_pipeline",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Pipeline path should not be used when flag is disabled")),
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Pipeline path should not be used when runtime is forced off")),
     )
     monkeypatch.setattr(
         metadata_runtime,
@@ -79,6 +79,40 @@ def test_run_extraction_uses_legacy_when_flag_disabled(monkeypatch):
     assert calls["legacy"] == 1
     assert calls["pipeline"] == 0
     assert jsonld_document == {"name": "from-legacy"}
+    assert enriched is None
+
+
+def test_run_extraction_defaults_to_pipeline_when_flag_unset(monkeypatch):
+    monkeypatch.delenv("COMET_RS_USE_PIPELINE_RUNTIME", raising=False)
+
+    calls = {"pipeline": 0, "legacy": 0}
+    monkeypatch.setattr(metadata_runtime, "canonical_schema_name", lambda registry, schema: schema)
+    monkeypatch.setattr(
+        metadata_runtime,
+        "run_extraction_via_pipeline",
+        lambda repo_url, schema, access_token, progress_callback=None: (
+            calls.__setitem__("pipeline", calls["pipeline"] + 1) or {"name": "from-pipeline"},
+            {},
+        ),
+    )
+    monkeypatch.setattr(
+        metadata_runtime,
+        "create_extraction_use_case",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("Legacy path should not be used by default")
+        ),
+    )
+
+    jsonld_document, enriched = metadata_runtime.run_extraction(
+        repo_url="https://github.com/example/repo",
+        schema="maSMP",
+        access_token=None,
+        with_enrichment=False,
+    )
+
+    assert calls["pipeline"] == 1
+    assert calls["legacy"] == 0
+    assert jsonld_document == {"name": "from-pipeline"}
     assert enriched is None
 
 

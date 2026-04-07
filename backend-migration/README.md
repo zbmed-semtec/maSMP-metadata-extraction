@@ -78,10 +78,10 @@ For full diagnostics (including full payloads), add `--json`:
 python scripts/check_pipeline_parity.py "https://github.com/psf/requests" --schema maSMP --with-enrichment --json
 ```
 
-Opt in to the new pipeline runtime path (default is legacy path):
+Pipeline runtime is enabled by default. To force legacy runtime during rollback/testing:
 
 ```bash
-COMET_RS_USE_PIPELINE_RUNTIME=1 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+COMET_RS_USE_PIPELINE_RUNTIME=0 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Documentation
