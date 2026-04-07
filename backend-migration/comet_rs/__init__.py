@@ -6,8 +6,9 @@ without exposing internal app.* wiring.
 """
 from typing import Any, Dict, Optional, Tuple, Literal, List
 
-from app.api.services.metadata_service import run_extraction, run_single_property_extraction
-from app.api.services.fairness_service import run_fairness_assessment
+from app.framework.api import extract_metadata as _framework_extract_metadata
+from app.framework.api import extract_property as _framework_extract_property
+from app.framework.api import assess_fairness as _framework_assess_fairness
 from app.core.entities.fairness import FairnessReport
 
 SchemaLiteral = Literal["maSMP", "CODEMETA"]
@@ -26,10 +27,10 @@ def extract_metadata(
     Returns:
         (jsonld_document, enriched_metadata or None)
     """
-    return run_extraction(
+    return _framework_extract_metadata(
         repo_url=repo_url,
         schema=schema,
-        access_token=token,
+        token=token,
         with_enrichment=with_enrichment,
     )
 
@@ -51,11 +52,11 @@ def extract_property(
     SoftwareApplication profiles; all matches are returned. For CODEMETA,
     a single synthetic \"codemeta\" profile is used.
     """
-    extracted_at, items = run_single_property_extraction(
+    extracted_at, items = _framework_extract_property(
         repo_url=repo_url,
-        schema=schema,
-        access_token=token,
         property_name=property_name,
+        schema=schema,
+        token=token,
     )
     return extracted_at, items
 
@@ -72,11 +73,10 @@ def assess_fairness(
     Returns:
         (jsonld_document, FairnessReport)
     """
-    return run_fairness_assessment(
+    return _framework_assess_fairness(
         repo_url=repo_url,
         schema=schema,
-        access_token=token,
-        with_enrichment=False,
+        token=token,
     )
 
 
