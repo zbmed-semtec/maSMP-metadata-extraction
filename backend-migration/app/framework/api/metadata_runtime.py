@@ -56,6 +56,48 @@ def run_pipeline_scaffold(
     )
 
 
+def run_extraction_via_pipeline(
+    repo_url: str,
+    schema: str,
+    access_token: Optional[str],
+    progress_callback: Optional[Callable[[str, str], None]] = None,
+) -> tuple[Dict[str, Any], Dict[str, Dict[str, Any]]]:
+    """
+    Execute extraction through the framework pipeline and return compatibility data.
+
+    Returns:
+        (jsonld_document, extraction_metadata)
+    """
+    schema = canonical_schema_name(_schema_registry, schema)
+    collector = InMemoryExtractionMetadataCollector()
+
+    payload = run_pipeline_scaffold(
+        initial_payload={
+            "repo_url": repo_url,
+            "schema": schema,
+            "access_token": access_token,
+            "extraction_metadata_collector": collector,
+        },
+    ) if progress_callback is None else PipelineEngine(
+        function_registry=create_default_function_registry()
+    ).execute(
+        pipeline=get_active_pipeline_definition(),
+        initial_payload={
+            "repo_url": repo_url,
+            "schema": schema,
+            "access_token": access_token,
+            "extraction_metadata_collector": collector,
+        },
+        progress_callback=progress_callback,
+    )
+
+    jsonld_document = payload.get("jsonld_document")
+    if not isinstance(jsonld_document, dict):
+        raise ValueError("Pipeline execution did not produce a valid 'jsonld_document'")
+
+    return jsonld_document, collector.get_all()
+
+
 def _build_enriched_metadata_via_plugin(
     jsonld_document: Dict[str, Any],
     extraction_metadata: Dict[str, Dict[str, Any]],
