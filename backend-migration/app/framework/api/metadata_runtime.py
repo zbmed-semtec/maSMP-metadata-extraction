@@ -19,7 +19,8 @@ from app.framework.schemas import (
     create_default_schema_registry,
     resolve_schema_plugin,
 )
-from app.framework.pipeline import PipelineRuntimeConfig, resolve_pipeline_definition
+from app.framework.functions import create_default_function_registry
+from app.framework.pipeline import PipelineEngine, PipelineRuntimeConfig, resolve_pipeline_definition
 
 # Stateless components (created once, reused)
 _llm_extractor = LLMExtractor()
@@ -35,6 +36,24 @@ def get_active_pipeline_definition():
     This is a runtime configuration entry point only; execution remains legacy for now.
     """
     return resolve_pipeline_definition(_pipeline_runtime_config)
+
+
+def run_pipeline_scaffold(
+    initial_payload: Optional[Dict[str, Any]] = None,
+    initial_metadata: Optional[Dict[str, Any]] = None,
+):
+    """
+    Execute the active pipeline via framework engine scaffold.
+
+    This helper is intentionally not used by legacy extraction paths yet.
+    """
+    pipeline = get_active_pipeline_definition()
+    engine = PipelineEngine(function_registry=create_default_function_registry())
+    return engine.execute(
+        pipeline=pipeline,
+        initial_payload=initial_payload,
+        initial_metadata=initial_metadata,
+    )
 
 
 def _build_enriched_metadata_via_plugin(
