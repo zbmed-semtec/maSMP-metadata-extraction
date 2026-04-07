@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.api.endpoints import metadata as metadata_endpoints
+from app.framework.api import debug_router
 from app.main import app
 
 
@@ -42,7 +42,7 @@ def test_pipeline_parity_endpoint_enabled_returns_parity(monkeypatch):
         }
 
     monkeypatch.setattr(
-        metadata_endpoints,
+        debug_router,
         "compare_legacy_and_pipeline_extraction",
         fake_compare,
     )
@@ -87,7 +87,7 @@ def test_pipeline_parity_endpoint_does_not_require_runtime_flag(monkeypatch):
         }
 
     monkeypatch.setattr(
-        metadata_endpoints,
+        debug_router,
         "compare_legacy_and_pipeline_extraction",
         fake_compare,
     )

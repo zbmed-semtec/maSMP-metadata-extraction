@@ -4,7 +4,6 @@ Schemas in api/schemas; composition in api/services.
 """
 import asyncio
 import json
-import os
 import queue
 from typing import Optional
 
@@ -20,7 +19,6 @@ from app.api.schemas.metadata import (
 )
 from app.api.services import fairness_service
 from app.api.services.metadata_service import (
-    compare_legacy_and_pipeline_extraction,
     run_extraction,
     run_extraction_with_progress,
     run_single_property_extraction,
@@ -33,11 +31,6 @@ STEP_LABELS = {step_id: label for step_id, label in EXTRACTION_STEPS}
 
 
 router = APIRouter(prefix="/api", tags=["Metadata"])
-
-
-def _parity_endpoint_enabled() -> bool:
-    raw = os.getenv("COMET_RS_ENABLE_PARITY_ENDPOINT", "0").strip().lower()
-    return raw in {"1", "true", "yes", "on"}
 
 
 @router.get("/metadata", response_model=MetadataPlainResponse)
@@ -404,45 +397,3 @@ async def get_supported_platforms():
             {"name": "GitLab", "url_pattern": "gitlab.com", "description": "GitLab repositories"},
         ]
     }
-
-
-@router.get("/debug/pipeline-parity")
-async def debug_pipeline_parity(
-    repo_url: HttpUrl = Query(
-        ...,
-        description="URL of the code repository (GitHub, GitLab)",
-    ),
-    schema: str = Query(
-        "maSMP",
-        description="Schema to analyze against",
-        enum=["maSMP", "CODEMETA"],
-    ),
-    access_token: Optional[str] = Query(
-        None,
-        description="Optional access token for private repositories",
-    ),
-    with_enrichment: bool = Query(
-        False,
-        description="Whether to compare enriched metadata parity as well",
-    ),
-):
-    """
-    Debug-only endpoint to compare legacy and pipeline extraction parity.
-
-    Guarded by COMET_RS_ENABLE_PARITY_ENDPOINT and disabled by default.
-    """
-    if not _parity_endpoint_enabled():
-        raise HTTPException(status_code=404, detail="Not found")
-
-    try:
-        parity = compare_legacy_and_pipeline_extraction(
-            repo_url=str(repo_url),
-            schema=schema,
-            access_token=access_token,
-            with_enrichment=with_enrichment,
-        )
-        return {"status": "success", "parity": parity}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
