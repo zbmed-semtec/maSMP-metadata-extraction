@@ -1,0 +1,60 @@
+# Central config for model + repositories used by the notebook
+# Add or remove entries under `repositories` as needed.
+
+model:
+  provider: ollama
+  name: qwen2.5:7b
+  base_url: http://localhost:11434
+
+repositories:
+  - name: TIGRE
+    url: https://github.com/CERN/TIGRE        # Trial Repository for testing metadata extraction on a scientific software with complex documentation
+    enabled: true
+    tags: [ct, reconstruction]
+                                              # Good test case for installation instructions, contact info, and contributors due to its scientific nature and detailed documentation.
+  - name: flash-attention
+    url: https://github.com/Dao-AILab/flash-attention.git
+    enabled: true
+    tags: [attention, optimization]
+  
+  - name: spaCy
+    url: https://github.com/explosion/spaCy.git
+    enabled: true
+    tags: [nlp, language-processing]
+
+  - name: manim
+    url: https://github.com/ManimCommunity/manim.git
+    enabled: true
+    tags: [animation, math]
+
+  - name: sentence-transformers
+    url: https://github.com/huggingface/sentence-transformers.git
+    enabled: true
+    tags: [nlp, sentence-embedding]
+  
+  - name: STGCN_IJCAI-18
+    url: https://github.com/VeritasYin/STGCN_IJCAI-18.git
+    enabled: true
+    tags: [graph, spatio-temporal]
+
+                                              # Not good readme structure, but good test case for contact info and contributors due to its academic nature.
+  
+  - name: T-GCN
+    url: https://github.com/lehaifeng/T-GCN.git
+    enabled: true
+    tags: [graph, spatio-temporal]
+
+  - name: contextualLoss
+    url: https://github.com/roimehrez/contextualLoss.git
+    enabled: true
+    tags: [computer-vision, loss-function]
+
+  - name: sparse-to-dense
+    url: https://github.com/fangchangma/sparse-to-dense.git
+    enabled: true
+    tags: [computer-vision, depth-estimation]
+
+  - name: dEFEND-web
+    url: https://github.com/cuilimeng/dEFEND-web.git
+    enabled: true
+    tags: [fake-news, explainability]
