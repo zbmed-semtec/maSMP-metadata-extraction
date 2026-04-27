@@ -1,10 +1,53 @@
 # Central config for model + repositories used by the notebook
-# Add or remove entries under `repositories` as needed.
+# Change active_model to switch between: phi4, llama32, gemma4, ministral, ministral7b
 
+# Set active model to one of: qwen, phi4, llama32, gemma4, ministral, ministral7b
+active_model: ministral7b
+
+# Qwen configuration
+qwen:
+  provider: vllm
+  name: Qwen/Qwen2.5-7B-Instruct
+  base_url: http://localhost:8000
+  description: "General-purpose baseline for README extraction."
+
+# Model configurations
+models:
+  phi4:
+    provider: ollama
+    name: phi4:latest
+    base_url: http://127.0.0.1:11435
+    description: "Best Reasoning. Best at messy docs."
+  
+  llama32:
+    provider: vllm
+    name: meta-llama/Llama-3.2-3B-Instruct
+    base_url: http://localhost:8002
+    description: "Highest Compatibility. Standard tool use."
+  
+  gemma4:
+    provider: vllm
+    name: google/gemma-4-it
+    base_url: http://localhost:8003
+    description: "Fastest Latency. Good for instant UIs."
+  
+  ministral:
+    provider: vllm
+    name: mistralai/Ministral-3-Instruct
+    base_url: http://localhost:8004
+    description: "Best Formatting. Stays in JSON perfectly."
+
+  ministral7b:
+    provider: vllm
+    name: mistralai/Mistral-7B-Instruct-v0.3
+    base_url: http://localhost:8004
+    description: "Compatible Mistral 7B fallback for vLLM."
+
+# Legacy model config (kept for backward compatibility)
 model:
-  provider: ollama
-  name: qwen2.5:7b
-  base_url: http://localhost:11434
+  provider: vllm
+  name: Qwen/Qwen2.5-7B-Instruct
+  base_url: http://localhost:8000
 
 repositories:
   - name: TIGRE
@@ -14,47 +57,47 @@ repositories:
                                               # Good test case for installation instructions, contact info, and contributors due to its scientific nature and detailed documentation.
   - name: flash-attention
     url: https://github.com/Dao-AILab/flash-attention.git
-    enabled: true
+    enabled: false
     tags: [attention, optimization]
   
   - name: spaCy
     url: https://github.com/explosion/spaCy.git
-    enabled: true
+    enabled: false
     tags: [nlp, language-processing]
 
   - name: manim
     url: https://github.com/ManimCommunity/manim.git
-    enabled: true
+    enabled: false
     tags: [animation, math]
 
   - name: sentence-transformers
     url: https://github.com/huggingface/sentence-transformers.git
-    enabled: true
+    enabled: false
     tags: [nlp, sentence-embedding]
   
   - name: STGCN_IJCAI-18
     url: https://github.com/VeritasYin/STGCN_IJCAI-18.git
-    enabled: true
+    enabled: false
     tags: [graph, spatio-temporal]
 
                                               # Not good readme structure, but good test case for contact info and contributors due to its academic nature.
   
   - name: T-GCN
     url: https://github.com/lehaifeng/T-GCN.git
-    enabled: true
+    enabled: false
     tags: [graph, spatio-temporal]
 
   - name: contextualLoss
     url: https://github.com/roimehrez/contextualLoss.git
-    enabled: true
+    enabled: false
     tags: [computer-vision, loss-function]
 
   - name: sparse-to-dense
     url: https://github.com/fangchangma/sparse-to-dense.git
-    enabled: true
+    enabled: false
     tags: [computer-vision, depth-estimation]
 
   - name: dEFEND-web
     url: https://github.com/cuilimeng/dEFEND-web.git
-    enabled: true
+    enabled: false
     tags: [fake-news, explainability]
