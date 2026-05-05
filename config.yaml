@@ -2,7 +2,7 @@
 # Change active_model to switch between: phi4, llama32, gemma4, ministral, ministral7b
 
 # Set active model to one of: qwen, phi4, llama32, gemma4, ministral, ministral7b
-active_model: llama32
+active_model: gemma4
 
 # Qwen configuration
 qwen:
@@ -27,9 +27,15 @@ models:
   
   gemma4:
     provider: vllm
-    name: google/gemma-4-it
-    base_url: http://localhost:8003
+    name: google/gemma-4-E4B-it
+    base_url: http://localhost:8000
     description: "Fastest Latency. Good for instant UIs."
+
+  gemma2:
+    provider: vllm
+    name: google/gemma-2-9b-it
+    base_url: http://localhost:8005
+    description: "Gemma 2 Instruct. Good for compatibility and speed."
   
   ministral:
     provider: vllm
