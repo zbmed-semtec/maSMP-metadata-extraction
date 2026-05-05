@@ -2,7 +2,7 @@
 # Change active_model to switch between: phi4, llama32, gemma4, ministral, ministral7b
 
 # Set active model to one of: qwen, phi4, llama32, gemma4, ministral, ministral7b
-active_model: ministral7b
+active_model: llama32
 
 # Qwen configuration
 qwen:
