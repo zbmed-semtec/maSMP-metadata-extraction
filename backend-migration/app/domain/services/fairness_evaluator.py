@@ -12,8 +12,8 @@ from collections import defaultdict
 import re
 from typing import Any, Dict, List
 
-from app.core.entities.fairness import FairnessIndicator, FairnessReport, FairPrinciple
-from app.core.entities.repository_metadata import RepositoryMetadata
+from core.entities.fairness import FairnessIndicator, FairnessReport, FairPrinciple
+from core.entities.repository_metadata import RepositoryMetadata
 
 
 def _bool_to_score(value: bool) -> float:

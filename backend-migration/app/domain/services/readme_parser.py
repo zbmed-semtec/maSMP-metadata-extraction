@@ -4,7 +4,7 @@ README parser - extracts metadata from README files
 """
 import re
 from typing import Optional, List, Dict, Any, Tuple, Tuple
-from app.core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
+from core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
 
 
 # Pattern for DOI URLs (e.g. in badges or links: https://doi.org/10.1234/xyz or https://zenodo.org/records/123)

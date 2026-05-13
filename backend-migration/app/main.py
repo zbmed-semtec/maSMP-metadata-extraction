@@ -4,8 +4,8 @@ FastAPI application entry point
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.config.settings import settings
-from app.api.endpoints import metadata
+from config.settings import settings
+from api.endpoints import metadata
 
 
 app = FastAPI(

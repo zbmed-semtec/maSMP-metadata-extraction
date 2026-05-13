@@ -7,13 +7,14 @@ from typing import Optional, Tuple, TYPE_CHECKING
 
 import requests
 
-from app.core.entities.repository_metadata import RepositoryMetadata
-from app.domain.services.citation_file_parser import CitationFileParser
-from app.domain.services.readme_parser import ReadmeParser
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
-from app.adapters.github.github_file_fetcher import GitHubFileFetcher
-from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
-from app.domain.extraction_sources import (
+from core.entities.repository_metadata import RepositoryMetadata
+from domain.services.citation_file_parser import CitationFileParser
+from domain.services.readme_parser import ReadmeParser
+from domain.services.url_pattern_matcher import URLPatternMatcher
+from adapters.github.github_file_fetcher import GitHubFileFetcher
+from adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
+from adapters.codeberg.codeberg_file_fetcher import CodebergFileFetcher
+from domain.extraction_sources import (
     SOURCE_CITATION_CFF,
     SOURCE_LICENSE_FILE,
     SOURCE_README_PARSER,
@@ -23,7 +24,7 @@ from app.domain.extraction_sources import (
 )
 
 if TYPE_CHECKING:
-    from app.application.use_cases.extract_metadata import ExtractionMetadataCollector
+    from application.use_cases.extract_metadata import ExtractionMetadataCollector
 
 # Zenodo badge URLs in raw README (image or link); link redirects to DOI
 # e.g. [![DOI](https://zenodo.org/badge/190487675.svg)](https://zenodo.org/badge/latestdoi/198487675)
@@ -81,6 +82,8 @@ class FileParserAdapter:
             self.file_fetcher = GitHubFileFetcher(access_token)
         elif platform == "gitlab":
             self.file_fetcher = GitLabFileFetcher(access_token)
+        elif platform == "codeberg":
+            self.file_fetcher = CodebergFileFetcher(access_token)
         else:
             raise ValueError(f"Unsupported platform: {platform}")
     

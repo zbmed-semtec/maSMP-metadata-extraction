@@ -1,5 +1,5 @@
 """API request/response schemas (Pydantic models)."""
-from app.api.schemas.metadata import (
+from api.schemas.metadata import (
     MetadataPlainResponse,
     MetadataEnrichedResponse,
 )

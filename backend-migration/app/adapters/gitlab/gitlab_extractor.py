@@ -5,18 +5,18 @@ GitLab extractor - implements PlatformExtractor protocol
 from typing import Optional, TYPE_CHECKING
 from urllib.parse import quote
 
-from app.core.entities.repository_metadata import (
+from core.entities.repository_metadata import (
     RepositoryMetadata,
     VersionControlSystem,
     License,
 )
-from app.adapters.gitlab.gitlab_client import GitLabClient
-from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
-from app.domain.extraction_sources import SOURCE_GITLAB_API, CONFIDENCE_PLATFORM
+from adapters.gitlab.gitlab_client import GitLabClient
+from adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
+from domain.services.url_pattern_matcher import URLPatternMatcher
+from domain.extraction_sources import SOURCE_GITLAB_API, CONFIDENCE_PLATFORM
 
 if TYPE_CHECKING:
-    from app.application.use_cases.extract_metadata import ExtractionMetadataCollector
+    from application.use_cases.extract_metadata import ExtractionMetadataCollector
 
 
 class GitLabExtractor:

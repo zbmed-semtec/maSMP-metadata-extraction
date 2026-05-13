@@ -5,15 +5,15 @@ Single place for composition; endpoints call this instead of building the use ca
 from datetime import datetime
 from typing import Optional, Dict, Any, Callable, List
 
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
-from app.adapters.factory import PlatformExtractorFactory
-from app.adapters.file_parser_adapter import FileParserAdapter
-from app.adapters.external_data_fetcher_adapter import ExternalDataFetcherAdapter
-from app.adapters.jsonld_builder import JSONLDBuilder
-from app.adapters.extraction_metadata_collector import InMemoryExtractionMetadataCollector
-from app.domain.services.llm_extractor import LLMExtractor
-from app.application.use_cases.extract_metadata import ExtractMetadataUseCase
-from app.api.builders.enriched_metadata import build_enriched_metadata
+from domain.services.url_pattern_matcher import URLPatternMatcher
+from adapters.factory import PlatformExtractorFactory
+from adapters.file_parser_adapter import FileParserAdapter
+from adapters.external_data_fetcher_adapter import ExternalDataFetcherAdapter
+from adapters.jsonld_builder import JSONLDBuilder
+from adapters.extraction_metadata_collector import InMemoryExtractionMetadataCollector
+from domain.services.llm_extractor import LLMExtractor
+from application.use_cases.extract_metadata import ExtractMetadataUseCase
+from api.builders.enriched_metadata import build_enriched_metadata
 
 
 # Stateless components (created once, reused)

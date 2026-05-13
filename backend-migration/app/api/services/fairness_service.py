@@ -10,16 +10,16 @@ schema still controls the shape of the JSON-LD returned alongside the report.
 """
 from typing import Dict, Optional, Tuple
 
-from app.application.use_cases.extract_metadata import ExtractMetadataUseCase
-from app.core.entities.fairness import FairnessReport
-from app.domain.services.fairness_evaluator import evaluate_fairness_from_metadata
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
-from app.adapters.factory import PlatformExtractorFactory
-from app.adapters.file_parser_adapter import FileParserAdapter
-from app.adapters.external_data_fetcher_adapter import ExternalDataFetcherAdapter
-from app.adapters.jsonld_builder import JSONLDBuilder
-from app.adapters.extraction_metadata_collector import InMemoryExtractionMetadataCollector
-from app.domain.services.llm_extractor import LLMExtractor
+from application.use_cases.extract_metadata import ExtractMetadataUseCase
+from core.entities.fairness import FairnessReport
+from domain.services.fairness_evaluator import evaluate_fairness_from_metadata
+from domain.services.url_pattern_matcher import URLPatternMatcher
+from adapters.factory import PlatformExtractorFactory
+from adapters.file_parser_adapter import FileParserAdapter
+from adapters.external_data_fetcher_adapter import ExternalDataFetcherAdapter
+from adapters.jsonld_builder import JSONLDBuilder
+from adapters.extraction_metadata_collector import InMemoryExtractionMetadataCollector
+from domain.services.llm_extractor import LLMExtractor
 
 
 _llm_extractor = LLMExtractor()

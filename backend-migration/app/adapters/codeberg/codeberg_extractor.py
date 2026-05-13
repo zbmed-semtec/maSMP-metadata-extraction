@@ -1,33 +1,33 @@
 """
-Layer 3: Adapters - GitHub
-GitHub extractor - implements PlatformExtractor protocol
+Layer 3: Adapters - Codeberg
+Codeberg extractor - implements PlatformExtractor protocol
 """
 from typing import Optional, TYPE_CHECKING
 from core.entities.repository_metadata import RepositoryMetadata, VersionControlSystem, License
-from adapters.github.github_client import GitHubClient
-from adapters.github.github_file_fetcher import GitHubFileFetcher
+from adapters.codeberg.codeberg_client import CodebergClient
+from adapters.codeberg.codeberg_file_fetcher import CodebergFileFetcher
 from domain.services.url_pattern_matcher import URLPatternMatcher
-from domain.extraction_sources import SOURCE_GITHUB_API, CONFIDENCE_PLATFORM
+from domain.extraction_sources import SOURCE_CODEBERG_API, CONFIDENCE_PLATFORM, SOURCE_LICENSE_FILE, CONFIDENCE_LICENSE
 
 if TYPE_CHECKING:
     from application.use_cases.extract_metadata import ExtractionMetadataCollector
 
 
-class GitHubExtractor:
+class CodebergExtractor:
     """
-    GitHub platform extractor.
+    Codeberg platform extractor.
     Implements the PlatformExtractor protocol from Layer 2.
     """
     
     def __init__(self, access_token: Optional[str] = None):
         """
-        Initialize GitHub extractor.
+        Initialize Codeberg extractor.
         
         Args:
-            access_token: GitHub access token
+            access_token: Codeberg access token
         """
-        self.client = GitHubClient(access_token)
-        self.file_fetcher = GitHubFileFetcher(access_token)
+        self.client = CodebergClient(access_token)
+        self.file_fetcher = CodebergFileFetcher(access_token)
         self.url_matcher = URLPatternMatcher()
     
     def extract_platform_metadata(
@@ -37,31 +37,41 @@ class GitHubExtractor:
         extraction_metadata: Optional["ExtractionMetadataCollector"] = None,
     ) -> RepositoryMetadata:
         """
-        Extract metadata from GitHub API.
-        
+        Extract metadata from Codeberg API.
+
         Args:
-            repo_url: GitHub repository URL
+            repo_url: Codeberg repository URL
             access_token: Access token (if not set in constructor)
             extraction_metadata: Optional collector for source/confidence per property
-            
+
         Returns:
             RepositoryMetadata object
         """
         def record(field: str) -> None:
             if extraction_metadata is not None:
-                extraction_metadata.record(field, SOURCE_GITHUB_API, CONFIDENCE_PLATFORM)
+                extraction_metadata.record(field, SOURCE_CODEBERG_API, CONFIDENCE_PLATFORM)
+
+        # import time
+        # _start = time.time()
+        # def _elapsed():
+        #     return f"{time.time() - _start:.3f}s"
+
+        # print(f"[DEBUG][{_elapsed()}] Starting Codeberg extraction for: {repo_url}")
 
         if access_token and not self.client.access_token:
-            self.client = GitHubClient(access_token)
-            self.file_fetcher = GitHubFileFetcher(access_token)
-        
+            self.client = CodebergClient(access_token)
+            self.file_fetcher = CodebergFileFetcher(access_token)
+
+        # print(f"[DEBUG][{_elapsed()}] Extracting owner/repo from URL")
         owner, repo = self.url_matcher.extract_repo_info(repo_url)
         if not owner or not repo:
-            raise ValueError(f"Invalid GitHub repository URL: {repo_url}")
-        
+            raise ValueError(f"Invalid Codeberg repository URL: {repo_url}")
+
+        # print(f"[DEBUG][{_elapsed()}] Fetching repo data for {owner}/{repo}")
         repo_data = self.client.get_repo(owner, repo)
+        # print(f"[DEBUG][{_elapsed()}] Repo data fetched")
         metadata = RepositoryMetadata()
-        
+
         # Basic information
         metadata.name = repo_data.get("name")
         metadata.description = repo_data.get("description")
@@ -75,7 +85,7 @@ class GitHubExtractor:
             record("url")
         if metadata.codeRepository is not None:
             record("codeRepository")
-        
+
         # Dates
         if repo_data.get("created_at"):
             metadata.dateCreated = repo_data.get("created_at")[:10]
@@ -86,14 +96,14 @@ class GitHubExtractor:
         if repo_data.get("pushed_at"):
             metadata.datePublished = repo_data.get("pushed_at")[:10]
             record("datePublished")
-        
+
         # Access information
         is_private = repo_data.get("private", False)
         metadata.conditionsOfAccess = "Private" if is_private else "Public"
         metadata.isAccessibleForFree = str(not is_private)
         record("conditionsOfAccess")
         record("isAccessibleForFree")
-        
+
         # Issue tracker and discussion
         metadata.issueTracker = f"{repo_data.get('html_url')}/issues"
         metadata.codemeta_issueTracker = metadata.issueTracker
@@ -102,83 +112,109 @@ class GitHubExtractor:
         if repo_data.get("has_discussions"):
             metadata.discussionUrl = f"{repo_data.get('html_url')}/discussions"
             record("discussionUrl")
-        
+
         # Download URL
         archive_url = repo_data.get("archive_url", "")
         if archive_url:
             metadata.downloadUrl = archive_url.replace("{archive_format}{/ref}", "zipball/master")
             record("downloadUrl")
-        
+
         # Source code
         metadata.hasSourceCode = f"{repo_data.get('html_url')}#id"
         metadata.codemeta_hasSourceCode = metadata.hasSourceCode
         record("hasSourceCode")
         record("codemeta_hasSourceCode")
-        
+
         # Keywords (topics) — merge with any existing from other sources
         topics = repo_data.get("topics") or []
         if topics:
             existing = metadata.keywords or []
             metadata.keywords = list(set(existing) | set(topics))
             record("keywords")
-        
+
         # Version control system
         metadata.masmp_versionControlSystem = VersionControlSystem.create_git(
             vcs_type="SoftwareSourceCode"
         )
         record("masmp_versionControlSystem")
-        
+
         # Programming languages
+        # print(f"[DEBUG][{_elapsed()}] Fetching programming languages")
         try:
             languages_data = self.client.get_languages(owner, repo)
+            # print(f"[DEBUG][{_elapsed()}] Languages fetched: {list(languages_data.keys()) if languages_data else 'none'}")
             if languages_data:
                 metadata.programmingLanguage = list(languages_data.keys())
                 record("programmingLanguage")
-        except Exception:
+        except Exception as e:
+            # print(f"[DEBUG][{_elapsed()}] Languages fetch failed: {e}")
             pass
-        
+
         # Contributors
+        # print(f"[DEBUG][{_elapsed()}] Fetching contributors")
         try:
+            #import pdb; pdb.set_trace()
             contributors_data = self.client.get_contributors(owner, repo)
+            # print(f"[DEBUG][{_elapsed()}] Contributors fetched: {len(contributors_data) if contributors_data else 0} contributors")
             if contributors_data:
                 metadata.contributor = [
                     {"@type": "Person", "url": c.get("html_url")}
                     for c in contributors_data
                 ]
                 record("contributor")
-        except Exception:
+        except Exception as e:
+            # print(f"[DEBUG][{_elapsed()}] Contributors fetch failed: {e}")
             pass
-        
+
+        # print(f"[DEBUG][{_elapsed()}] Listing repo contents")
+        repo_contents = self.file_fetcher.list_repo_contents(owner, repo)
+        # print(f"[DEBUG][{_elapsed()}] Repo contents listed: {len(repo_contents) if repo_contents else 0} items")
+
         # License
-        try:
-            license_data = self.client.get_license(owner, repo)
-            if license_data and license_data.get("license"):
-                license_info = license_data["license"]
-                metadata.license = License(
-                    name=license_info.get("name"),
-                    url=license_info.get("url")
-                )
-                record("license")
-        except Exception:
-            pass
-        
+        # print(f"[DEBUG][{_elapsed()}] Scanning for LICENSE file")
+        license_candidates = [
+            file for file in repo_contents 
+                if 'LICENSE' in file.get('name', '') 
+                and file.get('type', '') == 'file']
+        # print(f"[DEBUG][{_elapsed()}] LICENSE candidates found: {[f.get('name') for f in license_candidates]}")
+        if len(license_candidates) == 1:
+            license_file = license_candidates[0]
+            # print(f"[DEBUG][{_elapsed()}] Fetching LICENSE content from: {license_file.get('download_url')}")
+            license_content = self.file_fetcher.fetch_file_content(license_file.get('download_url'))
+            # print(f"[DEBUG][{_elapsed()}] LICENSE content fetched ({len(license_content) if license_content else 0} chars)")
+            license_url = license_file.get('html_url')
+            license_name = license_content.split('\n')[0].strip()
+            license_meta = License(name=license_name, url=license_url)
+            metadata.license = license_meta
+            if extraction_metadata:
+                extraction_metadata.record('license', SOURCE_LICENSE_FILE, CONFIDENCE_LICENSE)
+
         # README
-        for branch in ["main", "master"]:
-            readme_url = f"https://github.com/{owner}/{repo}/blob/{branch}/README.md"
-            if self.file_fetcher.is_file_reachable(readme_url):
-                metadata.codemeta_readme = readme_url
-                record("codemeta_readme")
-                break
-        
+        # print(f"[DEBUG][{_elapsed()}] Scanning for README file")
+        readme_candidates = [
+            file for file in repo_contents 
+                if 'README' in file.get('name', '') 
+                and file.get('type', '') == 'file']
+        # print(f"[DEBUG][{_elapsed()}] README candidates found: {[f.get('name') for f in readme_candidates]}")
+        if len(readme_candidates) == 1:
+            readme = readme_candidates[0]
+            metadata.codemeta_readme = readme.get('html_url')
+            record('codemeta_readme')
+
         # CHANGELOG
-        for branch in ["main", "master"]:
-            changelog_url = f"https://github.com/{owner}/{repo}/blob/{branch}/CHANGELOG.md"
-            if self.file_fetcher.is_file_reachable(changelog_url):
-                metadata.masmp_changelog = changelog_url
-                record("masmp_changelog")
-                break
+        # print(f"[DEBUG][{_elapsed()}] Scanning for CHANGELOG file")
+        changelog_candidates = [
+            file for file in repo_contents 
+                if 'CHANGELOG' in file.get('name', '') 
+                and file.get('type', '') == 'file']
+        # print(f"[DEBUG][{_elapsed()}] CHANGELOG candidates found: {[f.get('name') for f in changelog_candidates]}")
+        if len(changelog_candidates) == 1:
+            changelog = changelog_candidates[0]
+            metadata.masmp_changelog = changelog.get('html_url')
+            record('masmp_changelog')
 
         # Software requirements files (root-level and nested)
+        # print(f"[DEBUG][{_elapsed()}] Starting requirements file scan")
         requirement_files = {
             "requirements.txt",
             "environment.yml",
@@ -192,54 +228,20 @@ class GitHubExtractor:
             "pnpm-lock.yaml",
         }
         requirement_urls: list[str] = []
-        seen_paths: set[str] = set()
 
-        list_contents = getattr(self.file_fetcher, "list_repo_contents", None)
-
-        def _walk_requirements(path: str, depth: int) -> None:
-            # Limit recursion depth to avoid traversing huge trees
-            if depth > 3 or not callable(list_contents):
-                return
-            try:
-                contents = list_contents(owner, repo, path)  # type: ignore[misc]
-            except Exception:
-                return
-            if not contents:
-                return
-            for item in contents:
-                item_type = item.get("type")
-                name = item.get("name")
-                item_path = item.get("path") or name
-                if not name or not item_path:
-                    continue
-                if item_type in ("file", "blob") and (
-                    name in requirement_files or name.endswith(".lock")
-                ):
-                    if item_path in seen_paths:
-                        continue
-                    for branch in ["main", "master"]:
-                        file_url = f"https://github.com/{owner}/{repo}/blob/{branch}/{item_path}"
-                        if self.file_fetcher.is_file_reachable(file_url):
-                            requirement_urls.append(file_url)
-                            seen_paths.add(item_path)
-                            break
-                elif item_type in ("dir", "tree") and depth < 3:
-                    _walk_requirements(item_path, depth + 1)
-
-        if callable(list_contents):
-            _walk_requirements("", 0)
-        else:
-            # Fallback: only probe common filenames at repository root
-            for branch in ["main", "master"]:
-                for filename in requirement_files:
-                    if filename in seen_paths:
-                        continue
-                    file_url = f"https://github.com/{owner}/{repo}/blob/{branch}/{filename}"
-                    if self.file_fetcher.is_file_reachable(file_url):
-                        requirement_urls.append(file_url)
-                        seen_paths.add(filename)
-
-        if requirement_urls:
+        # requirements
+        requirement_candidates = [
+            file 
+                for file in repo_contents 
+                if file.get('name') in requirement_files
+                or file.get('name', '').endswith('.lock')
+                and file.get('type') == 'file'
+        ]
+        # print(f"[DEBUG][{_elapsed()}] requirement candidates found: {[f.get('name') for f in requirement_candidates]}")
+        requirement_urls = [requirement.get('html_url') for requirement in requirement_candidates if requirement.get('html_url') is not None]
+        
+        # print(f"[DEBUG][{_elapsed()}] requirement urls are: {requirement_urls}")
+        if len(requirement_urls) > 0:
             metadata.softwareRequirements = requirement_urls
             record("softwareRequirements")
         
@@ -252,7 +254,7 @@ class GitHubExtractor:
                 if release_data.get("published_at"):
                     release_date = release_data.get("published_at")[:10]
                     try:
-                        commits_data = self.client.get_commits(owner, repo, per_page=1)
+                        commits_data = self.client.get_commits(owner, repo, page=1)
                         if commits_data:
                             commit_date = commits_data[0]["commit"]["committer"]["date"][:10]
                             if commit_date <= release_date:

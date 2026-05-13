@@ -1,5 +1,5 @@
 """Adapters layer"""
-from app.adapters.factory import PlatformExtractorFactory
+from adapters.factory import PlatformExtractorFactory
 
 __all__ = ["PlatformExtractorFactory"]
 

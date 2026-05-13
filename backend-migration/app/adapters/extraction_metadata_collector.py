@@ -5,7 +5,7 @@ Stores per-property source and confidence for UI enrichment.
 """
 from typing import Dict, Any, List
 
-from app.domain.property_extraction_sources import MULTI_SOURCE_PROPERTIES
+from domain.property_extraction_sources import MULTI_SOURCE_PROPERTIES
 
 
 def _aggregate_confidence(entries: List[Dict[str, Any]]) -> float:

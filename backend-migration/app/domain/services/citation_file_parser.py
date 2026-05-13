@@ -4,7 +4,7 @@ Citation file parser - parses CITATION.cff files
 """
 import yaml
 from typing import Optional, Dict, Any, List
-from app.core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
+from core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
 
 
 class CitationFileParser:

@@ -3,9 +3,10 @@ Layer 3: Adapters - Factory
 Factory pattern to select the correct platform extractor
 """
 from typing import Optional
-from app.adapters.github.github_extractor import GitHubExtractor
-from app.adapters.gitlab.gitlab_extractor import GitLabExtractor
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
+from adapters.github.github_extractor import GitHubExtractor
+from adapters.gitlab.gitlab_extractor import GitLabExtractor
+from adapters.codeberg.codeberg_extractor import CodebergExtractor
+from domain.services.url_pattern_matcher import URLPatternMatcher
 
 
 class PlatformExtractorFactory:
@@ -33,6 +34,8 @@ class PlatformExtractorFactory:
             return GitHubExtractor(access_token)
         elif platform == "gitlab":
             return GitLabExtractor(access_token)
+        elif platform == "codeberg":
+            return CodebergExtractor(access_token)
         else:
             raise ValueError(f"Unsupported platform: {platform}. Supported platforms: GitHub, GitLab")
 

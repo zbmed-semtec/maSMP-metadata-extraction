@@ -6,7 +6,7 @@ Used for:
 - Tests: assert each property flows through its expected sources and adapters
          only record (property, source) pairs that are in this registry
 """
-from app.domain.extraction_sources import (
+from domain.extraction_sources import (
     SOURCE_GITHUB_API,
     SOURCE_GITLAB_API,
     SOURCE_CITATION_CFF,

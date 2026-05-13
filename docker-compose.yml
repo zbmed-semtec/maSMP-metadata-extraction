@@ -6,7 +6,7 @@ services:
     build:
       context: ./backend-migration
     volumes:
-      - ./backend-migration:/app
+      - ./backend-migration/app:/app
     ports:
       - "8000:8000"
     networks:

@@ -1,5 +1,5 @@
 """Domain schema definitions (e.g. maSMP profile categories)."""
-from app.domain.schemas.masmp_profiles import (
+from domain.schemas.masmp_profiles import (
     PROFILE_CATEGORIES,
     get_category_for_key,
 )

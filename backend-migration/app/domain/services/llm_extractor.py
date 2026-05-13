@@ -3,7 +3,7 @@ Layer 3: Domain Services
 LLM extractor - extracts metadata using LLM (optional enhancement)
 """
 from typing import Optional, Any
-from app.core.entities.repository_metadata import RepositoryMetadata
+from core.entities.repository_metadata import RepositoryMetadata
 
 
 class LLMExtractor:

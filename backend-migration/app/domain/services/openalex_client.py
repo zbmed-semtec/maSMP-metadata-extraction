@@ -4,7 +4,7 @@ OpenAlex client - fetches metadata from OpenAlex API
 """
 import requests
 from typing import Optional, List, Dict, Any
-from app.core.entities.repository_metadata import RepositoryMetadata
+from core.entities.repository_metadata import RepositoryMetadata
 
 
 class OpenAlexClient:

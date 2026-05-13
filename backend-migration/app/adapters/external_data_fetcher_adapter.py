@@ -3,14 +3,15 @@ Layer 3: Adapters
 External data fetcher adapter - implements ExternalDataFetcher protocol
 """
 from typing import Optional, TYPE_CHECKING
-from app.core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
-from app.domain.services.openalex_client import OpenAlexClient
-from app.domain.services.wayback_client import WaybackClient
-from app.domain.services.readme_parser import ReadmeParser
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
-from app.adapters.github.github_file_fetcher import GitHubFileFetcher
-from app.adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
-from app.domain.extraction_sources import (
+from core.entities.repository_metadata import RepositoryMetadata, ReferencePublication, Person
+from domain.services.openalex_client import OpenAlexClient
+from domain.services.wayback_client import WaybackClient
+from domain.services.readme_parser import ReadmeParser
+from domain.services.url_pattern_matcher import URLPatternMatcher
+from adapters.github.github_file_fetcher import GitHubFileFetcher
+from adapters.gitlab.gitlab_file_fetcher import GitLabFileFetcher
+from adapters.codeberg.codeberg_file_fetcher import CodebergFileFetcher
+from domain.extraction_sources import (
     SOURCE_ZENODO_BADGE,
     SOURCE_WAYBACK,
     SOURCE_SOFTWARE_HERITAGE,
@@ -20,7 +21,7 @@ from app.domain.extraction_sources import (
 )
 
 if TYPE_CHECKING:
-    from app.application.use_cases.extract_metadata import ExtractionMetadataCollector
+    from application.use_cases.extract_metadata import ExtractionMetadataCollector
 
 
 class ExternalDataFetcherAdapter:
@@ -48,6 +49,8 @@ class ExternalDataFetcherAdapter:
             self.file_fetcher = GitHubFileFetcher(access_token)
         elif platform == "gitlab":
             self.file_fetcher = GitLabFileFetcher(access_token)
+        elif platform == "codeberg":
+            self.file_fetcher = CodebergFileFetcher(access_token)
         else:
             raise ValueError(f"Unsupported platform: {platform}")
     

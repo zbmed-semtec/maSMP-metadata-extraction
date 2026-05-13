@@ -11,20 +11,20 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import HttpUrl
 
-from app.api.schemas.metadata import (
+from api.schemas.metadata import (
     FairnessResponse,
     MetadataEnrichedResponse,
     MetadataPlainResponse,
     SinglePropertyResponse,
 )
-from app.api.services import fairness_service
-from app.api.services.metadata_service import (
+from api.services import fairness_service
+from api.services.metadata_service import (
     run_extraction,
     run_extraction_with_progress,
     run_single_property_extraction,
 )
-from app.application.use_cases.extract_metadata import EXTRACTION_STEPS
-from app.domain.services.url_pattern_matcher import URLPatternMatcher
+from application.use_cases.extract_metadata import EXTRACTION_STEPS
+from domain.services.url_pattern_matcher import URLPatternMatcher
 
 # Step ID -> human-readable label for SSE progress events
 STEP_LABELS = {step_id: label for step_id, label in EXTRACTION_STEPS}

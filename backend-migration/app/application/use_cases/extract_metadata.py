@@ -6,7 +6,7 @@ Uses dependency injection to get tools from Layer 3.
 """
 from dataclasses import dataclass
 from typing import Protocol, Optional, Dict, Any, Callable
-from app.core.entities.repository_metadata import RepositoryMetadata
+from core.entities.repository_metadata import RepositoryMetadata
 
 # Step IDs for progress streaming (used by SSE endpoint and frontend)
 EXTRACTION_STEPS = [

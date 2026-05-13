@@ -4,6 +4,7 @@ Single place to change how we label and trust each extraction source.
 """
 # Source identifiers (used in enriched_metadata.source)
 SOURCE_GITHUB_API = "github_api"
+SOURCE_CODEBERG_API = "codeberg_api"
 SOURCE_GITLAB_API = "gitlab_api"
 SOURCE_CITATION_CFF = "citation_cff"
 SOURCE_LICENSE_FILE = "license_file"

@@ -47,6 +47,9 @@ class URLPatternMatcher:
         if "gitlab.com" in netloc:
             return "gitlab"
         
+        if "codeberg.org" in netloc:
+            return "codeberg"
+
         return None
     
     @staticmethod

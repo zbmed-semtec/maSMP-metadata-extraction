@@ -7,10 +7,10 @@ from typing import Any, Dict, List, Tuple
 
 from fastapi.encoders import jsonable_encoder
 
-from app.adapters.github.github_client import GitHubRateLimitError
-from app.adapters.gitlab.gitlab_client import GitLabRateLimitError
-from app.api.services.metadata_service import run_extraction
-from app.api.services.fairness_service import run_fairness_assessment
+from adapters.github.github_client import GitHubRateLimitError
+from adapters.gitlab.gitlab_client import GitLabRateLimitError
+from api.services.metadata_service import run_extraction
+from api.services.fairness_service import run_fairness_assessment
 
 
 def _print_json(data: Any) -> None:

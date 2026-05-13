@@ -4,7 +4,7 @@ Values come from results; this module only shapes annotations for the response.
 """
 from typing import Dict, Any
 
-from app.domain.schemas.masmp_profiles import get_category_for_key
+from domain.schemas.masmp_profiles import get_category_for_key
 
 
 def _jsonld_key_to_entity_key(jsonld_key: str) -> str:

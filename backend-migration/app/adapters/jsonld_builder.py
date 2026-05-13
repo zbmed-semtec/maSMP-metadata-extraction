@@ -3,7 +3,7 @@ Layer 3: Adapters
 JSON-LD builder - implements JSONLDBuilder protocol
 """
 from typing import Dict, Any
-from app.core.entities.repository_metadata import RepositoryMetadata
+from core.entities.repository_metadata import RepositoryMetadata
 
 
 class JSONLDBuilder:
