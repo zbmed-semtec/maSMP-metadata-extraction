@@ -1,23 +1,34 @@
 # Central config for model + repositories used by the notebook
-# Change active_model to switch between: phi4, llama32, gemma4, ministral, ministral7b
+# Change active_model to switch between: deepseek, qwen2, phi4, llama32, gemma4, ministral
 
-# Set active model to one of: qwen, phi4, llama32, gemma4, ministral, ministral7b
-active_model: gemma4
+# Set active model to one of: deepseek, qwen2, phi4, llama32, gemma4, ministral
+active_model: deepseek
 
-# Qwen configuration
+# Model configurations
+models:
 qwen:
   provider: vllm
   name: Qwen/Qwen2.5-7B-Instruct
   base_url: http://localhost:8000
   description: "General-purpose baseline for README extraction."
 
-# Model configurations
-models:
+deepseek:
+  provider: vllm
+  name: deepseek-ai/deepseek-llm-7b-chat
+  base_url: http://localhost:8000
+  description: "Primary model for README parsing and metadata generation."
+
   phi4:
     provider: ollama
     name: phi4:latest
     base_url: http://127.0.0.1:11435
     description: "Best Reasoning. Best at messy docs."
+  
+  qwen2:
+    provider: ollama
+    name: qwen2.5:7b
+    base_url: http://127.0.0.1:11435
+    description: "Qwen 2.5 Base. Good for compatibility and speed."
   
   llama32:
     provider: vllm
@@ -39,15 +50,9 @@ models:
   
   ministral:
     provider: vllm
-    name: mistralai/Ministral-3-Instruct
-    base_url: http://localhost:8004
-    description: "Best Formatting. Stays in JSON perfectly."
-
-  ministral7b:
-    provider: vllm
     name: mistralai/Mistral-7B-Instruct-v0.3
     base_url: http://localhost:8004
-    description: "Compatible Mistral 7B fallback for vLLM."
+    description: "Best Formatting. Stays in JSON perfectly."
 
 # Legacy model config (kept for backward compatibility)
 model:
@@ -78,7 +83,7 @@ repositories:
 
   - name: sentence-transformers
     url: https://github.com/huggingface/sentence-transformers.git
-    enabled: false
+    enabled: false  
     tags: [nlp, sentence-embedding]
   
   - name: STGCN_IJCAI-18
