@@ -1,0 +1,42 @@
+site_name: Comet Documentation
+site_description: Comet backend architecture and developer documentation
+site_url: ""
+repo_name: Comet
+
+docs_dir: docs
+
+# API (uvicorn) uses 8000; docs dev server uses 8002 to avoid "Address already in use"
+dev_addr: 127.0.0.1:8002
+
+theme:
+  name: material
+  logo: img/comet_logo.svg
+  favicon: img/comet_logo.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Architecture: architecture.md
+  - Layer 1: layer-1.md
+  - Layer 2: layer-2.md
+  - Layer 3: layer-3.md
+  - Layer 4: layer-4.md
