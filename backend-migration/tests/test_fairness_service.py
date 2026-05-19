@@ -1,10 +1,10 @@
 from dataclasses import asdict
 from typing import Any, Dict, Tuple, Optional
 
-from app.api.services import fairness_service
-from app.application.use_cases.extract_metadata import ExtractMetadataUseCase, ExtractMetadataResult
-from app.core.entities.fairness import FairnessReport
-from app.core.entities.repository_metadata import RepositoryMetadata
+from app.layer_4.services import fairness_service
+from app.layer_2.use_cases.extract_metadata import ExtractMetadataUseCase, ExtractMetadataResult
+from app.layer_1.entities.fair_assessment import FairnessReport
+from app.layer_1.entities.software_metadata import SoftwareMetadata
 
 
 class StubExtractMetadataUseCase:
@@ -25,7 +25,7 @@ class StubExtractMetadataUseCase:
                 "access_token": access_token,
             }
         )
-        md = RepositoryMetadata(
+        md = SoftwareMetadata(
             license={"name": "MIT"},  # type: ignore[assignment]
             documentation="https://example.com/docs",  # type: ignore[assignment]
             identifier=["https://doi.org/10.1234/example"],
@@ -44,36 +44,6 @@ class StubExtractMetadataUseCase:
 
 def test_run_fairness_assessment_uses_usecase_and_metadata(monkeypatch):
     stub_usecase = StubExtractMetadataUseCase()
-    # Avoid depending on URLPatternMatcher/platform detection and concrete extractors
-    monkeypatch.setattr(
-        fairness_service,
-        "URLPatternMatcher",
-        lambda: type("DummyMatcher", (), {"detect_platform": lambda self, url: "github"})(),
-    )
-    monkeypatch.setattr(
-        fairness_service,
-        "PlatformExtractorFactory",
-        type(
-            "DummyFactory",
-            (),
-            {"create_extractor": staticmethod(lambda repo_url, access_token=None: object())},
-        ),
-    )
-    monkeypatch.setattr(
-        fairness_service,
-        "FileParserAdapter",
-        lambda platform, access_token=None: object(),
-    )
-    monkeypatch.setattr(
-        fairness_service,
-        "ExternalDataFetcherAdapter",
-        lambda platform, access_token=None: object(),
-    )
-    monkeypatch.setattr(
-        fairness_service,
-        "JSONLDBuilder",
-        lambda: object(),
-    )
     monkeypatch.setattr(
         fairness_service,
         "ExtractMetadataUseCase",

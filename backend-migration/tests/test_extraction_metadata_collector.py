@@ -3,7 +3,7 @@ Tests for multi-source extraction metadata (e.g. keywords: merge from all source
 """
 import pytest
 
-from app.domain.extraction_sources import (
+from app.layer_1.provenance.software.defaults import (
     SOURCE_GITHUB_API,
     SOURCE_CITATION_CFF,
     SOURCE_OPENALEX,
@@ -11,7 +11,7 @@ from app.domain.extraction_sources import (
     CONFIDENCE_CITATION,
     CONFIDENCE_OPENALEX,
 )
-from app.adapters.extraction_metadata_collector import InMemoryExtractionMetadataCollector
+from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
 
 
 class TestMultiSourceKeywords:
@@ -40,3 +40,12 @@ class TestMultiSourceKeywords:
         # Single-source property: last writer wins (current design)
         assert all_records["name"]["source"] == SOURCE_CITATION_CFF
         assert all_records["name"]["confidence"] == CONFIDENCE_CITATION
+
+    def test_duplicate_sources_deduped_in_get_all(self):
+        collector = InMemoryExtractionMetadataCollector()
+        collector.record("keywords", SOURCE_GITHUB_API, CONFIDENCE_PLATFORM)
+        collector.record("keywords", SOURCE_GITHUB_API, CONFIDENCE_PLATFORM)
+        collector.record("keywords", SOURCE_CITATION_CFF, CONFIDENCE_CITATION)
+        all_records = collector.get_all()
+        assert all_records["keywords"]["source"] == [SOURCE_GITHUB_API, SOURCE_CITATION_CFF]
+        assert all_records["keywords"]["confidence"] == pytest.approx(0.975, abs=0.01)

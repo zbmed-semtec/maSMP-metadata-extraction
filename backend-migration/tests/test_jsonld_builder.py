@@ -2,12 +2,13 @@
 Unit tests for JSONLDBuilder.
 Cover maSMP and CODEMETA JSON-LD building, field mapping, and allowed-fields filtering.
 """
-from app.adapters.jsonld_builder import JSONLDBuilder
-from app.core.entities.repository_metadata import RepositoryMetadata, VersionControlSystem
+from app.layer_3.builders.jsonld_builder import JSONLDBuilder
+from app.layer_1.entities.shared_primitives import VersionControlSystem
+from app.layer_1.entities.software_metadata import SoftwareMetadata
 
 
-def _base_metadata() -> RepositoryMetadata:
-    return RepositoryMetadata(
+def _base_metadata() -> SoftwareMetadata:
+    return SoftwareMetadata(
         name="Test Repo",
         alternateName=["Alt Name"],
         description="Desc",
@@ -37,6 +38,19 @@ def test_build_jsonld_codemeta_includes_only_allowed_fields():
     # Codemeta-prefixed fields get mapped using colon
     assert "codemeta:readme" in jsonld
     assert "codemeta:issueTracker" in jsonld
+
+
+def test_build_jsonld_masmp_exports_software_requirements_in_source_code_profile():
+    builder = JSONLDBuilder()
+    metadata = _base_metadata()
+    metadata.softwareRequirements = [
+        "https://github.com/org/repo/blob/main/requirements.txt",
+    ]
+
+    jsonld = builder.build_jsonld(metadata, schema="maSMP", has_release=False)
+
+    assert jsonld["maSMP:SoftwareSourceCode"]["softwareRequirements"] == metadata.softwareRequirements
+    assert jsonld["maSMP:SoftwareApplication"]["softwareRequirements"] == metadata.softwareRequirements
 
 
 def test_build_jsonld_masmp_includes_has_release_and_nested_structures():
