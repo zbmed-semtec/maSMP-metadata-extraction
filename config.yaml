@@ -6,18 +6,17 @@ active_model: deepseek
 
 # Model configurations
 models:
-qwen:
-  provider: vllm
-  name: Qwen/Qwen2.5-7B-Instruct
-  base_url: http://localhost:8000
-  description: "General-purpose baseline for README extraction."
 
-deepseek:
-  provider: vllm
-  name: deepseek-ai/deepseek-llm-7b-chat
-  base_url: http://localhost:8000
-  description: "Primary model for README parsing and metadata generation."
-
+  qwen:
+    provider: vllm
+    name: Qwen/Qwen2.5-7B-Instruct
+    base_url: http://localhost:8000
+    description: "General-purpose baseline for README extraction."
+  deepseek:
+    provider: ollama
+    name: deepseek-r1:7b
+    base_url: http://127.0.0.1:11435
+    description: "Primary model for README parsing and metadata generation."
   phi4:
     provider: ollama
     name: phi4:latest
