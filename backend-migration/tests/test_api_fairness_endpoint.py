@@ -3,8 +3,8 @@ from typing import Any, Dict, Tuple
 
 from fastapi.testclient import TestClient
 
-from app.api import services as api_services
-from app.core.entities.fairness import FairnessReport
+from app.layer_4 import services as api_services
+from app.layer_1.entities.fair_assessment import FairnessReport
 from app.main import app
 
 

@@ -3,14 +3,14 @@ End-to-end tests for ExtractMetadataUseCase.
 Use stubbed dependencies and a simple in-memory collector to verify
 step ordering, propagation of metadata, and extraction_metadata contents.
 """
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Dict, Any, List
 
-from app.application.use_cases.extract_metadata import (
+from app.layer_2.use_cases.extract_metadata import (
     ExtractMetadataUseCase,
     ExtractMetadataResult,
-    ExtractionMetadataCollector,
 )
-from app.core.entities.repository_metadata import RepositoryMetadata
+from app.layer_1.entities.software_metadata import SoftwareMetadata
+from app.layer_3.steps.contracts import ExtractionPipeline
 
 
 class DummyCollector:
@@ -32,86 +32,49 @@ class DummyCollector:
         return result
 
 
-class StubPlatformExtractor:
-    def extract_platform_metadata(
+class StubComposer:
+    def compose(self, *, domain: str, schema: str, platform: str | None = None) -> ExtractionPipeline:
+        assert domain == "software"
+        assert platform == "github"
+        return ExtractionPipeline(steps=())
+
+
+class StubPipelineRunner:
+    def run(
         self,
-        repo_url: str,
-        access_token: Optional[str] = None,
-        extraction_metadata: Optional[ExtractionMetadataCollector] = None,
-    ) -> RepositoryMetadata:
-        md = RepositoryMetadata(name="FromPlatform")
-        if extraction_metadata is not None:
-            extraction_metadata.record("name", "platform", 0.9)
-        return md
-
-
-class StubFileParser:
-    def parse_files(
-        self,
-        repo_url: str,
-        metadata: RepositoryMetadata,
-        access_token: Optional[str] = None,
-        extraction_metadata: Optional[ExtractionMetadataCollector] = None,
-    ) -> Tuple[RepositoryMetadata, Optional[str], bool]:
-        metadata.description = "FromFiles"
-        if extraction_metadata is not None:
-            extraction_metadata.record("description", "files", 0.8)
-        # return a DOI and mark that no reference was yet extracted
-        return metadata, "10.1234/abcd", False
-
-
-class StubExternalFetcher:
-    def fetch_external_data(
-        self,
-        repo_url: str,
-        metadata: RepositoryMetadata,
-        doi: Optional[str] = None,
-        reference_extracted: bool = False,
-        access_token: Optional[str] = None,
-        extraction_metadata: Optional[ExtractionMetadataCollector] = None,
-    ) -> RepositoryMetadata:
-        metadata.keywords = ["ext"]
-        if extraction_metadata is not None:
-            extraction_metadata.record("keywords", "external", 0.7)
-        return metadata
-
-
-class StubLLMExtractor:
-    def extract_with_llm(
-        self,
-        metadata: RepositoryMetadata,
-        repo_url: str,
-        extraction_metadata: Optional[ExtractionMetadataCollector] = None,
-    ) -> RepositoryMetadata:
-        metadata.alternateName = ["FromLLM"]
-        if extraction_metadata is not None:
-            extraction_metadata.record("alternateName", "llm", 0.6)
-        return metadata
+        pipeline: ExtractionPipeline,
+        context,
+        state,
+    ):
+        state.metadata.name = "FromPlatform"
+        state.metadata.description = "FromFiles"
+        state.metadata.keywords = ["ext"]
+        state.metadata.alternateName = ["FromLLM"]
+        state.data["record_field"]("name")
+        state.data["record_field"]("description")
+        state.data["record_field"]("keywords")
+        state.data["record_field"]("alternateName")
+        return state
 
 
 class StubJSONLDBuilder:
     def __init__(self) -> None:
-        self.calls: list[tuple[RepositoryMetadata, str, bool]] = []
+        self.calls: list[tuple[SoftwareMetadata, str, bool]] = []
 
-    def build_jsonld(self, metadata: RepositoryMetadata, schema: str, has_release: bool) -> dict:
+    def build_jsonld(self, metadata: SoftwareMetadata, schema: str, has_release: bool) -> dict:
         self.calls.append((metadata, schema, has_release))
         return {"schema": schema, "name": metadata.name, "description": metadata.description}
 
 
 def test_extract_metadata_usecase_happy_path():
     collector = DummyCollector()
-    platform = StubPlatformExtractor()
-    files = StubFileParser()
-    external = StubExternalFetcher()
-    llm = StubLLMExtractor()
+    runner = StubPipelineRunner()
     builder = StubJSONLDBuilder()
 
     usecase = ExtractMetadataUseCase(
-        platform_extractor=platform,
-        file_parser=files,
-        external_data_fetcher=external,
-        llm_extractor=llm,
         jsonld_builder=builder,
+        pipeline_composer=StubComposer(),
+        pipeline_runner=runner,
         extraction_metadata_collector=collector,
     )
 
@@ -121,14 +84,14 @@ def test_extract_metadata_usecase_happy_path():
         progress_steps.append((step_id, status))
 
     result: ExtractMetadataResult = usecase.execute(
-        repo_url="https://example.com/repo",
+        repo_url="https://github.com/org/repo",
         schema="maSMP",
         access_token=None,
         progress_callback=progress,
     )
 
     # Verify progress ordering and statuses
-    expected_order = ["platform", "file_parsing", "external_data", "llm", "jsonld_build"]
+    expected_order = ["pipeline", "jsonld_build"]
     assert [s for (s, _status) in progress_steps if _status == "started"] == expected_order
     assert [s for (s, _status) in progress_steps if _status == "completed"] == expected_order
 
@@ -136,19 +99,19 @@ def test_extract_metadata_usecase_happy_path():
     assert builder.calls
     md_called, schema_called, has_release = builder.calls[0]
     assert schema_called == "maSMP"
-    assert isinstance(md_called, RepositoryMetadata)
+    assert isinstance(md_called, SoftwareMetadata)
 
     # JSON-LD output reflects metadata modifications
     assert result.jsonld_document["name"] == "FromPlatform"
     assert result.jsonld_document["description"] == "FromFiles"
 
     # Internal metadata is exposed for downstream services (e.g. FAIRness)
-    assert isinstance(result.metadata, RepositoryMetadata)
+    assert isinstance(result.metadata, SoftwareMetadata)
     assert result.metadata.name == "FromPlatform"
 
     # Extraction metadata was aggregated from all steps
     meta = result.extraction_metadata
-    assert "name" in meta and meta["name"]["source"] == ["platform"]
+    assert "name" in meta and meta["name"]["source"] == ["github_api"]
     assert "description" in meta
     assert "keywords" in meta
     assert "alternateName" in meta

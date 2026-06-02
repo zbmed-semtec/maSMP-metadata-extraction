@@ -1,0 +1,61 @@
+"""Software-domain provenance registries (sources, property mapping, validation)."""
+
+from app.layer_1.provenance.software.sources import (
+    ALL_SOURCES,
+    MULTI_SOURCE_PROPERTIES,
+    PROPERTY_EXTRACTION_SOURCES,
+    get_properties_for_source,
+    get_sources_for_property,
+)
+from app.layer_1.provenance.software.defaults import (
+    CONFIDENCE_ARCHIVE,
+    CONFIDENCE_CITATION,
+    CONFIDENCE_LICENSE,
+    CONFIDENCE_LLM,
+    CONFIDENCE_OPENALEX,
+    CONFIDENCE_PLATFORM,
+    CONFIDENCE_README,
+    SOURCE_CITATION_CFF,
+    SOURCE_GITHUB_API,
+    SOURCE_GITLAB_API,
+    SOURCE_LICENSE_FILE,
+    SOURCE_LLM,
+    SOURCE_OPENALEX,
+    SOURCE_README_PARSER,
+    SOURCE_SOFTWARE_HERITAGE,
+    SOURCE_WAYBACK,
+    SOURCE_ZENODO_BADGE,
+)
+from app.layer_1.provenance.software.validation import (
+    INTERNAL_SOFTWARE_PROPERTIES,
+    UNTRACKED_SOFTWARE_PROPERTIES,
+    validate_software_provenance_registry,
+)
+
+__all__ = [
+    "ALL_SOURCES",
+    "CONFIDENCE_ARCHIVE",
+    "CONFIDENCE_CITATION",
+    "CONFIDENCE_LICENSE",
+    "CONFIDENCE_LLM",
+    "CONFIDENCE_OPENALEX",
+    "CONFIDENCE_PLATFORM",
+    "CONFIDENCE_README",
+    "INTERNAL_SOFTWARE_PROPERTIES",
+    "MULTI_SOURCE_PROPERTIES",
+    "PROPERTY_EXTRACTION_SOURCES",
+    "SOURCE_CITATION_CFF",
+    "SOURCE_GITHUB_API",
+    "SOURCE_GITLAB_API",
+    "SOURCE_LICENSE_FILE",
+    "SOURCE_LLM",
+    "SOURCE_OPENALEX",
+    "SOURCE_README_PARSER",
+    "SOURCE_SOFTWARE_HERITAGE",
+    "SOURCE_WAYBACK",
+    "SOURCE_ZENODO_BADGE",
+    "UNTRACKED_SOFTWARE_PROPERTIES",
+    "get_properties_for_source",
+    "get_sources_for_property",
+    "validate_software_provenance_registry",
+]

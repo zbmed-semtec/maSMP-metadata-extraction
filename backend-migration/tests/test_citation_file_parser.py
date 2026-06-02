@@ -1,17 +1,17 @@
 """
-Unit tests for CitationFileParser.
+Unit tests for CitationCffWorkflow.
 Cover title/alternateName merging, keywords, DOIs (top-level and preferred-citation),
 author merging, and preferred citation extraction.
 """
 from textwrap import dedent
 
-from app.domain.services.citation_file_parser import CitationFileParser
-from app.core.entities.repository_metadata import RepositoryMetadata
+from app.layer_1.entities.software_metadata import SoftwareMetadata
+from app.layer_3.steps.extract_steps.services.files.workflows import CitationCffWorkflow
 
 
 def test_citation_file_parser_parses_minimal_cff():
-    parser = CitationFileParser()
-    metadata = RepositoryMetadata()
+    workflow = CitationCffWorkflow()
+    metadata = SoftwareMetadata()
 
     cff = dedent(
         """
@@ -26,7 +26,7 @@ def test_citation_file_parser_parses_minimal_cff():
         """
     )
 
-    updated, doi, ref_extracted = parser.parse_citation_cff(cff, metadata)
+    updated, doi, ref_extracted = workflow.run(cff, metadata)
 
     assert doi == "10.1234/abcd.1"
     assert ref_extracted is False  # no preferred-citation section yet
@@ -44,10 +44,10 @@ def test_citation_file_parser_parses_minimal_cff():
 
 
 def test_citation_file_parser_merges_preferred_citation_and_identifier():
-    parser = CitationFileParser()
+    workflow = CitationCffWorkflow()
     # Pre-existing identifier and author to test merging & deduplication
     existing_id = "https://doi.org/10.9999/existing"
-    metadata = RepositoryMetadata(identifier=[existing_id])
+    metadata = SoftwareMetadata(identifier=[existing_id])
 
     cff = dedent(
         """
@@ -66,7 +66,7 @@ def test_citation_file_parser_merges_preferred_citation_and_identifier():
         """
     )
 
-    updated, doi, ref_extracted = parser.parse_citation_cff(cff, metadata)
+    updated, doi, ref_extracted = workflow.run(cff, metadata)
 
     # No top-level DOI => doi return value may be None
     assert ref_extracted is True
@@ -93,15 +93,41 @@ def test_citation_file_parser_merges_preferred_citation_and_identifier():
 
 
 def test_citation_file_parser_handles_invalid_yaml_gracefully():
-    parser = CitationFileParser()
-    metadata = RepositoryMetadata()
+    workflow = CitationCffWorkflow()
+    metadata = SoftwareMetadata()
 
     bad_cff = ":::: this is not yaml :::"
 
-    updated, doi, ref_extracted = parser.parse_citation_cff(bad_cff, metadata)
+    updated, doi, ref_extracted = workflow.run(bad_cff, metadata)
 
     # Should be a no-op without raising
     assert updated is metadata
     assert doi is None
     assert ref_extracted is False
+
+
+def test_citation_file_parser_resolves_metadata_links_with_runtime_context():
+    workflow = CitationCffWorkflow()
+    metadata = SoftwareMetadata()
+
+    cff = dedent(
+        """
+        title: "Runtime Context Demo"
+        """
+    )
+
+    def _is_reachable(url: str) -> bool:
+        return url.endswith("/blob/main/README.md")
+
+    updated, doi, ref_extracted = workflow.run(
+        cff,
+        metadata,
+        repo_url="https://github.com/org/repo/",
+        platform="github",
+        is_file_reachable_fn=_is_reachable,
+    )
+
+    assert doi is None
+    assert ref_extracted is False
+    assert updated.codemeta_readme == "https://github.com/org/repo/blob/main/README.md"
 

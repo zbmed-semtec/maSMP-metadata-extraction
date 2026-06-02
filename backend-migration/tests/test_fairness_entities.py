@@ -1,4 +1,4 @@
-from app.core.entities.fairness import FairnessIndicator, FairnessReport
+from app.layer_1.entities.fair_assessment import FairnessIndicator, FairnessReport
 
 
 def test_fairness_indicator_and_report_basic():

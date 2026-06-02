@@ -1,14 +1,15 @@
 """
-Unit tests for OpenAlexClient.
-Cover DOI cleaning, fetch_work_by_doi error handling, author and keyword extraction,
-and metadata enrichment including merge semantics.
+Unit tests for OpenAlexClient (HTTP only) and shared author parsing helper.
 """
 from typing import Any, Dict
 
-import pytest
-
-from app.domain.services.openalex_client import OpenAlexClient
-from app.core.entities.repository_metadata import RepositoryMetadata
+from app.layer_3.steps.extract_steps.services.external.openalex.extract_openalex_keywords_step import (
+    _keywords_from_openalex_work,
+)
+from app.layer_3.steps.extract_steps.services.external.openalex.helpers.authors_from_work import (
+    authors_from_openalex_work,
+)
+from app.layer_3.steps.extract_steps.services.external.openalex.helpers.openalex_client import OpenAlexClient
 
 
 class DummyResponse:
@@ -31,7 +32,6 @@ def test_fetch_work_by_doi_cleans_prefix_and_handles_errors(monkeypatch):
 
     def fake_get(url: str, timeout: int = 10):
         calls.append(url)
-        # Simulate success
         return DummyResponse(200, {"id": "W/123"})
 
     import requests
@@ -56,68 +56,26 @@ def test_fetch_work_by_doi_returns_none_on_exception(monkeypatch):
     assert client.fetch_work_by_doi("10.1/err") is None
 
 
-def test_extract_authors_and_keywords():
-    client = OpenAlexClient()
+def test_authors_from_openalex_work():
     work = {
         "authorships": [
             {"author": {"display_name": "Jane Doe", "orcid": "0000-0001"}},
             {"author": {"display_name": "SingleName"}},
         ],
-        "keywords": [
-            {"display_name": "metadata"},
-            {"display_name": "software"},
-        ],
     }
-
-    authors = client.extract_authors(work)
+    authors = authors_from_openalex_work(work)
     assert len(authors) == 2
     assert authors[0]["familyName"] == "Doe"
     assert authors[0]["givenName"] == "Jane"
     assert authors[0]["@id"] == "0000-0001"
 
-    keywords = client.extract_keywords(work)
-    assert set(keywords) == {"metadata", "software"}
 
-
-def test_enrich_metadata_uses_identifier_when_doi_not_passed(monkeypatch):
-    client = OpenAlexClient()
-
+def test_keywords_from_openalex_work_display_name_and_plain_strings():
     work = {
-        "title": "OpenAlex Title",
-        "authorships": [
-            {"author": {"display_name": "Jane Doe"}},
+        "keywords": [
+            {"display_name": "metadata"},
+            {"display_name": "software"},
+            "plain-tag",
         ],
-        "keywords": [{"display_name": "openalex"}],
     }
-
-    def fake_fetch(doi: str):
-        # Should receive cleaned bare DOI from identifier list
-        assert doi == "10.1234/abcd"
-        return work
-
-    monkeypatch.setattr(client, "fetch_work_by_doi", fake_fetch)
-
-    metadata = RepositoryMetadata(
-        identifier=["https://doi.org/10.1234/abcd"],
-        alternateName=["Existing"],
-        keywords=["existing"],
-        author=[{"familyName": "Doe", "givenName": "Jane"}],
-    )
-
-    enriched = client.enrich_metadata(metadata, doi=None)
-
-    # alternateName merged
-    assert set(enriched.alternateName or []) == {"Existing", "OpenAlex Title"}
-    # keywords merged
-    assert "openalex" in (enriched.keywords or [])
-    assert "existing" in (enriched.keywords or [])
-    # authors merged/deduped
-    assert enriched.author is not None
-    # The existing author should still be present (possibly with @id added)
-    found = False
-    for a in enriched.author:
-        if a.get("familyName") == "Doe" and a.get("givenName") == "Jane":
-            found = True
-            break
-    assert found
-
+    assert set(_keywords_from_openalex_work(work)) == {"metadata", "software", "plain-tag"}
