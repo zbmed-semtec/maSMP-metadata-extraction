@@ -6,7 +6,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGitlabAccessStep:
+class ExtractGitlabAccessStep(ExtractionStep):
     name = "gitlab.extract_access"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

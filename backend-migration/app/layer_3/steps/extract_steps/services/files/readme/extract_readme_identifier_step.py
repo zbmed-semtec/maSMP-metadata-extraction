@@ -3,6 +3,7 @@
 import re
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.files.helpers.repository_files import (
     repository_file_content,
 )
@@ -13,7 +14,7 @@ DOI_URL_PATTERN = re.compile(
 )
 
 
-class ExtractReadmeIdentifierStep:
+class ExtractReadmeIdentifierStep(ExtractionStep):
     """Extract DOI/Zenodo identifier URL without mutating metadata."""
 
     name = "readme.extract_identifier"

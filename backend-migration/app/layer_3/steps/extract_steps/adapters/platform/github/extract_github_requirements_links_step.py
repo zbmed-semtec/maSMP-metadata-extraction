@@ -13,7 +13,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.requ
 )
 
 
-class ExtractGithubRequirementsLinksStep:
+class ExtractGithubRequirementsLinksStep(ExtractionStep):
     """Extract requirements links for GitHub repositories."""
 
     name = "github.extract_requirements_links"

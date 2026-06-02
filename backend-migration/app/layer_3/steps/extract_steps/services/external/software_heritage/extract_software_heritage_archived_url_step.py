@@ -3,12 +3,13 @@
 from collections.abc import Callable
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external.software_heritage.helpers.extract_archive import (
     lookup_software_heritage,
 )
 
 
-class ExtractSoftwareHeritageArchivedUrlStep:
+class ExtractSoftwareHeritageArchivedUrlStep(ExtractionStep):
     """Extract Software Heritage candidates for metadata.archivedAt."""
 
     name = "software_heritage.extract_archived_url"
@@ -17,6 +18,7 @@ class ExtractSoftwareHeritageArchivedUrlStep:
         self,
         lookup_fn: Callable[[str], str | None] | None = None,
     ) -> None:
+        super().__init__()
         self._lookup_fn = lookup_fn or lookup_software_heritage
 
     def run(self, context: StepContext, state: StepState) -> StepState:

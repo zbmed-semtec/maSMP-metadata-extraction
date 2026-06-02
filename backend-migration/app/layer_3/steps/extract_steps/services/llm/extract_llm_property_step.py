@@ -5,7 +5,7 @@ from typing import Optional
 from app.layer_3.steps.contracts import StepContext, StepState
 
 
-class ExtractLlmPropertyStep:
+class ExtractLlmPropertyStep(ExtractionStep):
     """No-op LLM property extraction step until real LLM extraction is implemented."""
 
     name = "llm.extract_property"

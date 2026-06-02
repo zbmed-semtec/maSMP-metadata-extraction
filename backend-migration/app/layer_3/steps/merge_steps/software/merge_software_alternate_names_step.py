@@ -8,9 +8,10 @@ from app.layer_1.provenance.software.defaults import (
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 
 
-class MergeSoftwareAlternateNamesStep:
+class MergeSoftwareAlternateNamesStep(ExtractionStep):
     """Merge alternate-name candidates from any extraction source."""
 
     name = "software.merge_alternate_names"

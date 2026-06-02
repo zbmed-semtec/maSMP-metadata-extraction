@@ -3,9 +3,10 @@
 from app.layer_1.provenance.software.defaults import CONFIDENCE_LICENSE, SOURCE_LICENSE_FILE
 from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 
 
-class MergeSoftwareCopyrightHolderStep:
+class MergeSoftwareCopyrightHolderStep(ExtractionStep):
     """Merge copyright-holder candidates from any extraction source."""
 
     name = "software.merge_copyright_holder"

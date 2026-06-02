@@ -21,7 +21,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.gitlab.extract_gitlab_rep
 
 
 @dataclass(frozen=True)
-class _AppendStep:
+class _AppendStep(ExtractionStep):
     name: str
     token: str
 

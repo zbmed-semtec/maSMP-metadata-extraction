@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Optional, Protocol
+from .callback_offer import CallbackOffer
 
 @dataclass(frozen=True)
 class StepContext:
@@ -52,6 +53,16 @@ class ExtractionStep(Protocol):
     """
 
     name: str
+    
+    def __init__(self):
+        self.on_before_run = CallbackOffer()
+        self.on_after_run = CallbackOffer()
+
+    def _run(self, context: StepContext, state: StepState) -> StepState:
+        self.on_before_run.callback(self.name, 'started')
+        result = self.run(context, state)  # type: ignore
+        self.on_after_run.callback(self.name, 'completed')
+        return result
 
     def run(self, context: StepContext, state: StepState) -> StepState:
         """Apply this step and return updated state."""

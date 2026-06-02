@@ -1,18 +1,20 @@
 """Extract alternate-name candidates from OpenAlex."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers import OpenAlexClient
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers.work_lookup import (
     get_openalex_work,
 )
 
 
-class ExtractOpenAlexAlternateNamesStep:
+class ExtractOpenAlexAlternateNamesStep(ExtractionStep):
     """Extract OpenAlex title candidates for metadata.alternateName."""
 
     name = "openalex.extract_alternate_names"
 
     def __init__(self, client: OpenAlexClient | None = None) -> None:
+        super().__init__()
         self.client = client or OpenAlexClient()
 
     def run(self, context: StepContext, state: StepState) -> StepState:

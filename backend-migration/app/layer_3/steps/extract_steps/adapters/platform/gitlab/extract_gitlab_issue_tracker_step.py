@@ -6,7 +6,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGitlabIssueTrackerStep:
+class ExtractGitlabIssueTrackerStep(ExtractionStep):
     name = "gitlab.extract_issue_tracker"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

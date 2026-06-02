@@ -7,7 +7,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGithubLicenseStep:
+class ExtractGithubLicenseStep(ExtractionStep):
     name = "github.extract_license"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

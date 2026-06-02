@@ -2,6 +2,7 @@
 
 from app.layer_1.entities.shared_primitives import Person, ReferencePublication
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers import OpenAlexClient
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers.authors_from_work import (
     authors_from_openalex_work,
@@ -11,12 +12,13 @@ from app.layer_3.steps.extract_steps.services.external.openalex.helpers.work_loo
 )
 
 
-class ExtractOpenAlexReferencePublicationStep:
+class ExtractOpenAlexReferencePublicationStep(ExtractionStep):
     """Extract OpenAlex candidates for metadata.codemeta_referencePublication."""
 
     name = "openalex.extract_reference_publication"
 
     def __init__(self, client: OpenAlexClient | None = None) -> None:
+        super().__init__()
         self.client = client or OpenAlexClient()
 
     def run(self, context: StepContext, state: StepState) -> StepState:

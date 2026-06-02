@@ -1,6 +1,7 @@
 """Extract keyword candidates from OpenAlex."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers import OpenAlexClient
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers.work_lookup import (
     get_openalex_work,
@@ -18,12 +19,13 @@ def _keywords_from_openalex_work(work_data: dict) -> list[str]:
     return keywords
 
 
-class ExtractOpenAlexKeywordsStep:
+class ExtractOpenAlexKeywordsStep(ExtractionStep):
     """Extract OpenAlex keyword candidates for metadata.keywords."""
 
     name = "openalex.extract_keywords"
 
     def __init__(self, client: OpenAlexClient | None = None) -> None:
+        super().__init__()
         self.client = client or OpenAlexClient()
 
     def run(self, context: StepContext, state: StepState) -> StepState:

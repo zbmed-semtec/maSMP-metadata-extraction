@@ -6,7 +6,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGithubContributorsStep:
+class ExtractGithubContributorsStep(ExtractionStep):
     name = "github.extract_contributors"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

@@ -1,13 +1,14 @@
 """Resolve ``masmp_changelog`` from prepared CHANGELOG URL candidates."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.adapters.platform.common.helpers.metadata_link_candidates import (
     first_reachable_url,
 )
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import record_field
 
 
-class ExtractMasmpChangelogLinkStep:
+class ExtractMasmpChangelogLinkStep(ExtractionStep):
     """Set ``metadata.masmp_changelog`` from the first reachable candidate URL."""
 
     name = "platform.extract_masmp_changelog_link"

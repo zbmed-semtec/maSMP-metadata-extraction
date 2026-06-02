@@ -11,9 +11,10 @@ from app.layer_1.provenance.software.defaults import (
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 
 
-class MergeSoftwareReferencePublicationStep:
+class MergeSoftwareReferencePublicationStep(ExtractionStep):
     """Merge reference-publication candidates from any extraction source."""
 
     name = "software.merge_reference_publication"

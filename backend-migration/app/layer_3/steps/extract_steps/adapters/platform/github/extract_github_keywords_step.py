@@ -6,7 +6,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGithubKeywordsStep:
+class ExtractGithubKeywordsStep(ExtractionStep):
     name = "github.extract_keywords"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

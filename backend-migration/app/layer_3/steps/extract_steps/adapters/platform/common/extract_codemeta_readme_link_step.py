@@ -1,13 +1,14 @@
 """Resolve ``codemeta_readme`` from prepared README URL candidates."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.adapters.platform.common.helpers.metadata_link_candidates import (
     first_reachable_url,
 )
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import record_field
 
 
-class ExtractCodemetaReadmeLinkStep:
+class ExtractCodemetaReadmeLinkStep(ExtractionStep):
     """Set ``metadata.codemeta_readme`` from the first reachable candidate URL."""
 
     name = "platform.extract_codemeta_readme_link"

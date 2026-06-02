@@ -8,7 +8,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGithubReleaseStep:
+class ExtractGithubReleaseStep(ExtractionStep):
     name = "github.extract_release"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

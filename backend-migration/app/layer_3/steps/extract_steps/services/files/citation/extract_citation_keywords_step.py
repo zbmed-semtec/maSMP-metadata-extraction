@@ -1,10 +1,11 @@
 """Extract keywords from CITATION.cff into step state."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.files.citation.helpers import ensure_cff_yaml_loaded
 
 
-class ExtractCitationKeywordsStep:
+class ExtractCitationKeywordsStep(ExtractionStep):
     """Extract CFF keywords without mutating metadata."""
 
     name = "citation.extract_keywords"

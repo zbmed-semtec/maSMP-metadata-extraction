@@ -1,13 +1,14 @@
 """Extract Zenodo archivedAt candidates."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.files.helpers.repository_files import (
     repository_file_content,
 )
 from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
 
 
-class ExtractZenodoArchivedUrlsStep:
+class ExtractZenodoArchivedUrlsStep(ExtractionStep):
     """Extract Zenodo candidates for metadata.archivedAt."""
 
     name = "zenodo.extract_archived_urls"

@@ -113,14 +113,17 @@ class ExtractMetadataUseCase:
         if not platform:
             raise ValueError("Unsupported repository platform. Supported: GitHub, GitLab")
 
-        if progress_callback:
-            progress_callback("pipeline", "started")
-
         pipeline = self.pipeline_composer.compose(
             domain="software",
             schema=schema,
             platform=platform,
         )
+
+        if progress_callback:
+            for step in pipeline.steps:
+                step.on_before_run.register(progress_callback, progress_callback)
+                step.on_after_run.register(progress_callback, progress_callback)
+
         state = StepState(
             metadata=SoftwareMetadata(),
             data={
@@ -135,9 +138,6 @@ class ExtractMetadataUseCase:
             access_token=access_token,
         )
         metadata = self.pipeline_runner.run(pipeline, context, state).metadata
-
-        if progress_callback:
-            progress_callback("pipeline", "completed")
 
         # Step 5: Build JSON-LD document
         if progress_callback:

@@ -7,7 +7,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGitlabProgrammingLanguagesStep:
+class ExtractGitlabProgrammingLanguagesStep(ExtractionStep):
     name = "gitlab.extract_programming_languages"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

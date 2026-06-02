@@ -3,10 +3,11 @@
 from typing import Any, Dict, List
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.files.citation.helpers import ensure_cff_yaml_loaded
 
 
-class ExtractCitationDoiStep:
+class ExtractCitationDoiStep(ExtractionStep):
     """Extract DOI values and citation entries without mutating metadata."""
 
     name = "citation.extract_doi"

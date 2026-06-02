@@ -13,7 +13,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGithubMetadataFilesStep:
+class ExtractGithubMetadataFilesStep(ExtractionStep):
     """Prepare likely GitHub metadata file URLs for downstream fetch steps."""
 
     name = "github.extract_metadata_files"

@@ -4,12 +4,13 @@ import re
 
 from app.layer_1.entities.shared_primitives import Person
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.files.helpers.repository_files import (
     repository_file_content,
 )
 
 
-class ExtractReadmeBibtexStep:
+class ExtractReadmeBibtexStep(ExtractionStep):
     """Extract first BibTeX citation block without mutating metadata."""
 
     name = "readme.extract_bibtex"

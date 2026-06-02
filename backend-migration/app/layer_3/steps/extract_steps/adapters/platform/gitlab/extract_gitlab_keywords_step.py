@@ -6,7 +6,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils impo
 )
 
 
-class ExtractGitlabKeywordsStep:
+class ExtractGitlabKeywordsStep(ExtractionStep):
     name = "gitlab.extract_keywords"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

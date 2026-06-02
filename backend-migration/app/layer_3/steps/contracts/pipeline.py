@@ -18,5 +18,5 @@ class ExtractionPipelineRunner:
     def run(self, pipeline: ExtractionPipeline, context: StepContext, state: StepState) -> StepState:
         current = state
         for step in pipeline.steps:
-            current = step.run(context, current)
+            current = step._run(context, current)
         return current

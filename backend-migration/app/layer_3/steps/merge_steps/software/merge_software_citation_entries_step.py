@@ -3,9 +3,10 @@
 from app.layer_1.provenance.software.defaults import CONFIDENCE_CITATION, SOURCE_CITATION_CFF
 from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 
 
-class MergeSoftwareCitationEntriesStep:
+class MergeSoftwareCitationEntriesStep(ExtractionStep):
     """Merge citation-entry candidates from any extraction source."""
 
     name = "software.merge_citation_entries"

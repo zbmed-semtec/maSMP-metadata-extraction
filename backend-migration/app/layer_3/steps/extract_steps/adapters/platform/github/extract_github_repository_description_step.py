@@ -3,13 +3,14 @@
 from typing import Callable
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
     github_repo_payload,
     record_field,
 )
 
 
-class ExtractGithubRepositoryDescriptionStep:
+class ExtractGithubRepositoryDescriptionStep(ExtractionStep):
     name = "github.extract_repository_description"
 
     def run(self, context: StepContext, state: StepState) -> StepState:

@@ -12,6 +12,7 @@ from app.layer_1.provenance.software.defaults import (
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 
 
 def _author_key(author: Any) -> tuple[str, str]:
@@ -32,7 +33,7 @@ def _author_to_dict(author: Any) -> dict[str, Any]:
     )
 
 
-class MergeSoftwareAuthorsStep:
+class MergeSoftwareAuthorsStep(ExtractionStep):
     """Merge author candidates from any extraction source."""
 
     name = "software.merge_authors"

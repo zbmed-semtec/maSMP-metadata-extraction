@@ -1,17 +1,19 @@
 """Extract Wayback archivedAt candidates."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external.wayback.helpers.extract_archive import (
     WaybackClient,
 )
 
 
-class ExtractWaybackArchivedUrlStep:
+class ExtractWaybackArchivedUrlStep(ExtractionStep):
     """Extract Wayback candidates for metadata.archivedAt."""
 
     name = "wayback.extract_archived_url"
 
     def __init__(self, client: WaybackClient | None = None) -> None:
+        super().__init__()
         self.client = client or WaybackClient()
 
     def run(self, context: StepContext, state: StepState) -> StepState:

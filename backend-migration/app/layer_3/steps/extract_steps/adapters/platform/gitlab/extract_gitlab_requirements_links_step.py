@@ -13,7 +13,7 @@ from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.requ
 )
 
 
-class ExtractGitlabRequirementsLinksStep:
+class ExtractGitlabRequirementsLinksStep(ExtractionStep):
     """Extract requirements links for GitLab repositories."""
 
     name = "gitlab.extract_requirements_links"

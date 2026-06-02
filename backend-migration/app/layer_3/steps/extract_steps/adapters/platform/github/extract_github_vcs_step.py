@@ -4,7 +4,7 @@ from app.layer_1.entities.shared_primitives import VersionControlSystem
 from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
 
 
-class ExtractGithubVcsStep:
+class ExtractGithubVcsStep(ExtractionStep):
     name = "github.extract_vcs"
 
     def run(self, context: StepContext, state: StepState) -> StepState:
