@@ -9,9 +9,8 @@ from fastapi.encoders import jsonable_encoder
 
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.github_utils.github_client import GitHubRateLimitError
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.gitlab_utils.gitlab_client import GitLabRateLimitError
-from app.layer_4.services.metadata_service import run_extraction
+from app.layer_4.services.metadata_service import run_extraction, run_extraction_with_progress
 from app.layer_4.services.fairness_service import run_fairness_assessment
-
 
 def _print_json(data: Any) -> None:
     """Print JSON-safe data to stdout."""
@@ -21,11 +20,18 @@ def _print_json(data: Any) -> None:
 
 
 def _extract_command(args: argparse.Namespace) -> None:
-    jsonld_document, enriched = run_extraction(
+
+    progress_observer = None
+    if args.show_progress:
+        from app.layer_4.progress_observers.tqdm_progress_observer import TqdmProgressObserver
+        progress_observer = TqdmProgressObserver()
+
+    jsonld_document, enriched = run_extraction_with_progress(
         repo_url=args.url,
         schema=args.schema,
         access_token=args.token,
         with_enrichment=args.with_enrichment,
+        progress_observer=progress_observer,  # +1 for JSON-LD build step
     )
 
     result = {
@@ -119,6 +125,12 @@ def _collect_property_results(
 
 
 def _extract_property_command(args: argparse.Namespace) -> None:
+
+    # progress_observer = None
+    # if args.show_progress:
+    #     from app.layer_4.progress_observers.tqdm_progress_observer import TqdmProgressObserver
+    #     progress_observer = TqdmProgressObserver()
+
     jsonld_document, enriched = run_extraction(
         repo_url=args.url,
         schema=args.schema,
@@ -204,6 +216,11 @@ def main() -> None:
         "--with-enrichment",
         action="store_true",
         help="Include per-property enrichment (source, confidence, category) when available.",
+    )
+    extract_parser.add_argument(
+        "--show-progress",
+        action="store_true",
+        help="Show progress bars for extraction steps (requires tqdm).",
     )
     extract_parser.set_defaults(func=_extract_command)
 

@@ -27,6 +27,7 @@ from app.layer_3.composers import PipelineComposer
 from app.layer_3.extraction_metadata import ExtractionMetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner, StepContext, StepState
 from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
+from app.layer_3.steps.contracts.progress_observer import ProgressObserver
 
 # Step IDs for progress streaming (used by SSE endpoint and frontend)
 EXTRACTION_STEPS = [
@@ -71,6 +72,7 @@ class ExtractMetadataUseCase:
         pipeline_composer: Optional[PipelineComposer] = None,
         pipeline_runner: Optional[ExtractionPipelineRunner] = None,
         extraction_metadata_collector: Optional[ExtractionMetadataCollector] = None,
+        progress_observer: Optional[ProgressObserver] = None,
     ):
         """
         Initialize the use case with all required tools.
@@ -85,13 +87,12 @@ class ExtractMetadataUseCase:
         self.pipeline_composer = pipeline_composer or PipelineComposer()
         self.pipeline_runner = pipeline_runner or ExtractionPipelineRunner()
         self.extraction_metadata_collector = extraction_metadata_collector
-    
+        self.progress_observer = progress_observer
     def execute(
         self,
         repo_url: str,
         schema: str,
         access_token: Optional[str] = None,
-        progress_callback: Optional[Callable[[str, str], None]] = None,
     ) -> ExtractMetadataResult:
         """
         Execute metadata extraction for one repository.
@@ -103,7 +104,7 @@ class ExtractMetadataUseCase:
             repo_url: URL of the repository
             schema: Schema to use (maSMP or CODEMETA)
             access_token: Optional access token for private repositories
-            progress_callback: Optional callback(step_id, status) for streaming progress
+            progress_observer: Optional observer for streaming progress
 
         Returns:
             ExtractMetadataResult with jsonld_document and extraction_metadata (for UI enrichment)
@@ -121,6 +122,7 @@ class ExtractMetadataUseCase:
             schema=schema,
             platform=platform,
         )
+
         state = StepState(
             metadata=SoftwareMetadata(),
             data={
@@ -134,18 +136,11 @@ class ExtractMetadataUseCase:
             platform=platform,
             access_token=access_token,
         )
-        metadata = self.pipeline_runner.run(pipeline, context, state).metadata
-
-        if progress_callback:
-            progress_callback("pipeline", "completed")
+        metadata = self.pipeline_runner.run(pipeline, context, state, progress_observer=self.progress_observer).metadata
 
         # Step 5: Build JSON-LD document
-        if progress_callback:
-            progress_callback("jsonld_build", "started")
         has_release = metadata.has_release
         jsonld_document = self.jsonld_builder.build_jsonld(metadata, schema, has_release)
-        if progress_callback:
-            progress_callback("jsonld_build", "completed")
 
         extraction_metadata = collector.get_all() if collector else {}
         return ExtractMetadataResult(
