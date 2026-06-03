@@ -11,6 +11,7 @@ from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner
 from app.layer_2.use_cases.extract_metadata import ExtractMetadataUseCase
 from app.layer_4.builders.enriched_metadata import build_enriched_metadata
+from app.layer_3.steps.contracts.progress_observer import ProgressObserver
 
 
 # Stateless components (created once, reused)
@@ -23,6 +24,7 @@ def _create_extraction_use_case(
     repo_url: str,
     access_token: Optional[str],
     with_enrichment: bool,
+    progress_observer: Optional[ProgressObserver] = None
 ) -> tuple[ExtractMetadataUseCase, Optional[InMemoryExtractionMetadataCollector]]:
     """
     Internal helper to create a fully-wired ExtractMetadataUseCase plus optional collector.
@@ -38,10 +40,49 @@ def _create_extraction_use_case(
         pipeline_composer=_pipeline_composer,
         pipeline_runner=_pipeline_runner,
         extraction_metadata_collector=collector,
+        progress_observer=progress_observer,
     )
 
     return use_case, collector
 
+def run_extraction_with_progress(
+    repo_url: str,
+    schema: str,
+    access_token: Optional[str],
+    with_enrichment: bool,
+    progress_observer: Optional[ProgressObserver] = None,
+) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+    """
+    Run metadata extraction with optional progress callbacks.
+
+    progress_observer is called for each step; step_id is one of
+    platform, file_parsing, external_data, llm, jsonld_build; status is "started" or "completed".
+
+    Returns:
+        (jsonld_document, enriched_metadata or None)
+    """
+    use_case, collector = _create_extraction_use_case(
+        repo_url=repo_url,
+        access_token=access_token,
+        with_enrichment=with_enrichment,
+        progress_observer=progress_observer,
+    )
+
+    result = use_case.execute(
+        repo_url=repo_url,
+        schema=schema,
+        access_token=access_token,
+    )
+    jsonld_document = result.jsonld_document
+
+    if with_enrichment and result.extraction_metadata:
+        enriched = build_enriched_metadata(
+            jsonld_document,
+            result.extraction_metadata,
+            schema,
+        )
+        return jsonld_document, enriched
+    return jsonld_document, None
 
 def run_extraction(
     repo_url: str,
@@ -55,64 +96,12 @@ def run_extraction(
     Returns:
         (jsonld_document, enriched_metadata or None)
     """
-    use_case, collector = _create_extraction_use_case(
-        repo_url=repo_url,
-        access_token=access_token,
-        with_enrichment=with_enrichment,
-    )
-
-    result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
-    jsonld_document = result.jsonld_document
-
-    if with_enrichment and result.extraction_metadata:
-        enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
-            schema,
-        )
-        return jsonld_document, enriched
-    return jsonld_document, None
-
-
-def run_extraction_with_progress(
-    repo_url: str,
-    schema: str,
-    access_token: Optional[str],
-    with_enrichment: bool,
-    progress_callback: Optional[Callable[[str, str], None]] = None,
-) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
-    """
-    Run metadata extraction with optional progress callbacks.
-
-    progress_callback(step_id, status) is called for each step; step_id is one of
-    platform, file_parsing, external_data, llm, jsonld_build; status is "started" or "completed".
-
-    Returns:
-        (jsonld_document, enriched_metadata or None)
-    """
-    use_case, collector = _create_extraction_use_case(
-        repo_url=repo_url,
-        access_token=access_token,
-        with_enrichment=with_enrichment,
-    )
-
-    result = use_case.execute(
+    return run_extraction_with_progress(
         repo_url=repo_url,
         schema=schema,
         access_token=access_token,
-        progress_callback=progress_callback,
+        with_enrichment=with_enrichment,
     )
-    jsonld_document = result.jsonld_document
-
-    if with_enrichment and result.extraction_metadata:
-        enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
-            schema,
-        )
-        return jsonld_document, enriched
-    return jsonld_document, None
-
 
 def run_single_property_extraction(
     repo_url: str,
