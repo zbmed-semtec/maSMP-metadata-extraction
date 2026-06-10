@@ -1,11 +1,10 @@
 """
-Layer 4: API / Frameworks
-FastAPI application entry point
+Layer 4 — API entry: FastAPI app wiring (`app.layer_4` routes and middleware).
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
-from app.api.endpoints import metadata
+from app.layer_4.endpoints import metadata
 
 
 app = FastAPI(

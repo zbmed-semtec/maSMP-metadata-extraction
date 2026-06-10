@@ -7,7 +7,7 @@ Run with: pytest backend-migration/tests/test_property_extraction_sources.py -v
 """
 import pytest
 
-from app.domain.extraction_sources import (
+from app.layer_1.provenance.software.defaults import (
     SOURCE_GITHUB_API,
     SOURCE_GITLAB_API,
     SOURCE_CITATION_CFF,
@@ -18,11 +18,14 @@ from app.domain.extraction_sources import (
     SOURCE_SOFTWARE_HERITAGE,
     SOURCE_OPENALEX,
 )
-from app.domain.property_extraction_sources import (
+from app.layer_1.provenance.software.sources import (
     PROPERTY_EXTRACTION_SOURCES,
     ALL_SOURCES,
     get_sources_for_property,
     get_properties_for_source,
+)
+from app.layer_1.provenance.software.validation import (
+    validate_software_provenance_registry,
 )
 
 
@@ -54,6 +57,7 @@ EXPECTED_ADAPTER_RECORDINGS = [
     ("masmp_changelog", SOURCE_GITHUB_API),
     ("softwareVersion", SOURCE_GITHUB_API),
     ("version", SOURCE_GITHUB_API),
+    ("softwareRequirements", SOURCE_GITHUB_API),
     # GitLab extractor (same set of fields)
     ("name", SOURCE_GITLAB_API),
     ("description", SOURCE_GITLAB_API),
@@ -79,6 +83,7 @@ EXPECTED_ADAPTER_RECORDINGS = [
     ("masmp_changelog", SOURCE_GITLAB_API),
     ("softwareVersion", SOURCE_GITLAB_API),
     ("version", SOURCE_GITLAB_API),
+    ("softwareRequirements", SOURCE_GITLAB_API),
     # File parser: CITATION.cff
     ("alternateName", SOURCE_CITATION_CFF),
     ("keywords", SOURCE_CITATION_CFF),
@@ -114,6 +119,10 @@ def _registry_pairs():
 
 class TestPropertyExtractionSourcesRegistry:
     """Registry consistency and per-property source coverage."""
+
+    def test_registry_matches_software_model(self):
+        """Fail fast when SoftwareMetadata fields are added without provenance policy."""
+        validate_software_provenance_registry()
 
     def test_registry_uses_valid_sources(self):
         """Every source in the registry is a known extraction source."""

@@ -94,7 +94,7 @@ comet-rs extract_property https://github.com/owner/repo author
 
 ```python
 import os
-from app.api.services.metadata_service import run_extraction
+from app.layer_4.services.metadata_service import run_extraction
 
 # Extract full metadata
 jsonld_document, enriched = run_extraction(

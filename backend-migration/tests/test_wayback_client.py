@@ -1,8 +1,7 @@
 """
-Unit tests for WaybackClient.
-Cover successful and failing archive lookups for both Wayback and Software Heritage.
+Unit tests for WaybackClient (web.archive.org lookups only).
 """
-from app.domain.services.wayback_client import WaybackClient
+from app.layer_3.steps.extract_steps.services.external.wayback.helpers.extract_archive import WaybackClient
 
 
 class DummyResponse:
@@ -39,35 +38,3 @@ def test_check_archive_url_not_found(monkeypatch):
 
     monkeypatch.setattr(requests, "get", fake_get)
     assert client.check_archive_url("https://example.com") is None
-
-
-def test_check_software_heritage_success(monkeypatch):
-    client = WaybackClient()
-
-    def fake_get(url: str, timeout: int = 5, allow_redirects: bool = True):
-        assert url.startswith("https://archive.softwareheritage.org/browse/origin/directory/")
-        return DummyResponse(200)
-
-    import requests
-
-    monkeypatch.setattr(requests, "get", fake_get)
-
-    result = client.check_software_heritage("https://example.com/repo")
-    assert result == "https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://example.com/repo"
-
-
-def test_find_archive_prefers_software_heritage(monkeypatch):
-    client = WaybackClient()
-
-    def fake_check_swh(url: str, timeout: int = 5):
-        return "swh-url"
-
-    def fake_check_wayback(url: str, timeout: int = 5):
-        return "wayback-url"
-
-    monkeypatch.setattr(WaybackClient, "check_software_heritage", staticmethod(fake_check_swh))
-    monkeypatch.setattr(WaybackClient, "check_archive_url", staticmethod(fake_check_wayback))
-
-    result = client.find_archive("https://example.com/repo")
-    assert result == "swh-url"
-

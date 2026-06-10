@@ -1,4 +1,4 @@
-from app.domain.services.fairness_evaluator import evaluate_fairness
+from app.layer_3.evaluators.fairness_evaluator import evaluate_fairness
 
 
 def test_evaluate_fairness_all_fields_present_codemeta():

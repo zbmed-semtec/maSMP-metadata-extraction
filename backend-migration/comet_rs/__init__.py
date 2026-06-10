@@ -6,9 +6,9 @@ without exposing internal app.* wiring.
 """
 from typing import Any, Dict, Optional, Tuple, Literal, List
 
-from app.api.services.metadata_service import run_extraction, run_single_property_extraction
-from app.api.services.fairness_service import run_fairness_assessment
-from app.core.entities.fairness import FairnessReport
+from app.layer_4.services.metadata_service import run_extraction, run_single_property_extraction
+from app.layer_4.services.fairness_service import run_fairness_assessment
+from app.layer_1.entities.fair_assessment import FairnessReport
 
 SchemaLiteral = Literal["maSMP", "CODEMETA"]
 

@@ -1,70 +1,58 @@
-# Backend Migration - Clean Architecture
+# CoMET-RS Backend
 
-This is the migrated backend using clean architecture principles.
+Metadata extraction for research software repositories (GitHub, GitLab), with maSMP and CodeMeta JSON-LD output.
 
 <p align="center">
   <img src="../docs/img/backend_architecture.png" width="75%">
 </p>
 
-## Architecture Overview
+## Architecture
 
-The application follows a 4-layer clean architecture (onion architecture):
+Four layers under `app/`:
 
-### Layer 1: Core / Entities (Center)
+| Layer | Location | Role |
+|-------|----------|------|
+| **1** | `app/layer_1/` | Domain models, schemas, provenance |
+| **2** | `app/layer_2/use_cases/` | Orchestration (`ExtractMetadataUseCase`) |
+| **3** | `app/layer_3/` | Extraction pipelines, steps, JSON-LD builder, FAIR evaluator |
+| **4** | `app/layer_4/` | FastAPI routes, API schemas, response builders |
 
-- **Location**: `app/core/entities/`
-- **Contains**: `RepositoryMetadata` - The final data model with 30+ fields
-- **Rule**: No dependencies on other layers
+Layer 3 layout (high level):
 
-### Layer 2: Application / Use Cases
+- `steps/contracts/` — `StepContext`, `StepState`, `ExtractionPipeline`
+- `steps/extract_steps/` — platform adapters, file parsers, external APIs
+- `steps/merge_steps/software/` — merge candidates into `SoftwareMetadata`
+- `composers/profiles/` — GitHub/GitLab × maSMP/CODEMETA pipelines
+- `extraction_metadata/` — provenance collector and `record_field_provenance`
+- `builders/jsonld_builder.py` — export `SoftwareMetadata` to JSON-LD
 
-- **Location**: `app/application/use_cases/`
-- **Contains**: `ExtractMetadataUseCase` - The orchestration layer
-- **Rule**: Only imports from Layer 1. Uses dependency injection for tools.
-
-### Layer 3: Domain Services + Adapters
-
-- **Location**: `app/domain/services/` and `app/adapters/`
-- **Contains**:
-  - Domain Services: Shared tools (LLM, OpenAlex, Wayback, parsers)
-  - Adapters: Platform-specific clients (GitHub)
-- **Rule**: Can import from Layer 2
-
-### Layer 4: Frameworks / API
-
-- **Location**: `app/api/` and `app/main.py`
-- **Contains**: FastAPI routes and application setup
-- **Rule**: Can import from Layer 3 and Layer 2
+Full documentation: run `mkdocs serve` in this directory (see [Getting started](docs/getting-started.md)) or read the pages under `docs/`.
 
 ## Installation
-
-```bash
-conda create -n metadata-extractor
-conda activate metadata-extractor
-```
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Running the Application
+## Run the API
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Testing
+- Swagger: http://localhost:8000/docs  
+- Enriched metadata: `GET /api/metadata/enriched?repo_url=...&schema=maSMP`
 
-To test the migration:
+## Run tests
 
-1. Start the server
-2. Test in swagger: http://localhost:8000/docs and try out the APIs
-3. Test in Terminal:
-   ```bash
-   curl "http://localhost:8000/api/v1/metadata?repo_url={URL}"
-   ```
+```bash
+pytest
+```
 
-## Documentation
+## Documentation (MkDocs)
 
-- **[DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md)** - Complete guide explaining the codebase, architecture, and how everything works. Perfect for new developers!
-- **[ADDING_NEW_PLATFORM.md](./docs/ADDING_NEW_PLATFORM.md)** - Step-by-step guide for adding support for new platforms (GitLab, Codeberg, etc.)
+```bash
+mkdocs serve
+```
+
+Open http://127.0.0.1:8002/ (port 8002 avoids clashing with the API on 8000).

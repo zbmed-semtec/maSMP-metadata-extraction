@@ -166,11 +166,12 @@ print("Reusable score:", fairness_report.reusable.score)
 
 ## Project links & docs
 
-- Source code: GitHub / GitLab repository where `comet-rs` is developed
-- Backend architecture and development docs:
-  - `README.md` in the repo root (architecture & local FastAPI server)
-  - `docs/DEVELOPER_GUIDE.md`
-  - `docs/ADDING_NEW_PLATFORM.md`
+Backend documentation lives under `backend-migration/docs/` and is published with MkDocs:
 
-Use those documents if you want to contribute, run the FastAPI backend locally, or add support for new code hosting platforms.
+```bash
+cd backend-migration
+mkdocs serve
+```
+
+Open http://127.0.0.1:8002/ for architecture, layer guides, and API usage. See `backend-migration/README.md` to run the FastAPI server locally.
 

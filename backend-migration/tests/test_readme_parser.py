@@ -1,36 +1,39 @@
 """
-Unit tests for ReadmeParser.
+Unit tests for ReadmeExtractionWorkflow.
 Cover DOI extraction (including Zenodo IDs), BibTeX parsing, author merging, and edge cases.
 """
-from app.domain.services.readme_parser import ReadmeParser
-from app.core.entities.repository_metadata import RepositoryMetadata, Person
+from app.layer_1.entities.shared_primitives import Person
+from app.layer_1.entities.software_metadata import SoftwareMetadata
+from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.extract_steps.services.files.license import ExtractLicenseCopyrightStep
+from app.layer_3.steps.extract_steps.services.files.workflows import ReadmeExtractionWorkflow
 
 
 def test_readme_parser_extracts_doi_and_sets_identifier_flag():
-    parser = ReadmeParser()
-    metadata = RepositoryMetadata()
+    workflow = ReadmeExtractionWorkflow()
+    metadata = SoftwareMetadata()
 
     content = """
     This project has a DOI badge:
     https://doi.org/10.1234/abcd.1
     """
 
-    updated, identifier_set = parser.parse_readme(content, metadata)
+    updated, identifier_set = workflow.run(content, metadata)
 
     assert identifier_set is True
     assert updated.identifier == ["https://doi.org/10.1234/abcd.1"]
 
 
 def test_readme_parser_extracts_zenodo_badge_and_converts_to_doi():
-    parser = ReadmeParser()
-    metadata = RepositoryMetadata()
+    workflow = ReadmeExtractionWorkflow()
+    metadata = SoftwareMetadata()
 
     content = """
     Zenodo badge:
     https://zenodo.org/record/987654
     """
 
-    updated, identifier_set = parser.parse_readme(content, metadata)
+    updated, identifier_set = workflow.run(content, metadata)
 
     assert identifier_set is True
     # Zenodo id must be converted into a DOI with 10.5281/zenodo.<id>
@@ -38,15 +41,15 @@ def test_readme_parser_extracts_zenodo_badge_and_converts_to_doi():
 
 
 def test_readme_parser_does_not_duplicate_existing_identifier():
-    parser = ReadmeParser()
-    metadata = RepositoryMetadata(identifier=["https://doi.org/10.1234/abcd.1"])
+    workflow = ReadmeExtractionWorkflow()
+    metadata = SoftwareMetadata(identifier=["https://doi.org/10.1234/abcd.1"])
 
     content = """
     Duplicate DOI:
     https://doi.org/10.1234/abcd.1
     """
 
-    updated, identifier_set = parser.parse_readme(content, metadata)
+    updated, identifier_set = workflow.run(content, metadata)
 
     assert identifier_set is True
     # No duplicate entries should be added
@@ -54,10 +57,10 @@ def test_readme_parser_does_not_duplicate_existing_identifier():
 
 
 def test_readme_parser_extracts_bibtex_and_merges_authors():
-    parser = ReadmeParser()
+    workflow = ReadmeExtractionWorkflow()
     # Pre-existing author should be preserved and deduped
     existing_author = {"@type": "Person", "familyName": "Doe", "givenName": "Jane"}
-    metadata = RepositoryMetadata(author=[existing_author])
+    metadata = SoftwareMetadata(author=[existing_author])
 
     content = r"""
     ```bibtex
@@ -68,7 +71,7 @@ def test_readme_parser_extracts_bibtex_and_merges_authors():
     ```
     """
 
-    updated, identifier_set = parser.parse_readme(content, metadata)
+    updated, identifier_set = workflow.run(content, metadata)
 
     assert identifier_set is False
 
@@ -84,10 +87,12 @@ def test_readme_parser_extracts_bibtex_and_merges_authors():
     assert ("Smith", "John") in names
 
 
-def test_readme_parser_extracts_copyright():
-    parser = ReadmeParser()
+def test_license_step_extracts_copyright():
     text = "Copyright (c) 2024 Example Org"
+    step = ExtractLicenseCopyrightStep()
+    state = StepState(metadata=SoftwareMetadata(), data={"license_content": text})
+    context = StepContext(repo_url="", domain="software", schema="maSMP")
 
-    holder = parser.extract_license_copyright(text)
-    assert holder == "Example Org"
+    result = step.run(context, state)
+    assert result.data["extracted_license_copyright_holder"] == "Example Org"
 
