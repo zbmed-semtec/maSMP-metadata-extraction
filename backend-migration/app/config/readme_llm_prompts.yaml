@@ -1,0 +1,47 @@
+# README LLM prompts, hints and property rules for orchestration
+
+default_prompt: |
+  You are a metadata extractor. Given the README content, extract the relevant properties
+  for the specified property types (identifiers, author, alternateName, keywords, citation, license).
+  Return structured values in JSON format with keys matching the property names.
+
+hints:
+  - "Prefer explicit DOI/Zenodo badge links when present."
+  - "Detect BibTeX blocks and extract title/authors." 
+  - "Do not add duplicate identifiers if already present in metadata."
+  - "For license: look for 'Copyright (c) YEAR Organization' or SPDX identifiers."
+
+property_types:
+  software:
+    - identifier
+    - author
+    - alternateName
+    - keywords
+    - citation
+    - license
+
+prompts:
+  identifier: |
+    Extract canonical identifier URLs (DOI or Zenodo) from the README. Normalize Zenodo
+    badges to DOI URLs (10.5281/zenodo.<id>). Return a JSON array of unique URL strings.
+
+  authors: |
+    Extract author names from the README. Return an array of objects with keys
+    `familyName` and `givenName` where possible.
+
+  keywords: |
+    Find a 'Keywords:' line or common keyword lists in README and return a list of keyword strings.
+
+  citation: |
+    If a BibTeX block is present, parse the first entry and extract the title, authors and DOI if present.
+
+  license: |
+    Detect license owner and license identifier. Look for SPDX short identifiers (e.g., MIT, Apache-2.0)
+    or copyright statements such as 'Copyright (c) 2024 Example Org'. Return a JSON object with
+    `identifier` and `holder` when possible.
+
+license_detection:
+  spdx_pattern: "\\b(?:MIT|Apache-2.0|GPL-3.0|BSD-3-Clause)\\b"
+  copyright_pattern: "Copyright\s*\(c\)\s*(?P<year>\\d{4})\s+(?P<holder>.+)"
+
+# End of prompts
