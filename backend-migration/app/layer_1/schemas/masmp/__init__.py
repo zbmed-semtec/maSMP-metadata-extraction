@@ -1,4 +1,5 @@
 """maSMP: profile categories (Layer 1) and JSON-LD export key sets."""
+from __future__ import annotations
 
 from app.layer_1.schemas.masmp.export_fields import (
     MASMP_SOFTWARE_APPLICATION_EXPORT_KEYS,

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import AbstractSet, Any, Dict
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata

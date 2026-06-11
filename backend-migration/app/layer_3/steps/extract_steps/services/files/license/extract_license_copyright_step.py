@@ -1,4 +1,5 @@
 """Extract copyright holder from LICENSE content into step state."""
+from __future__ import annotations
 
 import re
 

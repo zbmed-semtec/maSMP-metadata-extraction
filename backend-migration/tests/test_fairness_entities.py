@@ -1,3 +1,4 @@
+from __future__ import annotations
 from app.layer_1.entities.fair_assessment import FairnessIndicator, FairnessReport
 
 

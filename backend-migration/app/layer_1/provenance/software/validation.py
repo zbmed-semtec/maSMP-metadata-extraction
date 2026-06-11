@@ -4,6 +4,7 @@ Validation helpers for software provenance registries.
 These checks protect against silent drift when developers add new fields to
 SoftwareMetadata but forget to define provenance rules.
 """
+from __future__ import annotations
 from app.layer_1.entities.software_metadata import SoftwareMetadata
 from app.layer_1.provenance.software.sources import (
     ALL_SOURCES,

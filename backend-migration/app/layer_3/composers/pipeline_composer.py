@@ -1,4 +1,5 @@
 """Pipeline composer for selecting extraction profiles by context."""
+from __future__ import annotations
 
 from app.layer_3.composers.profiles.software_github_codemeta import (
     build_software_github_codemeta_pipeline,

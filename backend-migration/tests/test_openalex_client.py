@@ -1,6 +1,7 @@
 """
 Unit tests for OpenAlexClient (HTTP only) and shared author parsing helper.
 """
+from __future__ import annotations
 from typing import Any, Dict
 
 from app.layer_3.steps.extract_steps.services.external.openalex.extract_openalex_keywords_step import (

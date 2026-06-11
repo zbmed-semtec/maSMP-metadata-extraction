@@ -4,6 +4,7 @@ FAIR assessment domain types.
 These models describe the shape of a FAIR assessment result. The scoring
 algorithm itself lives outside Layer 1.
 """
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Literal
 

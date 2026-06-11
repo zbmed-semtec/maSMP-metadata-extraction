@@ -8,6 +8,7 @@ FAIRness scores are computed from the internal SoftwareMetadata entity so
 that they are invariant to the exported schema (maSMP vs CODEMETA). The
 schema still controls the shape of the JSON-LD returned alongside the report.
 """
+from __future__ import annotations
 from typing import Dict, Optional, Tuple
 
 from app.layer_2.use_cases.extract_metadata import ExtractMetadataUseCase

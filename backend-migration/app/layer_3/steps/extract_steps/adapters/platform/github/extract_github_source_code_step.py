@@ -1,4 +1,5 @@
 """GitHub source code URL metadata step."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (

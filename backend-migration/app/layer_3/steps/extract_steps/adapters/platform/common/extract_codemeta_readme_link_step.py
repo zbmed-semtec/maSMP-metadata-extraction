@@ -1,4 +1,5 @@
 """Resolve ``codemeta_readme`` from prepared README URL candidates."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import StepContext, StepState
 from app.layer_3.steps.extract_steps.adapters.platform.common.helpers.metadata_link_candidates import (

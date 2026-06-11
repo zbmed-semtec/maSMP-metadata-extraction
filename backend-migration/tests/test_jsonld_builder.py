@@ -2,6 +2,7 @@
 Unit tests for JSONLDBuilder.
 Cover maSMP and CODEMETA JSON-LD building, field mapping, and allowed-fields filtering.
 """
+from __future__ import annotations
 from app.layer_3.builders.jsonld_builder import JSONLDBuilder
 from app.layer_1.entities.shared_primitives import VersionControlSystem
 from app.layer_1.entities.software_metadata import SoftwareMetadata

@@ -1,4 +1,5 @@
 """Extract Zenodo archivedAt candidates."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import StepContext, StepState
 from app.layer_3.steps.extract_steps.services.files.helpers.repository_files import (

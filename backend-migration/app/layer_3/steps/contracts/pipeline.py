@@ -1,4 +1,5 @@
 """Pipeline contracts and default runner for composable extraction steps."""
+from __future__ import annotations
 
 from dataclasses import dataclass
 

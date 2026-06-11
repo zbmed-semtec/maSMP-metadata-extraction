@@ -1,4 +1,5 @@
 """Unit tests for platform repository core-field extract steps."""
+from __future__ import annotations
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata
 from app.layer_3.steps.contracts import StepContext, StepState

@@ -1,4 +1,5 @@
 """Single pipeline unit for URL normalization and platform flags (not domain property extraction)."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import StepContext, StepState
 

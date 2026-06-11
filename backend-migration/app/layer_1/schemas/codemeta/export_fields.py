@@ -3,6 +3,7 @@ Allowed JSON-LD keys for CodeMeta `SoftwareSourceCode` export.
 
 Single-document CODEMETA projection from SoftwareMetadata.
 """
+from __future__ import annotations
 from typing import FrozenSet
 
 CODEMETA_SOFTWARE_SOURCE_CODE_EXPORT_KEYS: FrozenSet[str] = frozenset({

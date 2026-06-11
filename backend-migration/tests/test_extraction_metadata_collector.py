@@ -1,6 +1,7 @@
 """
 Tests for multi-source extraction metadata (e.g. keywords: merge from all sources, multiple sources + aggregated confidence).
 """
+from __future__ import annotations
 import pytest
 
 from app.layer_1.provenance.software.defaults import (

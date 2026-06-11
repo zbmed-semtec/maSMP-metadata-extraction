@@ -2,6 +2,7 @@
 Layer 4: API / Frameworks – Routes only.
 Schemas in api/schemas; composition in api/services.
 """
+from __future__ import annotations
 import asyncio
 import json
 import queue

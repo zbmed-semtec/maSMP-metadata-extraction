@@ -4,6 +4,7 @@ Allowed JSON-LD keys per maSMP profile node when serializing SoftwareMetadata.
 These are the projection filters for `maSMP:SoftwareSourceCode` and
 `maSMP:SoftwareApplication` in the JSON-LD builder.
 """
+from __future__ import annotations
 from typing import FrozenSet
 
 # Keys as emitted in JSON-LD (after codemeta_* / masmp_* → prefixed mapping).

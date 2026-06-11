@@ -3,6 +3,7 @@ Unit tests for CitationCffWorkflow.
 Cover title/alternateName merging, keywords, DOIs (top-level and preferred-citation),
 author merging, and preferred citation extraction.
 """
+from __future__ import annotations
 from textwrap import dedent
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata

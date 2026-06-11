@@ -3,6 +3,7 @@ maSMP profile metadata: required / recommended / optional per profile (UI + docs
 
 JSON-LD export keys for each maSMP node live in `export_fields.py`.
 """
+from __future__ import annotations
 from typing import Dict, List
 
 MASMP_SOFTWARE_SOURCE_CODE: Dict[str, List[str]] = {

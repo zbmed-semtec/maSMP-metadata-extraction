@@ -2,6 +2,7 @@
 Layer 2 — Application / use cases (`app.layer_2`).
 Orchestration: compose and run extraction pipeline, then build JSON-LD.
 """
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, Optional, Dict, Any, Callable
 

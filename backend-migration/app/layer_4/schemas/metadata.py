@@ -2,6 +2,7 @@
 Response schemas for metadata endpoints (Layer 4 – API contracts).
 Kept separate from routes so the API layer stays modular.
 """
+from __future__ import annotations
 from typing import Dict, Any, List, Optional
 
 from pydantic import BaseModel, Field, HttpUrl

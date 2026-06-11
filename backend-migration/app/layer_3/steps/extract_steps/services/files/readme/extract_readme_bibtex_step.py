@@ -1,4 +1,5 @@
 """Extract BibTeX reference data from README content into step state."""
+from __future__ import annotations
 
 import re
 

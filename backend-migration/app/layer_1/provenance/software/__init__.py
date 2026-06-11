@@ -1,4 +1,5 @@
 """Software-domain provenance registries (sources, property mapping, validation)."""
+from __future__ import annotations
 
 from app.layer_1.provenance.software.sources import (
     ALL_SOURCES,

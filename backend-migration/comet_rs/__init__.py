@@ -4,6 +4,7 @@ Public Python API for comet_rs.
 Provides simple, stable functions for extracting metadata and assessing FAIRness
 without exposing internal app.* wiring.
 """
+from __future__ import annotations
 from typing import Any, Dict, Optional, Tuple, Literal, List
 
 from app.layer_4.services.metadata_service import run_extraction, run_single_property_extraction

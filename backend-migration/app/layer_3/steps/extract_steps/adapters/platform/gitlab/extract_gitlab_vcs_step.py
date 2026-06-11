@@ -1,4 +1,5 @@
 """GitLab VCS metadata steps."""
+from __future__ import annotations
 
 from app.layer_1.entities.shared_primitives import VersionControlSystem
 from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState

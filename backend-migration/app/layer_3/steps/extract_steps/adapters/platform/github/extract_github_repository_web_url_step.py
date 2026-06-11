@@ -1,4 +1,5 @@
 """Extract canonical web ``url`` from the GitHub API payload."""
+from __future__ import annotations
 
 from typing import Callable
 

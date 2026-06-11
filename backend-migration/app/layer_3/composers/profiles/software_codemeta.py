@@ -1,4 +1,5 @@
 """Backward-compatible aliases for software CodeMeta profiles."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts.pipeline import ExtractionPipeline
 from app.layer_3.composers.profiles.software_github_codemeta import (

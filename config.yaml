@@ -1,8 +1,8 @@
 # Central config for model + repositories used by the notebook
-# Change active_model to switch between: deepseek, qwen2, phi4, llama32, gemma4, ministral
+# Change active_model to switch between: qwen2, phi4, llama32, gemma4, ministral
 
-# Set active model to one of: deepseek, qwen2, phi4, llama32, gemma4, ministral
-active_model: deepseek
+# Set active model to one of: qwen2, phi4, llama32, gemma4, ministral
+active_model: qwen
 
 # Model configurations
 models:
@@ -10,13 +10,9 @@ models:
   qwen:
     provider: vllm
     name: Qwen/Qwen2.5-7B-Instruct
-    base_url: http://localhost:8000
+    base_url: http://localhost:8001
     description: "General-purpose baseline for README extraction."
-  deepseek:
-    provider: ollama
-    name: deepseek-r1:7b
-    base_url: http://127.0.0.1:11435
-    description: "Primary model for README parsing and metadata generation."
+
   phi4:
     provider: ollama
     name: phi4:latest

@@ -1,4 +1,5 @@
 """Merge extracted archive URL candidates into software metadata."""
+from __future__ import annotations
 
 from app.layer_1.provenance.software.defaults import (
     CONFIDENCE_ARCHIVE,

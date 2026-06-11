@@ -2,6 +2,7 @@
 Metadata extraction service: wires adapters and use case, runs extraction.
 Single place for composition; endpoints call this instead of building the use case themselves.
 """
+from __future__ import annotations
 from datetime import datetime
 from typing import Optional, Dict, Any, Callable, List
 

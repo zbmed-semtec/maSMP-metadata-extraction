@@ -1,4 +1,5 @@
 """Extract canonical web ``url`` from the GitLab API payload."""
+from __future__ import annotations
 
 from typing import Callable
 

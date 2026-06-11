@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Dict, List
 
 from app.layer_1.provenance.software.sources import MULTI_SOURCE_PROPERTIES

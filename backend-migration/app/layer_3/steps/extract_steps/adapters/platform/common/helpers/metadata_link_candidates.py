@@ -1,4 +1,5 @@
 """Pick first reachable URL from candidate lists (README / CHANGELOG)."""
+from __future__ import annotations
 
 from collections.abc import Callable
 

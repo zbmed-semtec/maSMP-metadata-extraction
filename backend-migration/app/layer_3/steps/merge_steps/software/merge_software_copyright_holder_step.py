@@ -1,4 +1,5 @@
 """Merge extracted copyright holder candidates into software metadata."""
+from __future__ import annotations
 
 from app.layer_1.provenance.software.defaults import CONFIDENCE_LICENSE, SOURCE_LICENSE_FILE
 from app.layer_3.extraction_metadata.record import record_field_provenance

@@ -1,4 +1,5 @@
 """Shared OpenAlex work fetch + cache (used by all OpenAlex property extract steps)."""
+from __future__ import annotations
 
 from typing import Optional
 

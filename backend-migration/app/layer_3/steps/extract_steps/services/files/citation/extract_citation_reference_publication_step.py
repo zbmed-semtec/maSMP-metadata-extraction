@@ -1,4 +1,5 @@
 """Extract preferred CITATION.cff reference publication into step state."""
+from __future__ import annotations
 
 from typing import Any, Dict, List
 

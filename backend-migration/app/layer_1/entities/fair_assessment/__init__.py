@@ -1,4 +1,5 @@
 """FAIR assessment entities — import result types from here."""
+from __future__ import annotations
 
 from app.layer_1.entities.fair_assessment.types import (
     FairPrinciple,

@@ -1,4 +1,5 @@
 """Extract ``codeRepository`` (clone URL) from the GitHub API payload."""
+from __future__ import annotations
 
 from typing import Callable
 

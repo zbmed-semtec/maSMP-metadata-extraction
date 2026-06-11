@@ -1,4 +1,5 @@
 """Tests for Software Heritage origin URL lookup."""
+from __future__ import annotations
 
 from app.layer_3.steps.extract_steps.services.external.software_heritage.helpers.extract_archive import (
     lookup_software_heritage,

@@ -1,4 +1,5 @@
 """Layer 1 — domain entities and shared domain value objects."""
+from __future__ import annotations
 
 from app.layer_1.entities.fair_assessment import FairnessIndicator, FairnessReport, FairPrinciple
 from app.layer_1.entities.shared_primitives import (

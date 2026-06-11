@@ -1,4 +1,5 @@
 """Software + GitLab + CodeMeta pipeline profile."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts.pipeline import ExtractionPipeline
 from app.layer_3.steps.step_bundles import (

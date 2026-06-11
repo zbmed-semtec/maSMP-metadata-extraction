@@ -1,4 +1,5 @@
 """Unit tests for requirements file discovery helpers."""
+from __future__ import annotations
 
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.requirements_discovery import (
     discover_requirement_urls_from_state,

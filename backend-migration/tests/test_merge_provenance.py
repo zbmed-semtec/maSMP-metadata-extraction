@@ -1,4 +1,5 @@
 """Tests for per-source provenance recording in merge steps."""
+from __future__ import annotations
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata
 from app.layer_1.provenance.software.defaults import (

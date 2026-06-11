@@ -1,3 +1,4 @@
+from __future__ import annotations
 from app.layer_3.evaluators.fairness_evaluator import evaluate_fairness
 
 

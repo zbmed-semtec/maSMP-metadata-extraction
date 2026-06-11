@@ -1,4 +1,5 @@
 """Schema vocabularies by standard (`masmp/`, `codemeta/`)."""
+from __future__ import annotations
 
 from app.layer_1.schemas.codemeta import CODEMETA_SOFTWARE_SOURCE_CODE_EXPORT_KEYS
 from app.layer_1.schemas.definitions import (

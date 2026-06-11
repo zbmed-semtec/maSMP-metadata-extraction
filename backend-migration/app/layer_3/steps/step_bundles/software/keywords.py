@@ -1,4 +1,5 @@
 """Citation + OpenAlex keyword extract steps and merge."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external import ExtractOpenAlexKeywordsStep

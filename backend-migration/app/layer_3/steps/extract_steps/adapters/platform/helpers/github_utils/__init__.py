@@ -1,4 +1,5 @@
 """GitHub platform helper infrastructure."""
+from __future__ import annotations
 
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.github_utils.github_client import (
     GitHubClient,

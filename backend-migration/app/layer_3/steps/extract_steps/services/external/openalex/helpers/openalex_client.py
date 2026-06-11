@@ -1,4 +1,5 @@
 """HTTP client for OpenAlex work lookups (shared by OpenAlex extract steps)."""
+from __future__ import annotations
 
 from typing import Optional
 

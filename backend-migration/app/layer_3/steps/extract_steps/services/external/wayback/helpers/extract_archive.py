@@ -1,4 +1,5 @@
 """Wayback archive lookup helper."""
+from __future__ import annotations
 
 import requests
 

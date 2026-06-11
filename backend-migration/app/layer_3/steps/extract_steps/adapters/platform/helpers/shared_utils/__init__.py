@@ -1,4 +1,5 @@
 """Shared platform helper utilities."""
+from __future__ import annotations
 
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.platform_payloads import (
     github_commits_payload,

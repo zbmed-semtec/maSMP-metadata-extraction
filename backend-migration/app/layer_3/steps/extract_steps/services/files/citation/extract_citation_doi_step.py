@@ -1,4 +1,5 @@
 """Extract DOI and citation entries from CITATION.cff into step state."""
+from __future__ import annotations
 
 from typing import Any, Dict, List
 

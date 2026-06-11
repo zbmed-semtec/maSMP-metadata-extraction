@@ -1,6 +1,7 @@
 """
 Unit tests for WaybackClient (web.archive.org lookups only).
 """
+from __future__ import annotations
 from app.layer_3.steps.extract_steps.services.external.wayback.helpers.extract_archive import WaybackClient
 
 

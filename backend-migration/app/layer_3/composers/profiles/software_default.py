@@ -2,6 +2,7 @@
 
 Backward-compatible alias for maSMP software profile.
 """
+from __future__ import annotations
 
 from app.layer_3.composers.profiles.software_masmp import build_software_masmp_pipeline
 from app.layer_3.steps.contracts.pipeline import ExtractionPipeline

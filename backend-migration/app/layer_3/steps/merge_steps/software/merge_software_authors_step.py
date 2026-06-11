@@ -1,4 +1,5 @@
 """Merge extracted author candidates into software metadata."""
+from __future__ import annotations
 
 from typing import Any
 

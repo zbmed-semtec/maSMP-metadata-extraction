@@ -3,6 +3,7 @@ Shared value objects used across domain entities (e.g. software, future training
 
 No dependencies on other entity modules.
 """
+from __future__ import annotations
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, HttpUrl

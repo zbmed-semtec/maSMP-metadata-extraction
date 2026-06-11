@@ -1,4 +1,5 @@
 """Tests for platform profile pipelines replacing legacy extractor wrappers."""
+from __future__ import annotations
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata
 from app.layer_1.provenance.software.defaults import SOURCE_GITHUB_API, SOURCE_GITLAB_API

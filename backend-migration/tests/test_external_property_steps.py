@@ -1,4 +1,5 @@
 """Tests for external source-property steps and property-level merge."""
+from __future__ import annotations
 
 from typing import Any, Dict, Optional
 

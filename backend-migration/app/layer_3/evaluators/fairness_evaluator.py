@@ -1,6 +1,7 @@
 """
 FAIRness evaluator – computes FAIR scores from JSON-LD and SoftwareMetadata.
 """
+from __future__ import annotations
 from collections import defaultdict
 import re
 from typing import Any, Dict, List

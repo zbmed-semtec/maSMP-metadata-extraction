@@ -4,6 +4,7 @@ Software-domain mapping: each metadata property -> extraction sources.
 This registry is intentionally domain-scoped. If you add another domain,
 create a sibling package (e.g. `provenance/training`) rather than extending this.
 """
+from __future__ import annotations
 from app.layer_1.provenance.software.defaults import (
     SOURCE_CITATION_CFF,
     SOURCE_GITHUB_API,

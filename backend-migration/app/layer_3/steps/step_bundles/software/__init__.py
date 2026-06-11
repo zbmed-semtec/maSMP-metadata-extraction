@@ -1,4 +1,5 @@
 """Per-property software pipeline fragments (extract + merge)."""
+from __future__ import annotations
 
 from app.layer_3.steps.step_bundles.software.alternate_names import software_alternate_name_steps
 from app.layer_3.steps.step_bundles.software.archived_urls import software_archived_url_steps

@@ -1,4 +1,5 @@
 """Citation + README + OpenAlex reference-publication extract steps and merges."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import ExtractionStep
 from app.layer_3.steps.extract_steps.services.external import ExtractOpenAlexReferencePublicationStep

@@ -1,4 +1,5 @@
 """Lazy platform payload helpers for source-specific extraction steps."""
+from __future__ import annotations
 
 from urllib.parse import quote
 

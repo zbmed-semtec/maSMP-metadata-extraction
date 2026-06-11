@@ -4,6 +4,7 @@ Software-domain extraction source identifiers and confidence defaults.
 Keep this domain-local so future domains (e.g. training materials) can have
 their own provenance vocabulary without mixing rules.
 """
+from __future__ import annotations
 
 # Source identifiers (used in enriched_metadata.source)
 SOURCE_GITHUB_API = "github_api"

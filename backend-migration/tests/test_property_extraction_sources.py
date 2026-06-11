@@ -5,6 +5,7 @@ allowed by the registry.
 
 Run with: pytest backend-migration/tests/test_property_extraction_sources.py -v
 """
+from __future__ import annotations
 import pytest
 
 from app.layer_1.provenance.software.defaults import (

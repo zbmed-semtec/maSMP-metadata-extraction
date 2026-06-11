@@ -1,4 +1,5 @@
 """Run the default CITATION.cff extraction pipeline for in-memory file content."""
+from __future__ import annotations
 
 from typing import Callable, Optional
 

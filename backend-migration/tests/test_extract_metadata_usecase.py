@@ -3,6 +3,7 @@ End-to-end tests for ExtractMetadataUseCase.
 Use stubbed dependencies and a simple in-memory collector to verify
 step ordering, propagation of metadata, and extraction_metadata contents.
 """
+from __future__ import annotations
 from typing import Dict, Any, List
 
 from app.layer_2.use_cases.extract_metadata import (

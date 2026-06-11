@@ -4,6 +4,7 @@ Research-software domain model: everything extractors fill before JSON-LD export
 This is the internal \"worksheet\" for the software pipeline only.
 Other domains (e.g. training materials) should get their own package under `entities/`.
 """
+from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, HttpUrl

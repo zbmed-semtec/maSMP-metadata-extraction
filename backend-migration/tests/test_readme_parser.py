@@ -2,6 +2,7 @@
 Unit tests for ReadmeExtractionWorkflow.
 Cover DOI extraction (including Zenodo IDs), BibTeX parsing, author merging, and edge cases.
 """
+from __future__ import annotations
 from app.layer_1.entities.shared_primitives import Person
 from app.layer_1.entities.software_metadata import SoftwareMetadata
 from app.layer_3.steps.contracts import StepContext, StepState

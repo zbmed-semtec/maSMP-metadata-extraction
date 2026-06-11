@@ -1,6 +1,7 @@
 """
 Layer 4 — API entry: FastAPI app wiring (`app.layer_4` routes and middleware).
 """
+from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings

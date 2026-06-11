@@ -1,4 +1,5 @@
 """Parse OpenAlex work JSON into author dicts (used by multiple property steps)."""
+from __future__ import annotations
 
 
 def authors_from_openalex_work(work_data: dict) -> list[dict]:

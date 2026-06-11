@@ -1,4 +1,5 @@
 """Property-specific merge steps for software metadata."""
+from __future__ import annotations
 
 from app.layer_3.steps.merge_steps.software.merge_software_alternate_names_step import (
     MergeSoftwareAlternateNamesStep,

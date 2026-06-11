@@ -1,4 +1,5 @@
 """Merge extracted reference-publication candidates into software metadata."""
+from __future__ import annotations
 
 from app.layer_1.entities.shared_primitives import ReferencePublication
 from app.layer_1.provenance.software.defaults import (

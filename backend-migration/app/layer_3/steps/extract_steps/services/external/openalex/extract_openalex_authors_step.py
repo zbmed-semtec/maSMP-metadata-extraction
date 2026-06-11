@@ -1,4 +1,5 @@
 """Extract author candidates from OpenAlex."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import StepContext, StepState
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers import OpenAlexClient

@@ -1,4 +1,5 @@
 """Run the default README extraction pipeline for in-memory README content."""
+from __future__ import annotations
 
 from typing import Tuple
 

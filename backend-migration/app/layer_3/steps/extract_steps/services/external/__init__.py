@@ -1,4 +1,5 @@
 """Extraction steps backed by external enrichment services."""
+from __future__ import annotations
 
 from app.layer_3.steps.extract_steps.services.external.openalex import (
     ExtractOpenAlexAlternateNamesStep,

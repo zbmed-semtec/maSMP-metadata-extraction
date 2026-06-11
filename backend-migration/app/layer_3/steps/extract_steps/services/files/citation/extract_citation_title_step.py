@@ -1,4 +1,5 @@
 """Extract title from CITATION.cff into step state."""
+from __future__ import annotations
 
 from app.layer_3.steps.contracts import StepContext, StepState
 from app.layer_3.steps.extract_steps.services.files.citation.helpers import ensure_cff_yaml_loaded

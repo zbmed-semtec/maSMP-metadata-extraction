@@ -1,4 +1,5 @@
 """Schema output definitions used by schema-driven JSON-LD rendering."""
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Mapping

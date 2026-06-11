@@ -2,6 +2,7 @@
 Build enriched_metadata for the API (per-property confidence, source, category).
 Values come from results; this module only shapes annotations for the response.
 """
+from __future__ import annotations
 from typing import Dict, Any
 
 from app.layer_1.schemas.masmp.profiles import get_category_for_key

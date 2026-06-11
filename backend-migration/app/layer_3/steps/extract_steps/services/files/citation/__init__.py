@@ -3,6 +3,7 @@
 Extraction steps read source content and write normalized intermediate values
 to ``StepState.data``. They do not update ``StepState.metadata`` directly.
 """
+from __future__ import annotations
 
 from app.layer_3.steps.extract_steps.services.files.citation.extract_citation_authors_step import (
     ExtractCitationAuthorsStep,

@@ -1,4 +1,5 @@
 """Extract reference-publication candidates from OpenAlex."""
+from __future__ import annotations
 
 from app.layer_1.entities.shared_primitives import Person, ReferencePublication
 from app.layer_3.steps.contracts import StepContext, StepState

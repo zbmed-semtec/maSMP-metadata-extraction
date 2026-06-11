@@ -1,4 +1,5 @@
 """Record per-source extraction provenance from pipeline steps."""
+from __future__ import annotations
 
 from typing import Optional
 

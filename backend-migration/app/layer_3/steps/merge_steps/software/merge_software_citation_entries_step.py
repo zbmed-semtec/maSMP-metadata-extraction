@@ -1,4 +1,5 @@
 """Merge extracted citation-entry candidates into software metadata."""
+from __future__ import annotations
 
 from app.layer_1.provenance.software.defaults import CONFIDENCE_CITATION, SOURCE_CITATION_CFF
 from app.layer_3.extraction_metadata.record import record_field_provenance
