@@ -126,11 +126,6 @@ def _collect_property_results(
 
 def _extract_property_command(args: argparse.Namespace) -> None:
 
-    # progress_observer = None
-    # if args.show_progress:
-    #     from app.layer_4.progress_observers.tqdm_progress_observer import TqdmProgressObserver
-    #     progress_observer = TqdmProgressObserver()
-
     jsonld_document, enriched = run_extraction(
         repo_url=args.url,
         schema=args.schema,

@@ -29,13 +29,6 @@ from app.layer_3.steps.contracts import ExtractionPipelineRunner, StepContext, S
 from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
 from app.layer_3.steps.contracts.progress_observer import ProgressObserver
 
-# Step IDs for progress streaming (used by SSE endpoint and frontend)
-EXTRACTION_STEPS = [
-    ("pipeline", "Running extraction pipeline"),
-    ("jsonld_build", "Building JSON-LD document"),
-]
-
-
 # ---------------------------------------------------------------------------
 # Extraction metadata collector (optional enrichment for UI)
 # ---------------------------------------------------------------------------

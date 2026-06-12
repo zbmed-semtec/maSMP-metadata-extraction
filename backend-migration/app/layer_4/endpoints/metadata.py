@@ -23,12 +23,8 @@ from app.layer_4.services.metadata_service import (
     run_extraction_with_progress,
     run_single_property_extraction,
 )
-from app.layer_2.use_cases.extract_metadata import EXTRACTION_STEPS
 from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
 from app.layer_4.progress_observers.sse_progress_observer import SSEProgressObserver
-
-# Step ID -> human-readable label for SSE progress events
-STEP_LABELS = {step: label for step, label in EXTRACTION_STEPS}
 
 router = APIRouter(prefix="/api", tags=["Metadata"])
 
