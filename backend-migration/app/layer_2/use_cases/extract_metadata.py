@@ -97,9 +97,6 @@ class ExtractMetadataUseCase:
         """
         Execute metadata extraction for one repository.
 
-        Optionally reports progress via progress_callback(step_id, status)
-        where status is "started" or "completed".
-
         Args:
             repo_url: URL of the repository
             schema: Schema to use (maSMP or CODEMETA)
@@ -113,9 +110,6 @@ class ExtractMetadataUseCase:
         platform = URLPatternMatcher.detect_platform(repo_url)
         if not platform:
             raise ValueError("Unsupported repository platform. Supported: GitHub, GitLab")
-
-        if progress_callback:
-            progress_callback("pipeline", "started")
 
         pipeline = self.pipeline_composer.compose(
             domain="software",

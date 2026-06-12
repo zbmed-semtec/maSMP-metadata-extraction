@@ -23,7 +23,7 @@ class ExtractionPipelineRunner:
         for step in pipeline.steps:
             if progress_observer:
                 progress_observer.on_step_started(step)
-            current = step._run(context, current)
+            current = step.run(context, current)
             if progress_observer:
                 progress_observer.on_step_completed(step)
         if progress_observer:
