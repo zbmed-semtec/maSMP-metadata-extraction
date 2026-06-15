@@ -42,6 +42,9 @@ ENV/
 .coverage
 htmlcov/
 
+# Documentation builds (MkDocs)
+site/
+
 # Logs
 *.log
 
