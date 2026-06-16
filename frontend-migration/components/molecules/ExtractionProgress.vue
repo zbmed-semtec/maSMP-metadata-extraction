@@ -100,6 +100,7 @@
 
 <script setup lang="ts">
 import type { ExtractionProgress as Progress } from '../../composables/useApi'
+import {watch, computed, ref} from 'vue'
 
 const STEP_ORDER = ['platform', 'file_parsing', 'external_data', 'llm', 'jsonld_build']
 

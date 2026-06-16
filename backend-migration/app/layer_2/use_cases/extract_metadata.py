@@ -115,12 +115,7 @@ class ExtractMetadataUseCase:
 
         if progress_callback:
             progress_callback("pipeline", "started")
-
-        pipeline = self.pipeline_composer.compose(
-            domain="software",
-            schema=schema,
-            platform=platform,
-        )
+        
         state = StepState(
             metadata=SoftwareMetadata(),
             data={
@@ -134,6 +129,9 @@ class ExtractMetadataUseCase:
             platform=platform,
             access_token=access_token,
         )
+
+        pipeline = self.pipeline_composer.compose(context)
+        
         metadata = self.pipeline_runner.run(pipeline, context, state).metadata
 
         if progress_callback:

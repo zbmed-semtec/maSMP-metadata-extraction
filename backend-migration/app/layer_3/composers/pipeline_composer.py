@@ -12,6 +12,7 @@ from app.layer_3.composers.profiles.software_gitlab_codemeta import (
 from app.layer_3.composers.profiles.software_gitlab_masmp import (
     build_software_gitlab_masmp_pipeline,
 )
+from app.layer_3.steps.contracts import StepContext
 from app.layer_3.steps.contracts.pipeline import ExtractionPipeline
 
 
@@ -25,21 +26,18 @@ class PipelineComposer:
 
     def compose(
         self,
-        *,
-        domain: str,
-        schema: str,
-        platform: str | None = None,
+        context : StepContext
     ) -> ExtractionPipeline:
-        if domain == "software":
-            normalized_schema = schema.strip().lower()
-            normalized_platform = (platform or "github").strip().lower()
+        if context.domain == "software":
+            normalized_schema = context.schema.strip().lower()
+            normalized_platform = (context.platform or "github").strip().lower()
             if normalized_schema == "masmp":
                 if normalized_platform == "github":
                     return build_software_github_masmp_pipeline()
                 if normalized_platform == "gitlab":
                     return build_software_gitlab_masmp_pipeline()
                 raise ValueError(
-                    f"Unsupported platform for software/maSMP: {platform!r}. "
+                    f"Unsupported platform for software/maSMP: {context.platform!r}. "
                     "Expected one of: 'github', 'gitlab', or None."
                 )
             if normalized_schema == "codemeta":
@@ -48,15 +46,15 @@ class PipelineComposer:
                 if normalized_platform == "gitlab":
                     return build_software_gitlab_codemeta_pipeline()
                 raise ValueError(
-                    f"Unsupported platform for software/codemeta: {platform!r}. "
+                    f"Unsupported platform for software/codemeta: {context.platform!r}. "
                     "Expected one of: 'github', 'gitlab', or None."
                 )
             raise ValueError(
-                f"Unsupported schema for software domain: {schema!r}. "
+                f"Unsupported schema for software domain: {context.schema!r}. "
                 "Expected one of: 'maSMP', 'codemeta'."
             )
 
         raise ValueError(
-            f"Unsupported domain for pipeline composition: {domain!r}. "
+            f"Unsupported domain for pipeline composition: {context.domain!r}. "
             "Add a profile under app.layer_3.composers.profiles."
         )

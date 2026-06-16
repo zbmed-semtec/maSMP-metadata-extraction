@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
 import type { ExtractionStreamResult, EnrichedProperty } from '../../composables/useApi'
+import {ref, computed} from 'vue'
 
 const props = defineProps<{
   result: ExtractionStreamResult

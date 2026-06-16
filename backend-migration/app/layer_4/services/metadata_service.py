@@ -5,7 +5,7 @@ Single place for composition; endpoints call this instead of building the use ca
 from datetime import datetime
 from typing import Optional, Dict, Any, Callable, List
 
-from app.layer_3.composers import PipelineComposer
+from app.layer_3.composers.plugin_pipeline_composer import PluginPipelineComposer
 from app.layer_3.builders.jsonld_builder import JSONLDBuilder
 from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner
@@ -15,7 +15,7 @@ from app.layer_4.builders.enriched_metadata import build_enriched_metadata
 
 # Stateless components (created once, reused)
 _jsonld_builder = JSONLDBuilder()
-_pipeline_composer = PipelineComposer()
+_pipeline_composer = PluginPipelineComposer()
 _pipeline_runner = ExtractionPipelineRunner()
 
 

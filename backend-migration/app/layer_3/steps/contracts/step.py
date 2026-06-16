@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Optional, Protocol
+from abc import ABC, abstractmethod
 
 @dataclass(frozen=True)
 class StepContext:
@@ -33,7 +34,7 @@ class StepState:
     data: dict[str, Any] = field(default_factory=dict)
 
 
-class ExtractionStep(Protocol):
+class ExtractionStep(ABC):
     """
     Small, composable unit of extraction behavior.
 
@@ -51,8 +52,23 @@ class ExtractionStep(Protocol):
     domain and property, such as "software.merge_authors".
     """
 
-    name: str
+    
+    @property
+    @abstractmethod
+    def name() -> str:
+      ...
+    
+    @property
+    @abstractmethod
+    def extracts() -> set["SchemaProperty"]:
+      ...
+    
+    @property
+    @abstractmethod
+    def platforms() -> set[str]:
+      ...
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    @abstractmethod
+    def extract(self, context: StepContext, state: StepState) -> StepState:
         """Apply this step and return updated state."""
         ...
