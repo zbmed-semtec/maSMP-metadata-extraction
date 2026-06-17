@@ -19,6 +19,8 @@ class ExtractOpenAlexReferencePublicationStep(ExtractionPlugin):
 
     name = "openalex.extract_reference_publication"
     client : OpenAlexClient
+    platforms = {"github", "gitlab"}
+    extracts = {"citation"}
 
     def extract(self, context: StepContext, state: StepState) -> StepState:
         self.client = self.plugin_manager.get("openalex_client_plugin")

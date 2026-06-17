@@ -1,7 +1,7 @@
 """Extract keyword candidates from OpenAlex."""
 
 from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.external.openalex.helpers import OpenAlexClient
+from app.layer_3.plugins.openalex_client_plugin import OpenAlexClient
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers.work_lookup import (
     get_openalex_work,
 )
@@ -26,6 +26,7 @@ class ExtractOpenAlexKeywordsStep(ExtractionPlugin):
 
     name = "openalex.extract_keywords"
     client : OpenAlexClient
+    platforms = {"github", "gitlab"}
     extracts = {"keywords"}
 
     def extract(self, context: StepContext, state: StepState) -> StepState:

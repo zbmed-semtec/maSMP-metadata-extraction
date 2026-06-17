@@ -18,6 +18,7 @@ class ExtractOpenAlexAuthorsStep(ExtractionPlugin):
 
     name = "openalex.extract_authors"
     extracts = {"author"}
+    platforms = {"github", "gitlab"}
 
     def extract(self, context: StepContext, state: StepState) -> StepState:
         self.client = self.plugin_manager.get("openalex_client_plugin")

@@ -3,15 +3,18 @@
 from app.layer_2.extraction_plugin import ExtractionPlugin
 from app.layer_3.steps.contracts import StepContext, StepState
 
-
 class CommonPlatformPreambleStep(ExtractionPlugin):
     """Runs shared non-extract setup: normalized URL and ``state.data[\"platform\"]``."""
 
     name = "platform.setup_context"
+    
+    # higher priority, runs before other plugins
     priority_level = 101
-    extracts = {"codemeta:readme", "maSMP:changelog"}
-    platforms = {}
 
+    extracts = {"codemeta:readme", "maSMP:changelog"}
+    
+    # always applicable
+    platforms = {}
     def applicable(self, context):
         return True
 
