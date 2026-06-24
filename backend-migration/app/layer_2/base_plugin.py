@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 class BasePlugin(ABC):
     name: str = ""

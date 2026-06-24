@@ -2,10 +2,8 @@
 
 import re
 
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.files.helpers.repository_files import (
-    repository_file_content,
-)
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
+from app.layer_3.plugins.repository_files import RepositoryFilesPlugin
 
 DOI_URL_PATTERN = re.compile(
     r"https://(?:doi\.org/([^\s\)\]\"']+)|zenodo\.org/records?/(\d+))",
@@ -23,8 +21,9 @@ class ExtractReadmeIdentifierStep(ExtractionPlugin):
     platforms = {"gitlab", "github"}
     extracts = {"identifier"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        content = repository_file_content(
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        rfp : RepositoryFilesPlugin = self.plugin_manager.get("repository-files-plugin")
+        content = rfp.repository_file_content(
             context,
             state,
             "readme_content",
@@ -41,5 +40,5 @@ class ExtractReadmeIdentifierStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractReadmeIdentifierStep"]
+
 

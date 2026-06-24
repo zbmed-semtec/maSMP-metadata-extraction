@@ -3,7 +3,7 @@ from app.layer_1.schemas.codemeta.export_fields import CODEMETA_SOFTWARE_SOURCE_
 from app.layer_2.extraction_plugin import ExtractionPlugin
 from app.layer_2.extraction_plugin_manager import ExtractionPluginManager
 from app.layer_3.steps.contracts.pipeline import ExtractionPipeline
-from app.layer_3.composers.pipeline_composer import PipelineComposer, StepContext
+from app.layer_3.composers.pipeline_composer import PipelineComposer, ExtractionContext
 import app.layer_3.plugins
 
 class PluginPipelineComposer(PipelineComposer):
@@ -16,16 +16,9 @@ class PluginPipelineComposer(PipelineComposer):
             self.plugin_manager.discover(app.layer_3.plugins)
         return self.plugin_manager
 
-    def compose(self, context : StepContext):
-        # import pdb; pdb.set_trace()
+    def compose(self, context : ExtractionContext):
 
-        export_keys = []
-        if context.schema.lower() == 'masmp':
-            export_keys = MASMP_SOFTWARE_SOURCE_CODE_EXPORT_KEYS.union(MASMP_SOFTWARE_APPLICATION_EXPORT_KEYS)
-        elif context.schema.lower() == 'codemeta':
-            export_keys = CODEMETA_SOFTWARE_SOURCE_CODE_EXPORT_KEYS
-        else:
-            raise Exception("unknown schema")
+        export_keys = context.schema.get_property_list()
 
         priority_groups : dict[int, set[ExtractionPlugin]] = dict()
         

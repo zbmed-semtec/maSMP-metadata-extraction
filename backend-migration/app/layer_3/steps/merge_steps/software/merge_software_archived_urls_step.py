@@ -7,7 +7,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_ZENODO_BADGE,
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 class MergeSoftwareArchivedUrlsStep:
@@ -15,7 +15,7 @@ class MergeSoftwareArchivedUrlsStep:
 
     name = "software.merge_archived_urls"
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         zenodo_urls = state.data.get("extracted_zenodo_archive_urls") or []
         heritage_url = state.data.get("extracted_software_heritage_archive_url")
         wayback_url = state.data.get("extracted_wayback_archive_url")

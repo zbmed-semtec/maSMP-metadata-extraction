@@ -31,7 +31,7 @@ The use case stays thin: collaborators are injected in the constructor for testi
 
 - **Platform detection** from the repo URL (`URLPatternMatcher`, used from the use case).  
 - **Pipeline selection** via `PipelineComposer.compose(domain, schema, platform)`.  
-- **Initial state**: empty `SoftwareMetadata`, `StepContext`, and `StepState.data` (including `record_field` when a collector is configured).  
+- **Initial state**: empty `SoftwareMetadata`, `ExtractionContext`, and `ExtractionState.data` (including `record_field` when a collector is configured).  
 - **Running** the pipeline through `ExtractionPipelineRunner`.  
 - **JSON-LD export** via the `JSONLDBuilder` protocol (implementation in `app/layer_3/builders/jsonld_builder.py`).  
 - **Progress callbacks** for streaming (`EXTRACTION_STEPS`: `pipeline`, `jsonld_build`).
@@ -56,8 +56,8 @@ app/layer_2/
 
 1. Detect `github` or `gitlab`; error if unsupported.  
 2. `PipelineComposer.compose(...)`.  
-3. Build `StepState` with `SoftwareMetadata()` and `data["record_field"]` when enrichment is enabled.  
-4. Build `StepContext` (repo URL, domain, schema, platform, token).  
+3. Build `ExtractionState` with `SoftwareMetadata()` and `data["record_field"]` when enrichment is enabled.  
+4. Build `ExtractionContext` (repo URL, domain, schema, platform, token).  
 5. `pipeline_runner.run(pipeline, context, state)`.  
 6. `jsonld_builder.build_jsonld(state.metadata, schema, has_release)`.  
 7. Return `ExtractMetadataResult` including `collector.get_all()` when configured.

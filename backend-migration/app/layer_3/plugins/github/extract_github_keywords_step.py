@@ -1,9 +1,7 @@
 """GitHub keyword metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    github_repo_payload,
-)
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -16,11 +14,12 @@ class ExtractGithubKeywordsStep(ExtractionPlugin):
     priority_level = 101
     platforms = {"github"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        repo_data = github_repo_payload(context, state)
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
+        repo_data = ppp.github_repo_payload(context, state)
         topics = repo_data.get("topics") or []
         if topics:
-            state.data["extracted_platform_keywords"] = list(topics)
+            state.metadata_collector.collect(self.name, "keywords", topics)
         return state
 
 

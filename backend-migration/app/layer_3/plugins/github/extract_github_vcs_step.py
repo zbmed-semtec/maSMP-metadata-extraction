@@ -1,7 +1,7 @@
 """GitHub VCS metadata steps."""
 
 from app.layer_1.entities.shared_primitives import VersionControlSystem
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -9,14 +9,11 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubVcsStep(ExtractionPlugin):
     name = "github.extract_vcs"
-    extracts = {"masmp:versionControlSystem"}
+    extracts = {"maSMP:versionControlSystem"}
     platforms = {"github"}
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        metadata = state.metadata
-        record = state.data.get("record_field")
-        metadata.masmp_versionControlSystem = VersionControlSystem.create_git(vcs_type="SoftwareSourceCode")
-        if callable(record):
-            record("masmp_versionControlSystem")
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        masmp_versionControlSystem = VersionControlSystem.create_git(vcs_type="SoftwareSourceCode")
+        state.metadata_collector.collect(self.name, "masmp:versionControlSystem", masmp_versionControlSystem)
         return state
 
 

@@ -1,0 +1,136 @@
+# masmp_schema_linkml.yaml
+id: https://example.org/masmp
+name: maSMP
+description: Metadata Schema for Scientific Software
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  schema: https://schema.org/
+  codemeta: https://codemeta.github.io/terms/
+  maSMP: https://discovery.biothings.io/ns/maSMP/
+
+default_prefix: maSMP
+default_range: string
+
+imports:
+  - linkml:types
+
+classes:
+
+  SoftwareSourceCode:
+    description: A software source code entity
+    slots:
+      - name
+      - description
+      - url
+      - codeRepository
+      - version
+      - programmingLanguage
+      - author
+      - contributor
+      - citation
+      - license
+      - identifier
+      - keywords
+      - readme
+      - versionControlSystem
+      - intendedUse
+      - archivedAt
+
+  SoftwareApplication:
+    description: A deployed software application
+    slots:
+      - name
+      - description
+      - url
+      - author
+      - citation
+      - license
+      - identifier
+      - keywords
+      - releaseNotes
+      - readme
+      - archivedAt
+      - intendedUse
+      - softwareVersion
+
+slots:
+
+  # --- Required for SoftwareSourceCode ---
+  name:
+    required: true
+    range: string
+    slot_uri: schema:name
+
+  description:
+    required: true
+    range: string
+    slot_uri: schema:description
+
+  url:
+    required: true
+    range: uri
+    slot_uri: schema:url
+
+  codeRepository:
+    required: true
+    range: uri
+    slot_uri: schema:codeRepository
+
+  version:
+    required: true
+    range: string
+    slot_uri: schema:version
+
+  programmingLanguage:
+    required: true
+    range: string
+    multivalued: true
+    slot_uri: schema:programmingLanguage
+
+  # --- Recommended ---
+  author:
+    range: string
+    multivalued: true
+    slot_uri: schema:author
+
+  citation:
+    range: string
+    slot_uri: schema:citation
+
+  license:
+    range: uri
+    slot_uri: schema:license
+
+  identifier:
+    range: string
+    slot_uri: schema:identifier
+
+  keywords:
+    range: string
+    multivalued: true
+    slot_uri: schema:keywords
+
+  readme:
+    range: uri
+    slot_uri: codemeta:readme
+
+  versionControlSystem:
+    range: string
+    slot_uri: maSMP:versionControlSystem
+
+  intendedUse:
+    range: string
+    slot_uri: maSMP:intendedUse
+
+  archivedAt:
+    range: uri
+    slot_uri: schema:archivedAt
+
+  releaseNotes:
+    range: string
+    slot_uri: schema:releaseNotes
+
+  softwareVersion:
+    range: string
+    slot_uri: schema:softwareVersion

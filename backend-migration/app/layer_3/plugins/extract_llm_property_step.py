@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -17,7 +17,7 @@ class ExtractLlmPropertyStep(ExtractionPlugin):
         self.api_key = api_key
         self.model = model or "llama-3.1-70b-versatile"
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         """
         Future implementation point for LLM-backed property extraction.
 
@@ -28,5 +28,5 @@ class ExtractLlmPropertyStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractLlmPropertyStep"]
+
 

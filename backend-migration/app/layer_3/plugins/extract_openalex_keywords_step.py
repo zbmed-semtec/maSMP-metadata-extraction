@@ -1,10 +1,8 @@
 """Extract keyword candidates from OpenAlex."""
 
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.openalex_client_plugin import OpenAlexClient
-from app.layer_3.steps.extract_steps.services.external.openalex.helpers.work_lookup import (
-    get_openalex_work,
-)
+from app.layer_3.plugins.openalex_work_lookup import get_openalex_work
 
 
 def _keywords_from_openalex_work(work_data: dict) -> list[str]:
@@ -29,7 +27,7 @@ class ExtractOpenAlexKeywordsStep(ExtractionPlugin):
     platforms = {"github", "gitlab"}
     extracts = {"keywords"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         self.client = self.plugin_manager.get("openalex_client_plugin")
         _, work_data = get_openalex_work(state, self.client)
         if not work_data:
@@ -38,4 +36,4 @@ class ExtractOpenAlexKeywordsStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractOpenAlexKeywordsStep"]
+

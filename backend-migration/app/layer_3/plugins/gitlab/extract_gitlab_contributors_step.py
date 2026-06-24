@@ -1,9 +1,7 @@
 """GitLab contributor metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    gitlab_contributors_payload,
-)
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -14,17 +12,16 @@ class ExtractGitlabContributorsStep(ExtractionPlugin):
     platforms = {"gitlab"}
     extracts = {"contributor"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        payload = gitlab_contributors_payload(context, state)
-        metadata = state.metadata
-        record = state.data.get("record_field")
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
+        payload = ppp.gitlab_contributors_payload(context, state)
+        
         if payload:
-            metadata.contributor = [
+            contributor = [
                 {"@type": "Person", "name": c.get("name"), "email": c.get("email")}
                 for c in payload
             ]
-            if callable(record):
-                record("contributor")
+            state.metadata_collector.collect(self.name, "contributor", contributor)
         return state
 
 

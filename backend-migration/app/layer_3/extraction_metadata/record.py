@@ -2,11 +2,11 @@
 
 from typing import Optional
 
-from app.layer_3.steps.contracts import StepState
+from app.layer_3.steps.contracts import ExtractionState
 
 
 def record_field_provenance(
-    state: StepState,
+    state: ExtractionState,
     field: str,
     source: str,
     confidence: float,

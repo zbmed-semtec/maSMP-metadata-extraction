@@ -3,9 +3,11 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional, Protocol
 from abc import ABC, abstractmethod
+from app.layer_1.schemas.base_schema import BaseSchema
+from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
 
 @dataclass(frozen=True)
-class StepContext:
+class ExtractionContext:
     """
     Immutable context used by extraction steps.
 
@@ -15,13 +17,13 @@ class StepContext:
 
     repo_url: str
     domain: str
-    schema: str
+    schema: BaseSchema
     platform: Optional[str] = None
     access_token: Optional[str] = None
 
 
 @dataclass
-class StepState:
+class ExtractionState:
     """
     Mutable state that flows across extraction steps.
 
@@ -29,8 +31,11 @@ class StepState:
       metadata: current aggregate being enriched.
       data: step-local scratchpad for intermediate values.
     """
+    @property
+    def metadata(self):
+       pass
 
-    metadata: Any 
+    metadata_collector: MetadataCollector 
     data: dict[str, Any] = field(default_factory=dict)
 
 
@@ -69,6 +74,6 @@ class ExtractionStep(ABC):
       ...
 
     @abstractmethod
-    def extract(self, context: StepContext, state: StepState) -> StepState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         """Apply this step and return updated state."""
         ...

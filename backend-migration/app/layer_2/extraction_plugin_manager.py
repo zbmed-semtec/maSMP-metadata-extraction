@@ -1,6 +1,6 @@
 from app.layer_2.plugin_manager import PluginManager
 from app.layer_2.extraction_plugin import ExtractionPlugin
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 SchemaPropery = str
@@ -20,7 +20,7 @@ class ExtractionPluginManager(PluginManager):
                 self.object_registry[plugin_class.name] = self._instantiate_plugin(plugin_class)
         print("registered", plugin_class)
 
-    def select(self, schema_property: SchemaPropery, context: StepContext) -> set[ExtractionPlugin]:
+    def select(self, schema_property: SchemaPropery, context: ExtractionContext) -> set[ExtractionPlugin]:
         result = set()
         for pluginName in self.metadata_providers.get(schema_property, {}):
             instance = self.get(pluginName)
@@ -30,6 +30,6 @@ class ExtractionPluginManager(PluginManager):
             raise Warning(f"missing plugin to extract '{schema_property}'!")
         return result
 
-    def extract(self, schema_property: SchemaPropery, context: StepContext, state: StepState) -> StepState:
+    def extract(self, schema_property: SchemaPropery, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         for plugin in self.select(schema_property, context):
             plugin.extract(context, state)

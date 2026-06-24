@@ -1,17 +1,13 @@
 """Extract reference-publication candidates from OpenAlex."""
 
 from app.layer_1.entities.shared_primitives import Person, ReferencePublication
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.external.openalex.helpers.authors_from_work import (
-    authors_from_openalex_work,
-)
-from app.layer_3.steps.extract_steps.services.external.openalex.helpers.work_lookup import (
-    get_openalex_work,
-)
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
 from app.layer_3.plugins.openalex_client_plugin import OpenAlexClient
+from app.layer_3.plugins.openalex_work_lookup import get_openalex_work
+from app.layer_3.plugins.openalex_authors_from_work import authors_from_openalex_work
 
 
 class ExtractOpenAlexReferencePublicationStep(ExtractionPlugin):
@@ -22,7 +18,7 @@ class ExtractOpenAlexReferencePublicationStep(ExtractionPlugin):
     platforms = {"github", "gitlab"}
     extracts = {"citation"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         self.client = self.plugin_manager.get("openalex_client_plugin")
         if state.data.get("reference_extracted"):
             return state
@@ -63,5 +59,5 @@ def _build_reference_publication(
     )
 
 
-__all__ = ["ExtractOpenAlexReferencePublicationStep"]
+
 

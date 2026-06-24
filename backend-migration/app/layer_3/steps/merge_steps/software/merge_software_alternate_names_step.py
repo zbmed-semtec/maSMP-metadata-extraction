@@ -7,7 +7,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_OPENALEX,
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 class MergeSoftwareAlternateNamesStep:
@@ -15,7 +15,7 @@ class MergeSoftwareAlternateNamesStep:
 
     name = "software.merge_alternate_names"
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         citation_title = state.data.get("extracted_title")
         openalex_title = state.data.get("extracted_openalex_title")
 

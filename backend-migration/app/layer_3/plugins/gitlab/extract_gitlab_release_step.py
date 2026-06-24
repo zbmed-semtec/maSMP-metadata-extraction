@@ -1,11 +1,7 @@
 """GitLab release/version metadata step."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    gitlab_release_payload,
-    record_field,
-)
-
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
@@ -15,16 +11,17 @@ class ExtractGitlabReleaseStep(ExtractionPlugin):
     platforms = {"gitlab"}
     extracts = {"version", "softwareVersion"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        release = gitlab_release_payload(context, state)
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
+        release = ppp.gitlab_release_payload(context, state)
         if not release:
-            state.metadata.has_release = False
+            has_release =False
             return state
-        state.metadata.softwareVersion = release.get("tag_name")
-        state.metadata.version = release.get("tag_name")
-        state.metadata.has_release = True
-        record_field(state, "softwareVersion")
-        record_field(state, "version")
+        softwareVersion =release.get("tag_name")
+        version =release.get("tag_name")
+        has_release =True
+        state.metadata_collector.collect(self.name, "softwareVersion", softwareVersion)
+        state.metadata_collector.collect(self.name, "version", version)
         return state
 
 
@@ -32,5 +29,5 @@ def gitlab_release_steps() -> tuple[ExtractionStep, ...]:
     return (ExtractGitlabReleaseStep(),)
 
 
-__all__ = ["ExtractGitlabReleaseStep", "gitlab_release_steps"]
+
 

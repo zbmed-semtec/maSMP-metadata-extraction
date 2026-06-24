@@ -2,12 +2,9 @@
 
 from typing import Callable
 
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    github_repo_payload,
-    record_field,
-)
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
@@ -15,16 +12,16 @@ class ExtractGithubRepositoryDescriptionStep(ExtractionPlugin):
     name = "github.extract_repository_description"
     extracts = {"description"}
     platforms = {"github"}
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        repo_data = github_repo_payload(context, state)
-        metadata = state.metadata
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
+        repo_data = ppp.github_repo_payload(context, state)
         record: Callable[[str], None] | None = state.data.get("record_field")
 
-        metadata.description = repo_data.get("description")
-        if metadata.description is not None and record:
-            record("description")
+        description = repo_data.get("description")
+        if description is not None:
+            state.metadata_collector.collect(self.name, 'description', description)
 
         return state
 
 
-__all__ = ["ExtractGithubRepositoryDescriptionStep"]
+

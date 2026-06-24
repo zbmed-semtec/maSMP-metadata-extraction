@@ -2,8 +2,8 @@
 
 from typing import Any, Dict, List
 
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.files.citation.helpers import ensure_cff_yaml_loaded
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
+from app.layer_3.plugins.cff_parse import CffParsePlugin
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -16,8 +16,9 @@ class ExtractCitationDoiStep(ExtractionPlugin):
     extracts = {"citaiton"}
     platforms = {"gitlab", "github"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        ensure_cff_yaml_loaded(context, state)
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        cpp : CffParsePlugin = self.plugin_manager.get('cff-parse-plugin')
+        cpp.ensure_cff_yaml_loaded(context, state)
         if not state.data.get("valid"):
             return state
         cff_data = state.data["cff_data"]
@@ -64,5 +65,5 @@ class ExtractCitationDoiStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractCitationDoiStep"]
+
 

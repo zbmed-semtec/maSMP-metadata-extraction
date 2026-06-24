@@ -9,7 +9,7 @@ from app.layer_3.steps.extract_steps.services.external.openalex.extract_openalex
 from app.layer_3.steps.extract_steps.services.external.openalex.helpers.authors_from_work import (
     authors_from_openalex_work,
 )
-from app.layer_3.steps.extract_steps.services.external.openalex.helpers.openalex_client import OpenAlexClient
+from app.layer_3.plugins.openalex_client_plugin import OpenAlexClient
 
 
 class DummyResponse:

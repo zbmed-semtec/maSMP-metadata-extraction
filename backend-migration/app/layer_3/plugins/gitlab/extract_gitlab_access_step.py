@@ -1,9 +1,7 @@
 """GitLab access metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    gitlab_repo_payload,
-)
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -11,16 +9,16 @@ class ExtractGitlabAccessStep(ExtractionPlugin):
     name = "gitlab.extract_access"
     platforms = {"gitlab"}
     extracts = {"conditionsOfAccess", "isAccessibleForFree"}
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        project = gitlab_repo_payload(context, state)
-        metadata = state.metadata
-        record = state.data.get("record_field")
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
+        project = ppp.gitlab_repo_payload(context, state)
+        
         visibility = str(project.get("visibility", "")).lower()
-        metadata.conditionsOfAccess = visibility.capitalize() if visibility else None
-        metadata.isAccessibleForFree = str(visibility == "public") if visibility else None
-        if callable(record) and visibility:
-            record("conditionsOfAccess")
-            record("isAccessibleForFree")
+        conditionsOfAccess = visibility.capitalize() if visibility else None
+        isAccessibleForFree = str(visibility == "public") if visibility else None
+        if visibility:
+            state.metadata_collector.collect(self.name, "conditionsOfAccess", conditionsOfAccess)
+            state.metadata_collector.collect(self.name, "isAccessibleForFree", isAccessibleForFree)
         return state
 
 def gitlab_access_steps() -> tuple[ExtractionStep, ...]:

@@ -11,7 +11,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_README_PARSER,
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 def _author_key(author: Any) -> tuple[str, str]:
@@ -37,7 +37,7 @@ class MergeSoftwareAuthorsStep:
 
     name = "software.merge_authors"
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         citation_authors = state.data.get("extracted_citation_authors") or []
         readme_authors = state.data.get("all_readme_authors") or []
         openalex_authors = state.data.get("extracted_openalex_authors") or []

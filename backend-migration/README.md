@@ -19,7 +19,7 @@ Four layers under `app/`:
 
 Layer 3 layout (high level):
 
-- `steps/contracts/` — `StepContext`, `StepState`, `ExtractionPipeline`
+- `steps/contracts/` — `ExtractionContext`, `ExtractionState`, `ExtractionPipeline`
 - `steps/extract_steps/` — platform adapters, file parsers, external APIs
 - `steps/merge_steps/software/` — merge candidates into `SoftwareMetadata`
 - `composers/profiles/` — GitHub/GitLab × maSMP/CODEMETA pipelines

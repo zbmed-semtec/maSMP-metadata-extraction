@@ -19,7 +19,7 @@ class SoftwareMetadata(BaseModel):
     """
     Canonical model for **research software** extracted from repos (GitHub, GitLab, …).
 
-    Vocabulary-specific output (maSMP, CodeMeta, …) is produced later by projecting
+    Vocabulary-specific output (masmp, CodeMeta, …) is produced later by projecting
     this object — see `layer_1/schemas/` and `JSONLDBuilder`.
     """
 
@@ -95,7 +95,7 @@ class SoftwareMetadata(BaseModel):
     # Archive Information
     archivedAt: Optional[List[str]] = None
 
-    # Additional maSMP fields
+    # Additional masmp fields
     masmp_intendedUse: Optional[str] = None
     codeSampleType: Optional[str] = None
     applicationCategory: Optional[str] = None

@@ -9,7 +9,7 @@ from fastapi.encoders import jsonable_encoder
 
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.github_utils.github_client import GitHubRateLimitError
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.gitlab_utils.gitlab_client import GitLabRateLimitError
-from app.layer_4.services.metadata_service import run_extraction
+from app.layer_4.services.metadata_service import run_extraction, initialize
 from app.layer_4.services.fairness_service import run_fairness_assessment
 
 
@@ -21,9 +21,10 @@ def _print_json(data: Any) -> None:
 
 
 def _extract_command(args: argparse.Namespace) -> None:
+    initialize()
     jsonld_document, enriched = run_extraction(
         repo_url=args.url,
-        schema=args.schema,
+        schema_name=args.schema,
         access_token=args.token,
         with_enrichment=args.with_enrichment,
     )
@@ -66,8 +67,8 @@ def _collect_property_results(
 
     matches: List[Dict[str, Any]] = []
 
-    if schema == "maSMP":
-        profiles = ("maSMP:SoftwareSourceCode", "maSMP:SoftwareApplication")
+    if schema == "masmp":
+        profiles = ("masmp:SoftwareSourceCode", "masmp:SoftwareApplication")
         skip_keys = {"@context", "@type"}
 
         for profile in profiles:
@@ -179,7 +180,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="comet-rs",
         description=(
-            "Extract maSMP/CODEMETA metadata (and per-property sources) "
+            "Extract masmp/CODEMETA metadata (and per-property sources) "
             "from code repositories."
         ),
     )
@@ -193,7 +194,7 @@ def main() -> None:
     extract_parser.add_argument("url", help="Repository URL (GitHub, GitLab).")
     extract_parser.add_argument(
         "schema",
-        choices=["maSMP", "CODEMETA"],
+        choices=["masmp", "CODEMETA"],
         help="Schema to analyze against.",
     )
     extract_parser.add_argument(
@@ -207,12 +208,12 @@ def main() -> None:
     )
     extract_parser.set_defaults(func=_extract_command)
 
-    # comet-rs extract_property {GIT_URL} {PROPERTY_NAME} [--schema maSMP|CODEMETA]
+    # comet-rs extract_property {GIT_URL} {PROPERTY_NAME} [--schema masmp|CODEMETA]
     extract_prop_parser = subparsers.add_parser(
         "extract_property",
         help=(
             "Extract a single property (value and source) for a repository. "
-            "Schema defaults to maSMP if not given."
+            "Schema defaults to masmp if not given."
         ),
     )
     extract_prop_parser.add_argument("url", help="Repository URL (GitHub, GitLab).")
@@ -225,9 +226,9 @@ def main() -> None:
     )
     extract_prop_parser.add_argument(
         "--schema",
-        choices=["maSMP", "CODEMETA"],
-        default="maSMP",
-        help="Schema to use (default: maSMP).",
+        choices=["masmp", "CODEMETA"],
+        default="masmp",
+        help="Schema to use (default: masmp).",
     )
     extract_prop_parser.add_argument(
         "--token",
@@ -243,7 +244,7 @@ def main() -> None:
     fairness_parser.add_argument("url", help="Repository URL (GitHub, GitLab).")
     fairness_parser.add_argument(
         "schema",
-        choices=["maSMP", "CODEMETA"],
+        choices=["masmp", "CODEMETA"],
         help="Schema to analyze against.",
     )
     fairness_parser.add_argument(

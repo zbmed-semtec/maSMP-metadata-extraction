@@ -10,7 +10,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_README_PARSER,
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 class MergeSoftwareReferencePublicationStep:
@@ -18,7 +18,7 @@ class MergeSoftwareReferencePublicationStep:
 
     name = "software.merge_reference_publication"
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         reference = state.data.get("extracted_preferred_reference_publication")
         if reference:
             state.metadata.codemeta_referencePublication = reference

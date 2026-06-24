@@ -15,7 +15,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_ZENODO_BADGE,
 )
 from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
-from app.layer_3.steps.contracts import ExtractionPipeline, ExtractionPipelineRunner, StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionPipeline, ExtractionPipelineRunner, ExtractionContext, ExtractionState
 from app.layer_3.steps.merge_steps.software import (
     MergeSoftwareArchivedUrlsStep,
     MergeSoftwareAuthorsStep,
@@ -38,7 +38,7 @@ def _record_field(collector: InMemoryExtractionMetadataCollector):
 
 def test_merge_authors_records_each_contributing_source():
     collector = InMemoryExtractionMetadataCollector()
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "record_field": _record_field(collector),
@@ -47,7 +47,7 @@ def test_merge_authors_records_each_contributing_source():
             "extracted_openalex_authors": [{"familyName": "E", "givenName": "F"}],
         },
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="CODEMETA",
@@ -66,7 +66,7 @@ def test_merge_authors_records_each_contributing_source():
 
 def test_merge_keywords_records_platform_and_openalex_without_duplicates():
     collector = InMemoryExtractionMetadataCollector()
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "record_field": _record_field(collector),
@@ -74,7 +74,7 @@ def test_merge_keywords_records_platform_and_openalex_without_duplicates():
             "extracted_openalex_keywords": ["research"],
         },
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="CODEMETA",
@@ -91,14 +91,14 @@ def test_merge_keywords_records_platform_and_openalex_without_duplicates():
 
 def test_merge_citation_entries_records_citation_field():
     collector = InMemoryExtractionMetadataCollector()
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "record_field": _record_field(collector),
             "extracted_top_level_citation_entry": {"@type": "Article", "title": "Paper"},
         },
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="CODEMETA",
@@ -137,7 +137,7 @@ def test_enriched_metadata_maps_citation_and_software_requirements():
 
 def test_merge_archived_urls_records_each_archive_source():
     collector = InMemoryExtractionMetadataCollector()
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "record_field": _record_field(collector),
@@ -146,7 +146,7 @@ def test_merge_archived_urls_records_each_archive_source():
             "extracted_wayback_archive_url": "https://web.archive.org/web/example",
         },
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="CODEMETA",

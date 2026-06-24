@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+import traceback
 from app.layer_2.base_plugin import BasePlugin
 
 class PluginManager:
@@ -21,8 +22,11 @@ class PluginManager:
             path=package.__path__,
             prefix=package.__name__ + ".",
         ):
-            module = importlib.import_module(module_name)
-            self._load_from_module(module)
+            try:
+                module = importlib.import_module(module_name)
+                self._load_from_module(module)
+            except:
+                traceback.print_exc()
 
     def _load_from_module(self, module):
         """Inspect a module and register any self.PLUGIN_BASE_CLASS subclasses found"""

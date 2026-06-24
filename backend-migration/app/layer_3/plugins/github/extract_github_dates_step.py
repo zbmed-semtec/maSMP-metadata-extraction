@@ -1,9 +1,6 @@
 """GitHub date extraction steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    github_repo_payload,
-)
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -15,22 +12,15 @@ class ExtractGithubDatesStep(ExtractionPlugin):
     extracts = {"dateCreated", "dateModified", "datePublished"}
     platforms = {"github"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        repo_data = github_repo_payload(context, state)
-        metadata = state.metadata
-        record = state.data.get("record_field")
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp = self.plugin_manager.get("platform-payloads-plugin")
+        repo_data = ppp.github_repo_payload(context, state)
         if repo_data.get("created_at"):
-            metadata.dateCreated = str(repo_data.get("created_at"))[:10]
-            if callable(record):
-                record("dateCreated")
+            state.metadata_collector.collect(self.name, "dateCreated", repo_data.get("created_at"))
         if repo_data.get("updated_at"):
-            metadata.dateModified = str(repo_data.get("updated_at"))[:10]
-            if callable(record):
-                record("dateModified")
+            state.metadata_collector.collect(self.name, "dateModified", repo_data.get("updated_at"))
         if repo_data.get("pushed_at"):
-            metadata.datePublished = str(repo_data.get("pushed_at"))[:10]
-            if callable(record):
-                record("datePublished")
+            state.metadata_collector.collect(self.name, "datePublished", repo_data.get("pushed_at"))
         return state
 
 

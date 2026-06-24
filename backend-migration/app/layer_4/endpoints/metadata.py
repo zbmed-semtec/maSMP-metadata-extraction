@@ -24,7 +24,6 @@ from app.layer_4.services.metadata_service import (
     run_single_property_extraction,
 )
 from app.layer_2.use_cases.extract_metadata import EXTRACTION_STEPS
-from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
 
 # Step ID -> human-readable label for SSE progress events
 STEP_LABELS = {step_id: label for step_id, label in EXTRACTION_STEPS}
@@ -56,13 +55,6 @@ async def extract_metadata_plain(
     For UI enrichment (confidence, source, category per property), use GET /metadata/enriched.
     """
     try:
-        url_matcher = URLPatternMatcher()
-        platform = url_matcher.detect_platform(str(repo_url))
-        if not platform:
-            raise HTTPException(
-                status_code=400,
-                detail="Unsupported repository platform. Supported: GitHub, GitLab",
-            )
 
         jsonld_document, _ = run_extraction(
             repo_url=str(repo_url),
@@ -108,13 +100,6 @@ async def extract_metadata_enriched(
     Use this for: UI display. For download or schema-only consumers, use GET /metadata.
     """
     try:
-        url_matcher = URLPatternMatcher()
-        platform = url_matcher.detect_platform(str(repo_url))
-        if not platform:
-            raise HTTPException(
-                status_code=400,
-                detail="Unsupported repository platform. Supported: GitHub, GitLab",
-            )
 
         jsonld_document, enriched = run_extraction(
             repo_url=str(repo_url),
@@ -174,7 +159,7 @@ async def _stream_metadata_events(
         try:
             jsonld_document, enriched = run_extraction_with_progress(
                 repo_url=repo_url,
-                schema=schema,
+                schema_name=schema,
                 access_token=access_token,
                 with_enrichment=True,
                 progress_callback=progress_callback,
@@ -241,16 +226,6 @@ async def extract_metadata_stream(
     - **result**: full enriched response (same shape as GET /metadata/enriched).
     - **error**: `{ "detail": "..." }` if extraction failed.
     """
-    try:
-        url_matcher = URLPatternMatcher()
-        platform = url_matcher.detect_platform(str(repo_url))
-        if not platform:
-            raise HTTPException(
-                status_code=400,
-                detail="Unsupported repository platform. Supported: GitHub, GitLab",
-            )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
     return StreamingResponse(
         _stream_metadata_events(
@@ -289,13 +264,6 @@ async def get_fairness(
     Returns the underlying JSON-LD plus FAIRness scores for F/A/I/R principles.
     """
     try:
-        url_matcher = URLPatternMatcher()
-        platform = url_matcher.detect_platform(str(repo_url))
-        if not platform:
-            raise HTTPException(
-                status_code=400,
-                detail="Unsupported repository platform. Supported: GitHub, GitLab",
-            )
 
         jsonld_document, fairness_report = fairness_service.run_fairness_assessment(
             repo_url=str(repo_url),
@@ -352,13 +320,6 @@ async def extract_single_property(
     profiles; in that case, all matching profiles are included.
     """
     try:
-        url_matcher = URLPatternMatcher()
-        platform = url_matcher.detect_platform(str(repo_url))
-        if not platform:
-            raise HTTPException(
-                status_code=400,
-                detail="Unsupported repository platform. Supported: GitHub, GitLab",
-            )
 
         extracted_at, items = run_single_property_extraction(
             repo_url=str(repo_url),

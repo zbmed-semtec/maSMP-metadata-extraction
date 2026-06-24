@@ -2,14 +2,24 @@
 
 from collections.abc import Callable
 
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.external.software_heritage.helpers.extract_archive import (
-    lookup_software_heritage,
-)
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
+import requests
+
+
+def lookup_software_heritage(repo_url: str, timeout: int = 5) -> str | None:
+    """Return Software Heritage archive URL when reachable."""
+    archive_url = f"https://archive.softwareheritage.org/browse/origin/directory/?origin_url={repo_url}"
+    try:
+        response = requests.get(archive_url, timeout=timeout, allow_redirects=True)
+        if response.status_code == 200:
+            return archive_url
+    except requests.exceptions.RequestException:
+        return None
+    return None
 
 class ExtractSoftwareHeritageArchivedUrlStep(ExtractionPlugin):
     """Extract Software Heritage candidates for metadata.archivedAt."""
@@ -19,7 +29,7 @@ class ExtractSoftwareHeritageArchivedUrlStep(ExtractionPlugin):
     extracts = {"archivedAt"}
 
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         self._lookup_fn = lookup_software_heritage
         if "extracted_software_heritage_archive_url" in state.data:
             return state
@@ -27,4 +37,4 @@ class ExtractSoftwareHeritageArchivedUrlStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractSoftwareHeritageArchivedUrlStep"]
+

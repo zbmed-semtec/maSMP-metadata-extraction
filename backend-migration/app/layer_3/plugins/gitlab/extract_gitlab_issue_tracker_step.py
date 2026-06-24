@@ -1,10 +1,6 @@
 """GitLab issue tracker metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    gitlab_repo_payload,
-)
-
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
@@ -14,22 +10,18 @@ class ExtractGitlabIssueTrackerStep(ExtractionPlugin):
     platforms = {"gitlab"}
     extracts = {"issueTracker", "codemeta:issueTracker", "discussionUrl"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        project = gitlab_repo_payload(context, state)
-        metadata = state.metadata
-        record = state.data.get("record_field")
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        project = self.plugin_manager.get('platform-payloads-plugin').gitlab_repo_payload(context, state)
         web_url = project.get("web_url")
         if not web_url:
             return state
-        metadata.issueTracker = web_url + "/-/issues"
-        metadata.codemeta_issueTracker = metadata.issueTracker
-        if callable(record):
-            record("issueTracker")
-            record("codemeta_issueTracker")
+        issueTracker = web_url + "/-/issues"
+        codemeta_issueTracker = issueTracker
+        state.metadata_collector.collect(self.name, "issueTracker", issueTracker)
+        state.metadata_collector.collect(self.name, "codemeta_issueTracker", codemeta_issueTracker)
         if project.get("operations_access_level") == "enabled":
-            metadata.discussionUrl = web_url + "/-/discussions"
-            if callable(record):
-                record("discussionUrl")
+            discussionUrl = web_url + "/-/discussions"
+            state.metadata_collector.collect(self.name, "discussionUrl", discussionUrl)
         return state
 
 

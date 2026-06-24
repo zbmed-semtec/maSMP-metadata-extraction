@@ -1,12 +1,33 @@
 """Extract Wayback archivedAt candidates."""
 
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.external.wayback.helpers.extract_archive import (
-    WaybackClient,
-)
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
+
+"""Wayback archive lookup helper."""
+
+import requests
+
+
+def lookup_wayback(repo_url: str, timeout: int = 5) -> str | None:
+    """Return Wayback archive URL when reachable."""
+    archive_url = f"https://web.archive.org/web/{repo_url}"
+    try:
+        response = requests.get(archive_url, timeout=timeout, allow_redirects=True)
+        if response.status_code == 200:
+            return archive_url
+    except requests.exceptions.RequestException:
+        return None
+    return None
+
+
+class WaybackClient:
+    """HTTP check for web.archive.org mirror of a repo URL."""
+
+    @staticmethod
+    def check_archive_url(url: str, timeout: int = 5) -> str | None:
+        return lookup_wayback(url, timeout=timeout)
 
 
 class ExtractWaybackArchivedUrlStep(ExtractionPlugin):
@@ -16,12 +37,12 @@ class ExtractWaybackArchivedUrlStep(ExtractionPlugin):
     platforms = {"gitlab", "github"}
     extracts = {"archivedAt"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         self.client = WaybackClient()
         if "extracted_wayback_archive_url" in state.data:
             return state
         state.data["extracted_wayback_archive_url"] = self.client.check_archive_url(context.repo_url)
         return state
 
-__all__ = ["ExtractWaybackArchivedUrlStep"]
+
 

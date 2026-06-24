@@ -1,6 +1,6 @@
 """Unit tests for requirements file discovery helpers."""
 
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.requirements_discovery import (
+from app.layer_3.plugins.platform_payloads_plugin.requirements_discovery import (
     discover_requirement_urls_from_state,
 )
 

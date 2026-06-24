@@ -4,7 +4,7 @@ Cover DOI extraction (including Zenodo IDs), BibTeX parsing, author merging, and
 """
 from app.layer_1.entities.shared_primitives import Person
 from app.layer_1.entities.software_metadata import SoftwareMetadata
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.steps.extract_steps.services.files.license import ExtractLicenseCopyrightStep
 from app.layer_3.steps.extract_steps.services.files.workflows import ReadmeExtractionWorkflow
 
@@ -90,8 +90,8 @@ def test_readme_parser_extracts_bibtex_and_merges_authors():
 def test_license_step_extracts_copyright():
     text = "Copyright (c) 2024 Example Org"
     step = ExtractLicenseCopyrightStep()
-    state = StepState(metadata=SoftwareMetadata(), data={"license_content": text})
-    context = StepContext(repo_url="", domain="software", schema="maSMP")
+    state = ExtractionState(metadata=SoftwareMetadata(), data={"license_content": text})
+    context = ExtractionContext(repo_url="", domain="software", schema="maSMP")
 
     result = step.run(context, state)
     assert result.data["extracted_license_copyright_holder"] == "Example Org"

@@ -20,4 +20,4 @@ class OpenAlexClient(BasePlugin):
         except requests.exceptions.RequestException:
             return None
 
-__all__ = ["OpenAlexClient"]
+

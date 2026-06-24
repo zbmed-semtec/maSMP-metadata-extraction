@@ -25,8 +25,9 @@ from app.layer_1.provenance.software.defaults import (
 )
 from app.layer_3.composers import PipelineComposer
 from app.layer_3.extraction_metadata import ExtractionMetadataCollector
-from app.layer_3.steps.contracts import ExtractionPipelineRunner, StepContext, StepState
-from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
+from app.layer_3.steps.contracts import ExtractionPipelineRunner, ExtractionContext, ExtractionState
+from app.layer_1.schemas.base_schema import BaseSchema
+from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
 
 # Step IDs for progress streaming (used by SSE endpoint and frontend)
 EXTRACTION_STEPS = [
@@ -55,7 +56,7 @@ class ExtractMetadataResult:
 
 class JSONLDBuilder(Protocol):
     """Protocol for building JSON-LD documents"""
-    def build_jsonld(self, metadata: SoftwareMetadata, schema: str, has_release: bool) -> dict:
+    def build_jsonld(self, metadata: MetadataCollector, schema: BaseSchema) -> dict:
         """Build JSON-LD document from metadata"""
         ...
 
@@ -70,7 +71,7 @@ class ExtractMetadataUseCase:
         jsonld_builder: JSONLDBuilder,
         pipeline_composer: Optional[PipelineComposer] = None,
         pipeline_runner: Optional[ExtractionPipelineRunner] = None,
-        extraction_metadata_collector: Optional[ExtractionMetadataCollector] = None,
+        extraction_metadata_collector: Optional[MetadataCollector] = None,
     ):
         """
         Initialize the use case with all required tools.
@@ -89,7 +90,7 @@ class ExtractMetadataUseCase:
     def execute(
         self,
         repo_url: str,
-        schema: str,
+        schema: BaseSchema,
         access_token: Optional[str] = None,
         progress_callback: Optional[Callable[[str, str], None]] = None,
     ) -> ExtractMetadataResult:
@@ -109,20 +110,20 @@ class ExtractMetadataUseCase:
             ExtractMetadataResult with jsonld_document and extraction_metadata (for UI enrichment)
         """
         collector = self.extraction_metadata_collector
-        platform = URLPatternMatcher.detect_platform(repo_url)
+        platform = repo_url
         if not platform:
             raise ValueError("Unsupported repository platform. Supported: GitHub, GitLab")
 
         if progress_callback:
             progress_callback("pipeline", "started")
         
-        state = StepState(
-            metadata=SoftwareMetadata(),
+        state = ExtractionState(
+            metadata_collector=MetadataCollector(),
             data={
                 "record_field": _build_record_field(collector, platform),
             },
         )
-        context = StepContext(
+        context = ExtractionContext(
             repo_url=repo_url,
             domain="software",
             schema=schema,
@@ -132,7 +133,7 @@ class ExtractMetadataUseCase:
 
         pipeline = self.pipeline_composer.compose(context)
         
-        metadata = self.pipeline_runner.run(pipeline, context, state).metadata
+        metadata = self.pipeline_runner.run(pipeline, context, state).metadata_collector
 
         if progress_callback:
             progress_callback("pipeline", "completed")
@@ -140,38 +141,32 @@ class ExtractMetadataUseCase:
         # Step 5: Build JSON-LD document
         if progress_callback:
             progress_callback("jsonld_build", "started")
-        has_release = metadata.has_release
-        jsonld_document = self.jsonld_builder.build_jsonld(metadata, schema, has_release)
+        
+        jsonld_document = self.jsonld_builder.build_jsonld(metadata, schema)
         if progress_callback:
             progress_callback("jsonld_build", "completed")
 
-        extraction_metadata = collector.get_all() if collector else {}
+        # extraction_metadata = collector.get_all() if collector else {}
         return ExtractMetadataResult(
             jsonld_document=jsonld_document,
-            extraction_metadata=extraction_metadata,
+            extraction_metadata=jsonld_document,
             metadata=metadata,
         )
 
 
 def _build_record_field(
-    collector: Optional[ExtractionMetadataCollector],
+    collector: Optional[MetadataCollector],
     platform: str,
 ) -> Callable[[str], None]:
-    platform_source = SOURCE_GITHUB_API if platform == "github" else SOURCE_GITLAB_API
 
     def record(
-        field: str,
-        *,
-        source: Optional[str] = None,
-        confidence: Optional[float] = None,
+        source: str,
+        property_name: str,
+        property_value: Any, 
     ) -> None:
         if collector is None:
             return
-        collector.record(
-            field,
-            source if source is not None else _source_for_field(field, platform_source),
-            confidence if confidence is not None else _confidence_for_field(field),
-        )
+        collector.collect(source, property_name, property_value)
 
     return record
 

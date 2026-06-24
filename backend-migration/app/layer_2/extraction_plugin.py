@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod, abstractproperty
 from app.layer_2.base_plugin import BasePlugin
-from app.layer_3.steps.contracts.step import ExtractionStep, StepContext, StepState
+from app.layer_3.steps.contracts.step import ExtractionStep, ExtractionContext, ExtractionState
 
 class ExtractionPlugin(BasePlugin, ExtractionStep, ABC):
     
@@ -13,5 +13,5 @@ class ExtractionPlugin(BasePlugin, ExtractionStep, ABC):
     def extract(self, context, state):
         ...
 
-    def applicable(self, context : StepContext):
-        return context.platform in self.platforms
+    def applicable(self, context : ExtractionContext):
+        return any([platform in context.platform for platform in self.platforms])

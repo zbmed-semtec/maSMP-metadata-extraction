@@ -1,17 +1,7 @@
 """GitLab requirements links steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    gitlab_file_fetcher,
-    gitlab_repo_payload,
-)
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.platform_payloads import (
-    record_field,
-)
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils.requirements_discovery import (
-    discover_requirement_urls_from_state,
-)
-
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.plugins.requirement_discovery_plugin import RequirementDiscoveryPlugin
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
@@ -23,19 +13,14 @@ class ExtractGitlabRequirementsLinksStep(ExtractionPlugin):
     platforms = {"gitlab"}
     extracts = {"softwareRequirements"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        gitlab_file_fetcher(context, state)
-        gitlab_repo_payload(context, state)
-        urls = discover_requirement_urls_from_state(
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        rdp : RequirementDiscoveryPlugin = self.plugin_manager.get("requirement-discovery-plugin")
+        urls = rdp.discover_requirement_urls_from_state(
             state_data=state.data,
             platform="gitlab",
             repo_url=context.repo_url,
         )
         if urls:
-            state.metadata.softwareRequirements = urls
-            record_field(state, "softwareRequirements")
+            softwareRequirements =urls
+            state.metadata_collector.collect(self.name, "softwareRequirements", softwareRequirements)
         return state
-
-
-def gitlab_requirements_link_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGitlabRequirementsLinksStep(),)

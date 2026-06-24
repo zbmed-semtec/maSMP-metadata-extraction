@@ -7,7 +7,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_README_PARSER,
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
 
 class MergeSoftwareIdentifiersStep:
@@ -15,7 +15,7 @@ class MergeSoftwareIdentifiersStep:
 
     name = "software.merge_identifiers"
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         citation_identifiers = [
             state.data.get("extracted_top_level_doi_url"),
             state.data.get("extracted_preferred_citation_doi_url"),

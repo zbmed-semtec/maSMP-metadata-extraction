@@ -1,10 +1,8 @@
 """GitLab license metadata steps."""
 
 from app.layer_1.entities.shared_primitives import License
-from app.layer_3.steps.contracts import ExtractionStep, StepContext, StepState
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.shared_utils import (
-    gitlab_license_payload,
-)
+from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -15,15 +13,14 @@ class ExtractGitlabLicenseStep(ExtractionPlugin):
     platforms = {"gitlab"}
     extracts = {'license'}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        payload = gitlab_license_payload(context, state)
-        metadata = state.metadata
-        record = state.data.get("record_field")
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
+        payload = ppp.gitlab_license_payload(context, state)
+        
         license_info = payload.get("license") if isinstance(payload, dict) else None
         if license_info:
-            metadata.license = License(name=license_info.get("name"), url=license_info.get("url"))
-            if callable(record):
-                record("license")
+            license = License(name=license_info.get("name"), url=license_info.get("url"))
+            state.metadata_collector.collect(self.name, "license", license)
         return state
 
 

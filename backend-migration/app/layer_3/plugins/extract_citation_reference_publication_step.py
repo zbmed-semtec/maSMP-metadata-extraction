@@ -3,8 +3,8 @@
 from typing import Any, Dict, List
 
 from app.layer_1.entities.shared_primitives import Person, ReferencePublication
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.files.citation.helpers import ensure_cff_yaml_loaded
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
+from app.layer_3.plugins.cff_parse import CffParsePlugin
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -17,8 +17,9 @@ class ExtractCitationReferencePublicationStep(ExtractionPlugin):
     extracts = {"codemeta:referencePublication"}
     platforms = {"gitlab", "github"}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        ensure_cff_yaml_loaded(context, state)
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        cpp : CffParsePlugin = self.plugin_manager.get('cff-parse-plugin')
+        cpp.ensure_cff_yaml_loaded(context, state)
         if not state.data.get("valid"):
             state.data["reference_extracted"] = False
             return state
@@ -71,5 +72,5 @@ class ExtractCitationReferencePublicationStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractCitationReferencePublicationStep"]
+
 

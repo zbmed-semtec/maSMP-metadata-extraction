@@ -2,10 +2,8 @@
 
 import re
 
-from app.layer_3.steps.contracts import StepContext, StepState
-from app.layer_3.steps.extract_steps.services.files.helpers.repository_files import (
-    repository_file_content,
-)
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
+from app.layer_3.plugins.repository_files import RepositoryFilesPlugin
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
@@ -18,8 +16,9 @@ class ExtractLicenseCopyrightStep(ExtractionPlugin):
     platforms = {"gitlab", "github"}
     extracts = {'license'}
 
-    def extract(self, context: StepContext, state: StepState) -> StepState:
-        license_content = repository_file_content(
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        rfp = self.plugin_manager.get('repository-files-plugin')
+        license_content = rfp.repository_file_content(
             context,
             state,
             "license_content",
@@ -32,5 +31,5 @@ class ExtractLicenseCopyrightStep(ExtractionPlugin):
         return state
 
 
-__all__ = ["ExtractLicenseCopyrightStep"]
+
 
