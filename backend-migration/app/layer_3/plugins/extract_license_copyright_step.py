@@ -14,7 +14,8 @@ class ExtractLicenseCopyrightStep(ExtractionPlugin):
 
     name = "license.extract_copyright"
     platforms = {"gitlab", "github"}
-    extracts = {'license'}
+    extracts = {'license', "copyrightHolder"}
+    priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         rfp = self.plugin_manager.get('repository-files-plugin')

@@ -18,10 +18,9 @@ class ExtractGitlabRepositoryDescriptionStep(ExtractionPlugin):
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
         project = ppp.gitlab_repo_payload(context, state)
         
-        record: Callable[[str], None] | None = state.data.get("record_field")
-
         description = project.get("description")
-        state.metadata_collector.collect(self.name, 'description', description)
+        if description:
+            state.metadata_collector.collect(self.name, 'description', description)
 
         return state
 

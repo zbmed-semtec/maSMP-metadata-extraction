@@ -8,14 +8,18 @@ from app.layer_1.provenance.software.defaults import (
 )
 from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
+from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
-class MergeSoftwareAlternateNamesStep:
+class MergeSoftwareAlternateNamesStep(ExtractionPlugin):
     """Merge alternate-name candidates from any extraction source."""
 
     name = "software.merge_alternate_names"
+    platforms = {"gitlab", "github"}
+    extracts = {"alternateName"}
+    priority_level = 99
 
-    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         citation_title = state.data.get("extracted_title")
         openalex_title = state.data.get("extracted_openalex_title")
 

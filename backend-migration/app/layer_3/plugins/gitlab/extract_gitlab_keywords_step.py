@@ -3,15 +3,14 @@
 from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
 class ExtractGitlabKeywordsStep(ExtractionPlugin):
     name = "gitlab.extract_keywords"
     platforms = {"gitlab"}
-    extracts = {"keywords"}
-    priority_level = 101
+    extracts = {'keywords'}
+    priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')

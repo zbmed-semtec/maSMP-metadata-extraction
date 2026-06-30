@@ -13,7 +13,7 @@ class ExtractGithubMetadataFilesStep(ExtractionPlugin):
 
     name = "github.extract_metadata_files"
 
-    extracts = {"codemeta:readme", "maSMP:changelog"}
+    extracts = {"readme", "changelog"}
     platforms = {"github"}
     priority_level = 101
 

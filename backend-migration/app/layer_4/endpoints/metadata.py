@@ -269,7 +269,7 @@ async def get_fairness(
             repo_url=str(repo_url),
             schema=schema,
             access_token=access_token,
-            with_enrichment=False,
+            with_enrichment=True,
         )
 
         # Convert dataclass to plain dict

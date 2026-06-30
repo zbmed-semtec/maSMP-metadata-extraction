@@ -69,15 +69,14 @@ def run_extraction(
         with_enrichment=with_enrichment,
     )
 
-    schema = _schema_registry.get(schema_name)
+    schema = _schema_registry.get(schema_name, "SoftwareSourceCode")
 
     result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
     jsonld_document = result.jsonld_document
 
     if with_enrichment and result.extraction_metadata:
         enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
+            collector,
             schema,
         )
         return jsonld_document, enriched
@@ -106,7 +105,7 @@ def run_extraction_with_progress(
         with_enrichment=with_enrichment,
     )
 
-    schema = _schema_registry.get(schema_name)
+    schema = _schema_registry.get(schema_name, "SoftwareSourceCode")
 
     result = use_case.execute(
         repo_url=repo_url,
@@ -116,10 +115,9 @@ def run_extraction_with_progress(
     )
     jsonld_document = result.jsonld_document
 
-    if with_enrichment and result.extraction_metadata:
+    if with_enrichment:
         enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
+            collector,
             schema,
         )
         return jsonld_document, enriched
@@ -139,7 +137,7 @@ def run_single_property_extraction(
     Returns:
         (extracted_at_iso, [ {profile, value, source, confidence}, ... ])
     """
-    schema = _schema_registry.get(schema_name)
+    schema = _schema_registry.get(schema_name, "SoftwareSourceCode")
 
     jsonld_document, enriched = run_extraction(
         repo_url=repo_url,

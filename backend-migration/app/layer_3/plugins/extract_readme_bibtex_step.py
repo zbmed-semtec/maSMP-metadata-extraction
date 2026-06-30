@@ -15,7 +15,7 @@ class ExtractReadmeBibtexStep(ExtractionPlugin):
 
     name = "readme.extract_bibtex"
     platforms = {"gitlab", "github"}
-    extracts = {"citation"}
+    extracts = {"referencePublication", "author"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         rfp : RepositoryFilesPlugin = self.plugin_manager.get("repository-files-plugin")

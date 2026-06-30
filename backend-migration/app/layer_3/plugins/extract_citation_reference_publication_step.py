@@ -6,7 +6,6 @@ from app.layer_1.entities.shared_primitives import Person, ReferencePublication
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.cff_parse import CffParsePlugin
 
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -14,8 +13,9 @@ class ExtractCitationReferencePublicationStep(ExtractionPlugin):
     """Build preferred citation values without mutating metadata."""
 
     name = "citation.extract_reference_publication"
-    extracts = {"codemeta:referencePublication"}
+    extracts = {"referencePublication", "identifier", "author", "citation", "alternateName"}
     platforms = {"gitlab", "github"}
+    priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         cpp : CffParsePlugin = self.plugin_manager.get('cff-parse-plugin')

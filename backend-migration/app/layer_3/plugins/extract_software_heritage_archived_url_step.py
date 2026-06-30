@@ -26,7 +26,8 @@ class ExtractSoftwareHeritageArchivedUrlStep(ExtractionPlugin):
 
     name = "software_heritage.extract_archived_url"
     platforms = {"gitlab", "github"}
-    extracts = {"archivedAt"}
+    extracts = {'archivedAt'}
+    priority_level = 102
 
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

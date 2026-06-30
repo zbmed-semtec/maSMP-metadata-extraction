@@ -19,7 +19,7 @@
     </div>
 
     <!-- maSMP: tabs + Required / Recommended / Optional -->
-    <template v-if="isMaSMP">
+    <template v-if="false">
       <div class="border-b border-gray-200">
         <nav class="-mb-px flex gap-4" aria-label="Result profiles">
           <button
@@ -195,7 +195,7 @@ const codemetaRows = computed(() => {
   const data = props.result.results
   if (!data || typeof data !== 'object' || Array.isArray(data)) return []
 
-  const enriched = (props.result.enriched_metadata?.codemeta ?? {}) as Record<string, EnrichedProperty>
+  const enriched = (props.result.enriched_metadata ?? {}) as Record<string, EnrichedProperty>
   const skip = new Set(['@context', '@type'])
 
   return Object.entries(data)

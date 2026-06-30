@@ -35,13 +35,13 @@ class ExtractWaybackArchivedUrlStep(ExtractionPlugin):
 
     name = "wayback.extract_archived_url"
     platforms = {"gitlab", "github"}
-    extracts = {"archivedAt"}
+    extracts = {'archivedAt'}
+    priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
-        self.client = WaybackClient()
         if "extracted_wayback_archive_url" in state.data:
             return state
-        state.data["extracted_wayback_archive_url"] = self.client.check_archive_url(context.repo_url)
+        state.data["extracted_wayback_archive_url"] = WaybackClient.check_archive_url(context.repo_url)
         return state
 
 

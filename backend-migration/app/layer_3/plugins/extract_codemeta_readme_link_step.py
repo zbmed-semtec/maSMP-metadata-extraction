@@ -16,9 +16,8 @@ class ExtractCodemetaReadmeLinkStep(ExtractionPlugin):
     """Set ``metadata.codemeta_readme`` from the first reachable candidate URL."""
 
     name = "platform.extract_codemeta_readme_link"
-    extracts = {"codemeta:readme"}
+    extracts = {"readme"}
     platforms = {"gitlab", "github"}
-    priority_level = 99
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         candidates = state.data.get("metadata_file_candidates") or {}
@@ -29,7 +28,7 @@ class ExtractCodemetaReadmeLinkStep(ExtractionPlugin):
         readme_url = first_reachable_url(candidates.get("readme") or [], is_file_reachable_fn)
         if readme_url:
             codemeta_readme =readme_url
-            state.metadata_collector.collect(self.name, "codemeta_readme", codemeta_readme)
+            state.metadata_collector.collect(self.name, "readme", codemeta_readme)
 
         return state
 

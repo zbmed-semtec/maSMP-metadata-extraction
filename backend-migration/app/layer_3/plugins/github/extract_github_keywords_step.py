@@ -11,7 +11,7 @@ class ExtractGithubKeywordsStep(ExtractionPlugin):
     name = "github.extract_keywords"
 
     extracts = {"keywords"}
-    priority_level = 101
+    priority_level = 102
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

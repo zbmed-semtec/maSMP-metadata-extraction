@@ -2,7 +2,6 @@ from app.layer_2.plugin_manager import PluginManager
 from app.layer_2.extraction_plugin import ExtractionPlugin
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
-
 SchemaPropery = str
 
 class ExtractionPluginManager(PluginManager):

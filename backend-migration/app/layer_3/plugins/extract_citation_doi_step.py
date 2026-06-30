@@ -13,7 +13,7 @@ class ExtractCitationDoiStep(ExtractionPlugin):
     """Extract DOI values and citation entries without mutating metadata."""
 
     name = "citation.extract_doi"
-    extracts = {"citaiton"}
+    extracts = {"citaiton", "identifier", "author", "alternateName", "readme", "referencePublication"}
     platforms = {"gitlab", "github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

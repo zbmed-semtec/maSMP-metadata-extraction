@@ -11,8 +11,9 @@ class ExtractCitationKeywordsStep(ExtractionPlugin):
     """Extract CFF keywords without mutating metadata."""
 
     name = "citation.extract_keywords"
-    extracts = {"citation"}
+    extracts = {'keywords'}
     platforms = {"gitlab", "github"}
+    priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         cpp : CffParsePlugin = self.plugin_manager.get('cff-parse-plugin')

@@ -118,7 +118,7 @@ class ExtractMetadataUseCase:
             progress_callback("pipeline", "started")
         
         state = ExtractionState(
-            metadata_collector=MetadataCollector(),
+            metadata_collector=self.extraction_metadata_collector,
             data={
                 "record_field": _build_record_field(collector, platform),
             },
@@ -147,9 +147,11 @@ class ExtractMetadataUseCase:
             progress_callback("jsonld_build", "completed")
 
         # extraction_metadata = collector.get_all() if collector else {}
+        extraction_metadata = {}
+
         return ExtractMetadataResult(
             jsonld_document=jsonld_document,
-            extraction_metadata=jsonld_document,
+            extraction_metadata=extraction_metadata,
             metadata=metadata,
         )
 

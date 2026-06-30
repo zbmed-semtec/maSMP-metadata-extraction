@@ -2,11 +2,13 @@ from typing import AbstractSet, Any, Dict
 from app.layer_1.schemas.base_schema import BaseSchema
 from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
 from pydantic import BaseModel
+from app.layer_2.use_cases.extract_metadata import JSONLDBuilder as BaseJsonLdBuilder
 
-class JSONLDBuilder:
+class JSONLDBuilder(BaseJsonLdBuilder):
     def build_jsonld(self, metadata: MetadataCollector, schema: BaseSchema) -> Dict[str, Any]:
 
-        result = dict()
+        context = schema.build_context()
+        result = {"@context": context}
         # for key, sources in metadata.data.items():
         #     for source in sources.keys():
         #         val = sources[source].property_value

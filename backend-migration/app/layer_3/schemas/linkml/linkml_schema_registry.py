@@ -16,15 +16,17 @@ class LinkMlSchemaRegistry(BaseSchemaRegistry):
         loaded = []
         for path in directory.glob("*.yaml"):
             view = SchemaView(str(path))
-            schema = LinkMlSchema(view, "SoftwareSourceCode")
-            name = schema.get_schema_name().lower()
-            self.schemas[name] = schema
-            loaded.append(name)
+            for class_name in view.all_classes():
+                schema_name = view.schema.name
+                name = f"{schema_name.lower()}:{class_name.lower()}"
+                schema = LinkMlSchema(view, class_name)
+                self.schemas[name] = schema
+                loaded.append(name)
 
         return loaded
 
-    def get(self, name: str) -> LinkMlSchema:
-        name = name.lower()
+    def get(self, schema_name: str, class_name: str) -> LinkMlSchema:
+        name = f"{schema_name.lower()}:{class_name.lower()}"
         if name not in self.schemas:
             raise KeyError(f"Schema '{name}' not found in registry")
         return self.schemas[name]

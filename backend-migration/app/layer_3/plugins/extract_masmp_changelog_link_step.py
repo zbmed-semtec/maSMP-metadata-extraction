@@ -15,9 +15,8 @@ class ExtractMasmpChangelogLinkStep(ExtractionPlugin):
     """Set ``metadata.masmp_changelog`` from the first reachable candidate URL."""
 
     name = "platform.extract_masmp_changelog_link"
-    extracts = {"maSMP:changelog"}
+    extracts = {"changelog"}
     platforms = {"github", "gitlab"}
-
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         candidates = state.data.get("metadata_file_candidates") or {}
@@ -28,7 +27,7 @@ class ExtractMasmpChangelogLinkStep(ExtractionPlugin):
         changelog_url = first_reachable_url(candidates.get("changelog") or [], is_file_reachable_fn)
         if changelog_url:
             masmp_changelog =changelog_url
-            state.metadata_collector.collect(self.name, "masmp_changelog", masmp_changelog)
+            state.metadata_collector.collect(self.name, "changelog", masmp_changelog)
 
         return state
 

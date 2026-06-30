@@ -11,14 +11,15 @@ class MergeSoftwareCopyrightHolderStep(ExtractionPlugin):
 
     name = "software.merge_copyright_holder"
     platforms = {"gitlab", "github"}
-    extracts = {'copyrightHolder'}
-    priority_level = 99
+    extracts = {'license', "copyrightHolder"}
     
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         copyright_holder = state.data.get("extracted_license_copyright_holder")
+        # if copyright_holder:
+        #     state.metadata.copyrightHolder = copyright_holder
+        #     record_field_provenance(state, "copyrightHolder", SOURCE_LICENSE_FILE, CONFIDENCE_LICENSE)
         if copyright_holder:
-            state.metadata.copyrightHolder = copyright_holder
-            record_field_provenance(state, "copyrightHolder", SOURCE_LICENSE_FILE, CONFIDENCE_LICENSE)
+            state.metadata_collector.collect(self.name, 'copyrightHolder', copyright_holder)
         return state
 
 

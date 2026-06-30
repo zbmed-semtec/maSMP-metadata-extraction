@@ -4,6 +4,7 @@ from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, Extra
 
 
 from app.layer_2.extraction_plugin import ExtractionPlugin
+from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
 
 class ExtractGithubDatesStep(ExtractionPlugin):
@@ -13,7 +14,7 @@ class ExtractGithubDatesStep(ExtractionPlugin):
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
-        ppp = self.plugin_manager.get("platform-payloads-plugin")
+        ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
         repo_data = ppp.github_repo_payload(context, state)
         if repo_data.get("created_at"):
             state.metadata_collector.collect(self.name, "dateCreated", repo_data.get("created_at"))

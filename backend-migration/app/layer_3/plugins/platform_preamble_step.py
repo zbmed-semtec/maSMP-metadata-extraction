@@ -9,9 +9,9 @@ class CommonPlatformPreambleStep(ExtractionPlugin):
     name = "platform.setup_context"
     
     # higher priority, runs before other plugins
-    priority_level = 101
+    priority_level = 102
 
-    extracts = {"codemeta:readme", "maSMP:changelog"}
+    extracts = {"readme", "changelog", "softwareRequirements"}
     
     # always applicable
     platforms = {}
@@ -20,7 +20,7 @@ class CommonPlatformPreambleStep(ExtractionPlugin):
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         state.data["normalized_repo_url"] = (context.repo_url or "").strip().rstrip("/")
-        state.data["platform"] = (context.platform or "").strip().lower() or "github"
+        state.data["platform"] = (context.platform or "").strip().lower()
         return state
 
 

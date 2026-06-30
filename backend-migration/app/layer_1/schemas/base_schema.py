@@ -10,3 +10,14 @@ class BaseSchema(ABC):
     @abstractmethod
     def get_property_list(self) -> list[str]:
         ...
+    @abstractmethod
+    def get_categories_of(self, property_name:str) -> str:
+        ...
+    
+    @abstractmethod
+    def get_prefixes(self) -> dict[str, str]:
+        ...
+
+    @abstractmethod
+    def build_context(self) -> dict[str, str]:
+        ...

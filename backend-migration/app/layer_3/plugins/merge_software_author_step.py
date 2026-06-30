@@ -2,16 +2,10 @@
 
 from typing import Any
 
-from app.layer_1.provenance.software.defaults import (
-    CONFIDENCE_CITATION,
-    CONFIDENCE_OPENALEX,
-    CONFIDENCE_README,
-    SOURCE_CITATION_CFF,
-    SOURCE_OPENALEX,
-    SOURCE_README_PARSER,
-)
-from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
+from app.layer_3.plugins.extract_openalex_authors_step import ExtractOpenAlexAuthorsStep
+from app.layer_3.plugins.extract_citation_authors_step import ExtractCitationAuthorsStep
+from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
 def _author_key(author: Any) -> tuple[str, str]:
@@ -32,12 +26,16 @@ def _author_to_dict(author: Any) -> dict[str, Any]:
     )
 
 
-class MergeSoftwareAuthorsStep:
+class MergeSoftwareAuthorsStep(ExtractionPlugin):
     """Merge author candidates from any extraction source."""
 
-    name = "software.merge_authors"
+    name = "software.merge_author"
+    platforms = {'github', 'gitlab'}
+    extracts = {'author'}
+    priority_level = 99
 
-    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+    def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+
         citation_authors = state.data.get("extracted_citation_authors") or []
         readme_authors = state.data.get("all_readme_authors") or []
         openalex_authors = state.data.get("extracted_openalex_authors") or []
@@ -46,21 +44,21 @@ class MergeSoftwareAuthorsStep:
         if not candidates:
             return state
 
-        merged = list(state.metadata.author or [])
+        merged = []
         seen = {_author_key(author) for author in merged}
         for author in candidates:
             key = _author_key(author)
             if key not in seen:
                 merged.append(_author_to_dict(author))
                 seen.add(key)
-        state.metadata.author = merged
 
-        if citation_authors:
-            record_field_provenance(state, "author", SOURCE_CITATION_CFF, CONFIDENCE_CITATION)
-        if readme_authors:
-            record_field_provenance(state, "author", SOURCE_README_PARSER, CONFIDENCE_README)
-        if openalex_authors:
-            record_field_provenance(state, "author", SOURCE_OPENALEX, CONFIDENCE_OPENALEX)
+        state.metadata_collector.collect(self.name, 'author', merged)
+        # if citation_authors:
+        #     state.metadata_collector.collect(ExtractCitationAuthorsStep.name, 'author', citation_authors)
+        # if readme_authors:
+        #     state.metadata_collector.collect(ExtractCitationAuthorsStep.name, 'author', citation_authors)
+        # if openalex_authors:
+        #     state.metadata_collector.collect(ExtractOpenAlexAuthorsStep.name, 'author', citation_authors)
         return state
 
 

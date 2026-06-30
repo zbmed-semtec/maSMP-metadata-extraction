@@ -20,9 +20,7 @@ class ExtractGithubIssueTrackerStep(ExtractionPlugin):
         if not html_url:
             return state
         issueTracker = f"{html_url}/issues"
-        codemeta_issueTracker = issueTracker
         state.metadata_collector.collect(self.name, "issueTracker", issueTracker)
-        state.metadata_collector.collect(self.name, "codemeta_issueTracker", codemeta_issueTracker)
         if repo_data.get("has_discussions"):
             discussionUrl = f"{html_url}/discussions"
             state.metadata_collector.collect(self.name, "discussionUrl", discussionUrl)

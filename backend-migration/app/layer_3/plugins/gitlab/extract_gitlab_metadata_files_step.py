@@ -13,7 +13,7 @@ class ExtractGitlabMetadataFilesStep(ExtractionPlugin):
 
     name = "gitlab.extract_metadata_files"
     platforms = {"gitlab"}
-    extracts = {"codemeta:readme", "maSMP:changelog"}
+    extracts = {"readme", "changelog"}
     priority_level = 101
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

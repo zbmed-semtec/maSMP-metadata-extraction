@@ -20,22 +20,47 @@ classes:
   SoftwareSourceCode:
     description: A software source code entity
     slots:
-      - name
-      - description
-      - url
+      # Required Properties
       - codeRepository
-      - version
       - programmingLanguage
+      - version
+      - description
+      - name
+      - url
+      # Recommended Properties
+      - versionControlSystem
+      - hasSourceCode
+      - archivedAt
       - author
-      - contributor
       - citation
-      - license
       - identifier
       - keywords
+      - license
       - readme
-      - versionControlSystem
       - intendedUse
-      - archivedAt
+      # Optional Properties
+      - codeSampleType
+      - runtimePlatform
+      - conditionOfAccess
+      - contributor
+      - copyrightHolder
+      - dateModified
+      - datePublished
+      - discussionUrl
+      - isAccessibleForFree
+      - maintainer
+      - buildInstructions
+      - issueTracker
+      - referencePublication
+      - developerDocumentation
+      - learningResource
+      - changeLog
+      - testedWith
+      - userDocumentation
+      - deployInstructions
+      - installInstructions
+      - testInstructions
+      - testObject
 
   SoftwareApplication:
     description: A deployed software application
@@ -59,78 +84,112 @@ slots:
   # --- Required for SoftwareSourceCode ---
   name:
     required: true
+    categories:
+      - required
     range: string
     slot_uri: schema:name
 
   description:
     required: true
+    categories:
+      - required
     range: string
     slot_uri: schema:description
 
   url:
     required: true
+    categories:
+      - required
     range: uri
     slot_uri: schema:url
 
   codeRepository:
     required: true
+    categories:
+      - required
     range: uri
     slot_uri: schema:codeRepository
 
   version:
     required: true
+    categories:
+      - required
     range: string
     slot_uri: schema:version
 
   programmingLanguage:
     required: true
+    categories:
+      - required
     range: string
     multivalued: true
     slot_uri: schema:programmingLanguage
 
   # --- Recommended ---
   author:
+    categories:
+      - recommended
     range: string
     multivalued: true
     slot_uri: schema:author
 
   citation:
+    categories:
+      - recommended
     range: string
-    slot_uri: schema:citation
+    slot_uri: schtestInputema:citation
 
   license:
+    categories:
+      - recommended
     range: uri
     slot_uri: schema:license
 
   identifier:
+    categories:
+      - recommended
     range: string
     slot_uri: schema:identifier
 
   keywords:
+    categories:
+      - recommended
     range: string
     multivalued: true
     slot_uri: schema:keywords
 
   readme:
+    categories:
+      - recommended
     range: uri
     slot_uri: codemeta:readme
 
   versionControlSystem:
+    categories:
+      - recommended
     range: string
     slot_uri: maSMP:versionControlSystem
 
   intendedUse:
+    categories:
+      - recommended
     range: string
     slot_uri: maSMP:intendedUse
 
   archivedAt:
+    categories:
+      - recommended
     range: uri
     slot_uri: schema:archivedAt
 
   releaseNotes:
+    categories:
+      - recommended
     range: string
     slot_uri: schema:releaseNotes
 
   softwareVersion:
+    categories:
+      - recommended
     range: string
     slot_uri: schema:softwareVersion

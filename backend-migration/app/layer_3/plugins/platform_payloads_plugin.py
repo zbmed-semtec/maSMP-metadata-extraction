@@ -100,7 +100,7 @@ class PlatformPayloadsPlugin(BasePlugin):
     def gitlab_client(self, context: ExtractionContext, state: ExtractionState) -> GitLabClient:
         client = state.data.get("gitlab_client")
         if client is None:
-            client = GitHubClient(context.access_token)
+            client = GitLabClient(context.access_token)
             state.data['gitlab_client'] = client
         return client
 

@@ -9,11 +9,11 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubVcsStep(ExtractionPlugin):
     name = "github.extract_vcs"
-    extracts = {"maSMP:versionControlSystem"}
+    extracts = {"versionControlSystem"}
     platforms = {"github"}
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         masmp_versionControlSystem = VersionControlSystem.create_git(vcs_type="SoftwareSourceCode")
-        state.metadata_collector.collect(self.name, "masmp:versionControlSystem", masmp_versionControlSystem)
+        state.metadata_collector.collect(self.name, "versionControlSystem", masmp_versionControlSystem)
         return state
 
 

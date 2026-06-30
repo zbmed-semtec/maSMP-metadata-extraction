@@ -13,8 +13,9 @@ class ExtractZenodoArchivedUrlsStep(ExtractionPlugin):
 
     name = "zenodo.extract_archived_urls"
     platforms = {"gitlab", "github"}
-    extracts = {"archivedAt"}
-
+    extracts = {'archivedAt'}
+    priority_level = 102
+    
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         rfp : RepositoryFilesPlugin = self.plugin_manager.get('repository-files-plugin')
         readme_content = rfp.repository_file_content(

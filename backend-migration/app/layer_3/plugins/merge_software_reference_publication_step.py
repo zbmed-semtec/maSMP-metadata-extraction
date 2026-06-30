@@ -13,6 +13,8 @@ from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
+from app.layer_3.plugins.extract_citation_reference_publication_step import ExtractCitationReferencePublicationStep
+from app.layer_3.plugins.extract_openalex_reference_publication_step import ExtractOpenAlexReferencePublicationStep
 
 class MergeSoftwareReferencePublicationStep(ExtractionPlugin):
     """Merge reference-publication candidates from any extraction source."""
@@ -20,48 +22,29 @@ class MergeSoftwareReferencePublicationStep(ExtractionPlugin):
     name = "software.merge_reference_publication"
     platforms = {"gitlab", "github"}
     priority_level = 99
-    extracts = {"codemeta:referencePublication"}
+    extracts = {"referencePublication"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+        
         reference = state.data.get("extracted_preferred_reference_publication")
         if reference:
-            state.metadata.codemeta_referencePublication = reference
-            record_field_provenance(
-                state,
-                "codemeta_referencePublication",
-                SOURCE_CITATION_CFF,
-                CONFIDENCE_CITATION,
-            )
+            state.metadata_collector.collect(ExtractCitationReferencePublicationStep.name, "referencePublication", reference)
             return state
 
         openalex_reference = state.data.get("extracted_openalex_reference_publication")
-        if openalex_reference and not state.metadata.codemeta_referencePublication:
-            state.metadata.codemeta_referencePublication = openalex_reference
-            record_field_provenance(
-                state,
-                "codemeta_referencePublication",
-                SOURCE_OPENALEX,
-                CONFIDENCE_OPENALEX,
-            )
-            return state
-
-        if state.metadata.codemeta_referencePublication:
+        if openalex_reference:
+            state.metadata_collector.collect(ExtractOpenAlexReferencePublicationStep.name, "referencePublication", openalex_reference)
             return state
 
         title = state.data.get("bibtex_title")
         authors = state.data.get("bibtex_authors") or []
         if title or authors:
-            state.metadata.codemeta_referencePublication = ReferencePublication(
+            codemeta_referencePublication = ReferencePublication(
                 type="ScholarlyArticle",
                 name=title,
                 author=authors if authors else None,
             )
-            record_field_provenance(
-                state,
-                "codemeta_referencePublication",
-                SOURCE_README_PARSER,
-                CONFIDENCE_README,
-            )
+            state.metadata_collector.collect(self.name, 'referencePublication', codemeta_referencePublication)
         return state
 
 
