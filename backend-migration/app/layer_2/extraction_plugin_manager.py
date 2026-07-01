@@ -21,12 +21,13 @@ class ExtractionPluginManager(PluginManager):
 
     def select(self, schema_property: SchemaPropery, context: ExtractionContext) -> set[ExtractionPlugin]:
         result = set()
-        for pluginName in self.metadata_providers.get(schema_property, {}):
+        uri = context.schema.get_uri(schema_property)
+        for pluginName in self.metadata_providers.get(uri, {}):
             instance = self.get(pluginName)
             if instance.applicable(context):
                 result.add(instance)
         if len(result) < 1:
-            raise Warning(f"missing plugin to extract '{schema_property}'!")
+            raise Warning(f"missing plugin to extract '{uri}'!")
         return result
 
     def extract(self, schema_property: SchemaPropery, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

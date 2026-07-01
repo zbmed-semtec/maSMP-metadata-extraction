@@ -47,3 +47,7 @@ class LinkMlSchema(BaseSchema):
                 context[slot_name] = str(uri)
 
         return context
+
+    def get_uri(self, property_name):
+        slot = self.schema_view.get_slot(property_name)
+        return self.schema_view.get_uri(slot, expand=True)

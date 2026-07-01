@@ -20,7 +20,8 @@ class JSONLDBuilder(BaseJsonLdBuilder):
                 
         # return result
         for property_name in schema.get_property_list():
-            sources = metadata.data.get(property_name, {})
+            uri = schema.get_uri(property_name)
+            sources = metadata.get(uri)
             for source in sources.keys():
                 val = sources[source].property_value
                 if isinstance(val, BaseModel):

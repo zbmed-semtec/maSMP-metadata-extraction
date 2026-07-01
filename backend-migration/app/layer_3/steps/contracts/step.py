@@ -31,10 +31,6 @@ class ExtractionState:
       metadata: current aggregate being enriched.
       data: step-local scratchpad for intermediate values.
     """
-    @property
-    def metadata(self):
-       pass
-
     metadata_collector: MetadataCollector 
     data: dict[str, Any] = field(default_factory=dict)
 
