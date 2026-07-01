@@ -10,7 +10,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabVcsStep(ExtractionPlugin):
     name = "gitlab.extract_vcs"
     platforms = {"gitlab"}
-    extracts = {"versionControlSystem"}
+    extracts = {"https://discovery.biothings.io/ns/maSMP/versionControlSystem"}
     priority_level = 99
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

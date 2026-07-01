@@ -35,7 +35,7 @@ class ExtractWaybackArchivedUrlStep(ExtractionPlugin):
 
     name = "wayback.extract_archived_url"
     platforms = {"gitlab", "github"}
-    extracts = {'archivedAt'}
+    extracts = {"https://schema.org/archivedAt"}
     priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

@@ -31,7 +31,7 @@ class MergeSoftwareAuthorsStep(ExtractionPlugin):
 
     name = "software.merge_author"
     platforms = {'github', 'gitlab'}
-    extracts = {'author'}
+    extracts = {"https://schema.org/author"}
     priority_level = 99
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -52,13 +52,13 @@ class MergeSoftwareAuthorsStep(ExtractionPlugin):
                 merged.append(_author_to_dict(author))
                 seen.add(key)
 
-        state.metadata_collector.collect(self.name, 'author', merged)
+        state.metadata_collector.collect(self.name, "https://schema.org/author", merged)
         # if citation_authors:
-        #     state.metadata_collector.collect(ExtractCitationAuthorsStep.name, 'author', citation_authors)
+        #     state.metadata_collector.collect(ExtractCitationAuthorsStep.name, "https://schema.org/author", citation_authors)
         # if readme_authors:
-        #     state.metadata_collector.collect(ExtractCitationAuthorsStep.name, 'author', citation_authors)
+        #     state.metadata_collector.collect(ExtractCitationAuthorsStep.name, "https://schema.org/author", citation_authors)
         # if openalex_authors:
-        #     state.metadata_collector.collect(ExtractOpenAlexAuthorsStep.name, 'author', citation_authors)
+        #     state.metadata_collector.collect(ExtractOpenAlexAuthorsStep.name, "https://schema.org/author", citation_authors)
         return state
 
 

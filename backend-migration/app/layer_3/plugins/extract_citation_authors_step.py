@@ -9,7 +9,7 @@ class ExtractCitationAuthorsStep(ExtractionPlugin):
     """Extract top-level CFF authors without mutating metadata."""
 
     name = "citation.extract_authors"
-    extracts = {'author'} # this plugin is not called directly, but is a sub-plugin to 'extract_author'
+    extracts = {"https://schema.org/author"} # this plugin is not called directly, but is a sub-plugin to 'extract_author'
     platforms = {"gitlab", "github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

@@ -10,7 +10,7 @@ from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 class ExtractGithubDatesStep(ExtractionPlugin):
     name = "github.extract_dates"
 
-    extracts = {"dateCreated", "dateModified", "datePublished"}
+    extracts = {"dateCreated", "https://schema.org/dateModified", "https://schema.org/datePublished"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -19,9 +19,9 @@ class ExtractGithubDatesStep(ExtractionPlugin):
         if repo_data.get("created_at"):
             state.metadata_collector.collect(self.name, "dateCreated", repo_data.get("created_at"))
         if repo_data.get("updated_at"):
-            state.metadata_collector.collect(self.name, "dateModified", repo_data.get("updated_at"))
+            state.metadata_collector.collect(self.name, "https://schema.org/dateModified", repo_data.get("updated_at"))
         if repo_data.get("pushed_at"):
-            state.metadata_collector.collect(self.name, "datePublished", repo_data.get("pushed_at"))
+            state.metadata_collector.collect(self.name, "https://schema.org/datePublished", repo_data.get("pushed_at"))
         return state
 
 

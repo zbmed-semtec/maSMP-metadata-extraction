@@ -12,7 +12,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabRepositoryDescriptionStep(ExtractionPlugin):
     name = "gitlab.extract_repository_description"
     platforms = {"gitlab"}
-    extracts = {"description"}
+    extracts = {"https://schema.org/description"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
@@ -20,7 +20,7 @@ class ExtractGitlabRepositoryDescriptionStep(ExtractionPlugin):
         
         description = project.get("description")
         if description:
-            state.metadata_collector.collect(self.name, 'description', description)
+            state.metadata_collector.collect(self.name, "https://schema.org/description", description)
 
         return state
 

@@ -10,7 +10,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubRepositoryDescriptionStep(ExtractionPlugin):
     name = "github.extract_repository_description"
-    extracts = {"description"}
+    extracts = {"https://schema.org/description"}
     platforms = {"github"}
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
@@ -19,7 +19,7 @@ class ExtractGithubRepositoryDescriptionStep(ExtractionPlugin):
 
         description = repo_data.get("description")
         if description is not None:
-            state.metadata_collector.collect(self.name, 'description', description)
+            state.metadata_collector.collect(self.name, "https://schema.org/description", description)
 
         return state
 

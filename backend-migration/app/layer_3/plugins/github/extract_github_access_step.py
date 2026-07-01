@@ -7,19 +7,19 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubAccessStep(ExtractionPlugin):
     name = "github.extract_access"
-    extracts = {'conditionsOfAccess', 'isAccessibleForFree'}
+    extracts = {"https://schema.org/conditionOfAccess", "https://schema.org/isAccessibleForFree"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp = self.plugin_manager.get("platform-payloads-plugin")
         repo_data = ppp.github_repo_payload(context, state)
         is_private = bool(repo_data.get("private", False))
-        conditionsOfAccess = "Private" if is_private else "Public"
+        conditionOfAccess = "Private" if is_private else "Public"
         isAccessibleForFree = str(not is_private)
         state.metadata_collector.collect(
-            self.name, "conditionsOfAccess", conditionsOfAccess)
+            self.name, "https://schema.org/conditionOfAccess", conditionOfAccess)
         state.metadata_collector.collect(
-            self.name, "isAccessibleForFree", isAccessibleForFree)
+            self.name, "https://schema.org/isAccessibleForFree", isAccessibleForFree)
         return state
 
 

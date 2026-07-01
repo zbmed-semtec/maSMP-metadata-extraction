@@ -15,7 +15,7 @@ class ExtractReadmeBibtexStep(ExtractionPlugin):
 
     name = "readme.extract_bibtex"
     platforms = {"gitlab", "github"}
-    extracts = {"referencePublication", "author"}
+    extracts = {"https://discovery.biothings.io/ns/maSMP/referencePublication", "https://schema.org/author"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         rfp : RepositoryFilesPlugin = self.plugin_manager.get("repository-files-plugin")

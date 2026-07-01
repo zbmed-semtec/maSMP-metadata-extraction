@@ -13,7 +13,7 @@ class ExtractZenodoArchivedUrlsStep(ExtractionPlugin):
 
     name = "zenodo.extract_archived_urls"
     platforms = {"gitlab", "github"}
-    extracts = {'archivedAt'}
+    extracts = {"https://schema.org/archivedAt"}
     priority_level = 102
     
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

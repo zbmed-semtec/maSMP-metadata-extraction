@@ -31,63 +31,11 @@ def build_enriched_metadata(
     - For maSMP: per-profile (SoftwareSourceCode / SoftwareApplication), with category.
     - For CODEMETA: flat \"codemeta\" profile without category.
     """
-    # # maSMP profiles
-    # if schema == "maSMP":
-    #     result: Dict[str, Dict[str, Dict[str, Any]]] = {}
-
-    #     for profile_key in ("maSMP:SoftwareSourceCode", "maSMP:SoftwareApplication"):
-    #         profile_data = jsonld_document.get(profile_key)
-    #         if not isinstance(profile_data, dict):
-    #             continue
-
-    #         result[profile_key] = {}
-    #         skip_keys = {"@context", "@type"}
-
-    #         for prop_key in profile_data.keys():
-    #             if prop_key in skip_keys:
-    #                 continue
-    #             entity_key = _jsonld_key_to_entity_key(prop_key)
-    #             record = extraction_metadata.get(entity_key, {})
-
-    #             # Default source/confidence from extraction metadata
-    #             source = record.get("source")
-    #             confidence = record.get("confidence")
-
-    #             # Version control system is a constant, schema-level recommendation
-    #             # rather than something inferred from external data.
-    #             if prop_key == "maSMP:versionControlSystem":
-    #                 source = "Constant"
-    #                 confidence = 1.0
-
-    #             result[profile_key][prop_key] = {
-    #                 "confidence": confidence,
-    #                 "source": source,
-    #                 "category": get_category_for_key(profile_key, prop_key),
-    #             }
-
-    #     return result
-
-    # # CODEMETA: flat profile, no category semantics (UI still shows source & confidence)
-    # if schema == "CODEMETA":
-    #     result: Dict[str, Dict[str, Dict[str, Any]]] = {"codemeta": {}}
-    #     skip_keys = {"@context", "@type"}
-
-    #     for prop_key in jsonld_document.keys():
-    #         if prop_key in skip_keys:
-    #             continue
-    #         entity_key = _jsonld_key_to_entity_key(prop_key)
-    #         record = extraction_metadata.get(entity_key, {})
-    #         result["codemeta"][prop_key] = {
-    #             "confidence": record.get("confidence"),
-    #             "source": record.get("source"),
-    #             "category": None,
-    #         }
-
-    #     return result
-
+   
     result = {}
     for prop in schema.get_property_list():
-        for record in collector.get(prop).values():
+        uri = schema.get_uri(prop)
+        for record in collector.get(uri).values():
             record : MetadataProperty = record
             category = schema.get_categories_of(property_name=record.property_name)
             if isinstance(category, list):

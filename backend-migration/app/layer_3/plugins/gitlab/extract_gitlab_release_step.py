@@ -9,7 +9,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabReleaseStep(ExtractionPlugin):
     name = "gitlab.extract_release"
     platforms = {"gitlab"}
-    extracts = {"version", "softwareVersion"}
+    extracts = {"https://schema.org/version", "https://schema.org/softwareVersion"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
@@ -20,8 +20,8 @@ class ExtractGitlabReleaseStep(ExtractionPlugin):
         softwareVersion =release.get("tag_name")
         version =release.get("tag_name")
         has_release =True
-        state.metadata_collector.collect(self.name, "softwareVersion", softwareVersion)
-        state.metadata_collector.collect(self.name, "version", version)
+        state.metadata_collector.collect(self.name, "https://schema.org/softwareVersion", softwareVersion)
+        state.metadata_collector.collect(self.name, "https://schema.org/version", version)
         return state
 
 

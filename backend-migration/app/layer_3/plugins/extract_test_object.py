@@ -10,11 +10,11 @@ class ExtractOpenAlexAlternateNamesStep(ExtractionPlugin):
     """Extract OpenAlex title candidates for metadata.alternateName."""
 
     name = "extract.test_object"
-    extracts = {"testObject"}
+    extracts = {"https://schema.org/value"}
     platforms = {'github', 'gitlab'}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
-        state.metadata_collector.collect(self.name, "testObject", 43, 0.67)
+        state.metadata_collector.collect(self.name, "https://schema.org/value", 43, 0.67)
         return state
 
     def applicable(self, context):

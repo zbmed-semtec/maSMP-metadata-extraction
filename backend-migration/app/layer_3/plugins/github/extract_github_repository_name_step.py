@@ -7,14 +7,14 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubRepositoryNameStep(ExtractionPlugin):
     name = "github.extract_repository_name"
-    extracts = {"name"}
-    platforms = {"github"}
+    extracts = {"https://schema.org/name"}
+    platforms = {"github.com"}
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
         repo_data = ppp.github_repo_payload(context, state)
         name = repo_data.get("name")
         if name is not None:
-            state.metadata_collector.collect(self.name, 'name', name)
+            state.metadata_collector.collect(self.name, "https://schema.org/name", name)
         return state
 
 

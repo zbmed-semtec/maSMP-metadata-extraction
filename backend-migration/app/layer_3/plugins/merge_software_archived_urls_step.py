@@ -19,7 +19,7 @@ class MergeSoftwareArchivedUrlsStep(ExtractionPlugin):
 
     name = "software.merge_archived_urls"
     platforms = {"gitlab", "github"}    
-    extracts = {"archivedAt"}
+    extracts = {"https://schema.org/archivedAt"}
  
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
 
@@ -28,11 +28,11 @@ class MergeSoftwareArchivedUrlsStep(ExtractionPlugin):
         wayback_url = state.data.get("extracted_wayback_archive_url")
 
         # if heritage_url:
-        #     state.metadata_collector.collect(ExtractSoftwareHeritageArchivedUrlStep.name, 'archivedAt', heritage_url)
+        #     state.metadata_collector.collect(ExtractSoftwareHeritageArchivedUrlStep.name, "https://schema.org/archivedAt", heritage_url)
         # if zenodo_urls:
-        #     state.metadata_collector.collect(ExtractZenodoArchivedUrlsStep.name, 'archivedAt', zenodo_urls)
+        #     state.metadata_collector.collect(ExtractZenodoArchivedUrlsStep.name, "https://schema.org/archivedAt", zenodo_urls)
         # if wayback_url:
-        #     state.metadata_collector.collect(ExtractWaybackArchivedUrlStep.name, 'archivedAt', wayback_url)
+        #     state.metadata_collector.collect(ExtractWaybackArchivedUrlStep.name, "https://schema.org/archivedAt", wayback_url)
 
         candidates = [*zenodo_urls, heritage_url, wayback_url]
         archived_urls = []
@@ -42,18 +42,18 @@ class MergeSoftwareArchivedUrlsStep(ExtractionPlugin):
         if not archived_urls:
             return state
         
-        state.metadata_collector.collect(self.name, 'archivedAt', archived_urls)
+        state.metadata_collector.collect(self.name, "https://schema.org/archivedAt", archived_urls)
 
 
         # state.metadata.archivedAt = archived_urls
         # if zenodo_urls:
-        #     record_field_provenance(state, "archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
+        #     record_field_provenance(state, "https://schema.org/archivedAt", SOURCE_ZENODO_BADGE, CONFIDENCE_ARCHIVE)
         # if heritage_url:
         #     record_field_provenance(
-        #         state, "archivedAt", SOURCE_SOFTWARE_HERITAGE, CONFIDENCE_ARCHIVE
+        #         state, "https://schema.org/archivedAt", SOURCE_SOFTWARE_HERITAGE, CONFIDENCE_ARCHIVE
         #     )
         # if wayback_url:
-        #     record_field_provenance(state, "archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
+        #     record_field_provenance(state, "https://schema.org/archivedAt", SOURCE_WAYBACK, CONFIDENCE_ARCHIVE)
         return state
 
 

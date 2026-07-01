@@ -9,7 +9,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubSourceCodeStep(ExtractionPlugin):
     name = "github.extract_source_code"
-    extracts = {"hasSourceCode"}
+    extracts = {"https://codemeta.github.io/terms/hasSourceCode"}
     platforms = {"github"}
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
@@ -19,7 +19,7 @@ class ExtractGithubSourceCodeStep(ExtractionPlugin):
             return state
         source_url = f"{html_url}#id"
         hasSourceCode = source_url
-        state.metadata_collector.collect(self.name, "hasSourceCode", hasSourceCode)
+        state.metadata_collector.collect(self.name, "https://codemeta.github.io/terms/hasSourceCode", hasSourceCode)
         return state
 
 

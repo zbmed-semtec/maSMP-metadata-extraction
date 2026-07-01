@@ -10,7 +10,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGithubIssueTrackerStep(ExtractionPlugin):
     name = "github.extract_issue_tracker"
 
-    extracts = {"issueTracker", "codemeta:issueTracker", "discussionUrl"}
+    extracts = {"https://schema.org/issueTracker", "https://codemeta.github.io/terms/issueTracker", "https://schema.org/discussionUrl"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -20,10 +20,10 @@ class ExtractGithubIssueTrackerStep(ExtractionPlugin):
         if not html_url:
             return state
         issueTracker = f"{html_url}/issues"
-        state.metadata_collector.collect(self.name, "issueTracker", issueTracker)
+        state.metadata_collector.collect(self.name, "https://schema.org/issueTracker", issueTracker)
         if repo_data.get("has_discussions"):
             discussionUrl = f"{html_url}/discussions"
-            state.metadata_collector.collect(self.name, "discussionUrl", discussionUrl)
+            state.metadata_collector.collect(self.name, "https://schema.org/discussionUrl", discussionUrl)
         return state
 
 

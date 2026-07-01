@@ -11,7 +11,7 @@ class ExtractCitationKeywordsStep(ExtractionPlugin):
     """Extract CFF keywords without mutating metadata."""
 
     name = "citation.extract_keywords"
-    extracts = {'keywords'}
+    extracts = {"https://schema.org/keywords"}
     platforms = {"gitlab", "github"}
     priority_level = 102
 

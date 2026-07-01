@@ -1,4 +1,4 @@
-"""GitHub README/CHANGELOG discovery steps."""
+"""GitHub README/changeLog discovery steps."""
 
 from app.layer_3.steps.contracts import ExtractionStep
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
@@ -13,7 +13,7 @@ class ExtractGithubMetadataFilesStep(ExtractionPlugin):
 
     name = "github.extract_metadata_files"
 
-    extracts = {"readme", "changelog"}
+    extracts = {"https://codemeta.github.io/terms/readme", "https://discovery.biothings.io/ns/maSMP/changeLog"}
     platforms = {"github"}
     priority_level = 101
 
@@ -23,8 +23,8 @@ class ExtractGithubMetadataFilesStep(ExtractionPlugin):
         base_url = (state.data.get("normalized_repo_url") or context.repo_url or "").rstrip("/")
         branches = ("main", "master")
         state.data["metadata_file_candidates"] = {
-            "readme": [f"{base_url}/blob/{branch}/README.md" for branch in branches],
-            "changelog": [f"{base_url}/blob/{branch}/CHANGELOG.md" for branch in branches],
+            "https://codemeta.github.io/terms/readme": [f"{base_url}/blob/{branch}/README.md" for branch in branches],
+            "https://discovery.biothings.io/ns/maSMP/changeLog": [f"{base_url}/blob/{branch}/changeLog.md" for branch in branches],
         }
         return state
 

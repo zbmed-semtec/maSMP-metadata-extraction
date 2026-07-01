@@ -16,7 +16,7 @@ class ExtractCodemetaReadmeLinkStep(ExtractionPlugin):
     """Set ``metadata.codemeta_readme`` from the first reachable candidate URL."""
 
     name = "platform.extract_codemeta_readme_link"
-    extracts = {"readme"}
+    extracts = {"https://codemeta.github.io/terms/readme"}
     platforms = {"gitlab", "github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

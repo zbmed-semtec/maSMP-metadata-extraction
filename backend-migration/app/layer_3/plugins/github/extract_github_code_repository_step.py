@@ -7,7 +7,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGithubCodeRepositoryStep(ExtractionPlugin):
     name = "github.extract_code_repository"
 
-    extracts = {"codeRepository"}
+    extracts = {"https://schema.org/codeRepository"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -16,7 +16,7 @@ class ExtractGithubCodeRepositoryStep(ExtractionPlugin):
 
         html_url = repo_data.get("html_url")
         if html_url:
-            state.metadata_collector.collect(self.name, "codeRepository", f"{html_url}.git")
+            state.metadata_collector.collect(self.name, "https://schema.org/codeRepository", f"{html_url}.git")
 
         return state
 

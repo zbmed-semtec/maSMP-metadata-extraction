@@ -10,7 +10,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGithubKeywordsStep(ExtractionPlugin):
     name = "github.extract_keywords"
 
-    extracts = {"keywords"}
+    extracts = {"https://schema.org/keywords"}
     priority_level = 102
     platforms = {"github"}
 
@@ -19,7 +19,7 @@ class ExtractGithubKeywordsStep(ExtractionPlugin):
         repo_data = ppp.github_repo_payload(context, state)
         topics = repo_data.get("topics") or []
         if topics:
-            state.metadata_collector.collect(self.name, "keywords", topics)
+            state.metadata_collector.collect(self.name, "https://schema.org/keywords", topics)
         return state
 
 

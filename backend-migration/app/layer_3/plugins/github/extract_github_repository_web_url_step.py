@@ -6,7 +6,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubRepositoryWebUrlStep(ExtractionPlugin):
     name = "github.extract_repository_web_url"
-    extracts = {"url"}
+    extracts = {"https://schema.org/url"}
     platforms = {"github"}
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get("platform-payloads-plugin")
@@ -14,7 +14,7 @@ class ExtractGithubRepositoryWebUrlStep(ExtractionPlugin):
         
         url = repo_data.get("html_url")
         if url is not None:
-            state.metadata_collector.collect(self.name, 'url', url)
+            state.metadata_collector.collect(self.name, "https://schema.org/url", url)
 
         return state
 

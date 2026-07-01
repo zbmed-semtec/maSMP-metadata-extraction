@@ -11,7 +11,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabLicenseStep(ExtractionPlugin):
     name = "gitlab.extract_license"
     platforms = {"gitlab"}
-    extracts = {'license'}
+    extracts = {"https://schema.org/license"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
@@ -20,7 +20,7 @@ class ExtractGitlabLicenseStep(ExtractionPlugin):
         license_info = payload.get("license") if isinstance(payload, dict) else None
         if license_info:
             license = License(name=license_info.get("name"), url=license_info.get("url"))
-            state.metadata_collector.collect(self.name, "license", license)
+            state.metadata_collector.collect(self.name, "https://schema.org/license", license)
         return state
 
 

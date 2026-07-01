@@ -22,18 +22,18 @@ class MergeSoftwareReferencePublicationStep(ExtractionPlugin):
     name = "software.merge_reference_publication"
     platforms = {"gitlab", "github"}
     priority_level = 99
-    extracts = {"referencePublication"}
+    extracts = {"https://discovery.biothings.io/ns/maSMP/referencePublication"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         
         reference = state.data.get("extracted_preferred_reference_publication")
         if reference:
-            state.metadata_collector.collect(ExtractCitationReferencePublicationStep.name, "referencePublication", reference)
+            state.metadata_collector.collect(ExtractCitationReferencePublicationStep.name, "https://discovery.biothings.io/ns/maSMP/referencePublication", reference)
             return state
 
         openalex_reference = state.data.get("extracted_openalex_reference_publication")
         if openalex_reference:
-            state.metadata_collector.collect(ExtractOpenAlexReferencePublicationStep.name, "referencePublication", openalex_reference)
+            state.metadata_collector.collect(ExtractOpenAlexReferencePublicationStep.name, "https://discovery.biothings.io/ns/maSMP/referencePublication", openalex_reference)
             return state
 
         title = state.data.get("bibtex_title")
@@ -44,7 +44,7 @@ class MergeSoftwareReferencePublicationStep(ExtractionPlugin):
                 name=title,
                 author=authors if authors else None,
             )
-            state.metadata_collector.collect(self.name, 'referencePublication', codemeta_referencePublication)
+            state.metadata_collector.collect(self.name, "https://discovery.biothings.io/ns/maSMP/referencePublication", codemeta_referencePublication)
         return state
 
 

@@ -26,7 +26,7 @@ class ExtractSoftwareHeritageArchivedUrlStep(ExtractionPlugin):
 
     name = "software_heritage.extract_archived_url"
     platforms = {"gitlab", "github"}
-    extracts = {'archivedAt'}
+    extracts = {"https://schema.org/archivedAt"}
     priority_level = 102
 
 

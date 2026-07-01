@@ -9,7 +9,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabKeywordsStep(ExtractionPlugin):
     name = "gitlab.extract_keywords"
     platforms = {"gitlab"}
-    extracts = {'keywords'}
+    extracts = {"https://schema.org/keywords"}
     priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

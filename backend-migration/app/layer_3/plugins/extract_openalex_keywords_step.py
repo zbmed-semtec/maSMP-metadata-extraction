@@ -25,7 +25,7 @@ class ExtractOpenAlexKeywordsStep(ExtractionPlugin):
     name = "openalex.extract_keywords"
     client : OpenAlexClient
     platforms = {"github", "gitlab"}
-    extracts = {'keywords'}
+    extracts = {"https://schema.org/keywords"}
     priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

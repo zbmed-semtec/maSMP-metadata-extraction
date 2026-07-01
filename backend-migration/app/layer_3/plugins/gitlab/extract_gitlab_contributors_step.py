@@ -10,7 +10,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabContributorsStep(ExtractionPlugin):
     name = "gitlab.extract_contributors"
     platforms = {"gitlab"}
-    extracts = {"contributor"}
+    extracts = {"https://schema.org/contributor"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
@@ -18,10 +18,10 @@ class ExtractGitlabContributorsStep(ExtractionPlugin):
         
         if payload:
             contributor = [
-                {"@type": "Person", "name": c.get("name"), "email": c.get("email")}
+                {"@type": "Person", "https://schema.org/name": c.get("name"), "email": c.get("email")}
                 for c in payload
             ]
-            state.metadata_collector.collect(self.name, "contributor", contributor)
+            state.metadata_collector.collect(self.name, "https://schema.org/contributor", contributor)
         return state
 
 

@@ -18,7 +18,7 @@ class MergeSoftwareIdentifiersStep(ExtractionPlugin):
 
     name = "software.merge_identifiers"
     platforms = {"gitlab", "github"}
-    extracts = {"identifier"}
+    extracts = {"https://schema.org/identifier"}
     priority_level = 98
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -31,9 +31,9 @@ class MergeSoftwareIdentifiersStep(ExtractionPlugin):
 
         for citation in citation_identifiers:
             if citation:
-                state.metadata_collector.collect(ExtractCitationDoiStep.name, 'identifier', citation)
+                state.metadata_collector.collect(ExtractCitationDoiStep.name, "https://schema.org/identifier", citation)
         if readme_identifier:
-            state.metadata_collector.collect(ExtractReadmeIdentifierStep.name, 'identifier', readme_identifier)
+            state.metadata_collector.collect(ExtractReadmeIdentifierStep.name, "https://schema.org/identifier", readme_identifier)
         return state
 
 

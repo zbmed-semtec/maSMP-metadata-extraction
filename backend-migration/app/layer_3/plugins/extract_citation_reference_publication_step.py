@@ -13,7 +13,7 @@ class ExtractCitationReferencePublicationStep(ExtractionPlugin):
     """Build preferred citation values without mutating metadata."""
 
     name = "citation.extract_reference_publication"
-    extracts = {"referencePublication", "identifier", "author", "citation", "alternateName"}
+    extracts = {"https://discovery.biothings.io/ns/maSMP/referencePublication", "https://schema.org/identifier", "https://schema.org/author", "https://schema.org/citation", "alternateName"}
     platforms = {"gitlab", "github"}
     priority_level = 102
 

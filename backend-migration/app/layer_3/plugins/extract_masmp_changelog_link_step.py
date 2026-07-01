@@ -1,4 +1,4 @@
-"""Resolve ``masmp_changelog`` from prepared CHANGELOG URL candidates."""
+"""Resolve ``masmp_changeLog`` from prepared changeLog URL candidates."""
 
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
@@ -11,11 +11,11 @@ def first_reachable_url(urls: list[str], is_file_reachable_fn: Callable[[str], b
             return url
     return None
 
-class ExtractMasmpChangelogLinkStep(ExtractionPlugin):
-    """Set ``metadata.masmp_changelog`` from the first reachable candidate URL."""
+class ExtractMasmpchangeLogLinkStep(ExtractionPlugin):
+    """Set ``metadata.masmp_changeLog`` from the first reachable candidate URL."""
 
-    name = "platform.extract_masmp_changelog_link"
-    extracts = {"changelog"}
+    name = "platform.extract_masmp_changeLog_link"
+    extracts = {"https://discovery.biothings.io/ns/maSMP/changeLog"}
     platforms = {"github", "gitlab"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -24,10 +24,10 @@ class ExtractMasmpChangelogLinkStep(ExtractionPlugin):
         if not callable(is_file_reachable_fn):
             return state
 
-        changelog_url = first_reachable_url(candidates.get("changelog") or [], is_file_reachable_fn)
-        if changelog_url:
-            masmp_changelog =changelog_url
-            state.metadata_collector.collect(self.name, "changelog", masmp_changelog)
+        changeLog_url = first_reachable_url(candidates.get("changeLog") or [], is_file_reachable_fn)
+        if changeLog_url:
+            masmp_changeLog =changeLog_url
+            state.metadata_collector.collect(self.name, "https://discovery.biothings.io/ns/maSMP/changeLog", masmp_changeLog)
 
         return state
 

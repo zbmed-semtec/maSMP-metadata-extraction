@@ -11,8 +11,8 @@ class ExtractCitationTitleStep(ExtractionPlugin):
     """Extract CFF title without mutating metadata."""
 
     name = "citation.extract_title"
-    extracts = {"name"}
-    platforms = {"gitlab", "github"}
+    extracts = {"https://schema.org/name"}
+    platforms = {"gitlab.com", "github.com"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         cpp : CffParsePlugin = self.plugin_manager.get('cff-parse-plugin')

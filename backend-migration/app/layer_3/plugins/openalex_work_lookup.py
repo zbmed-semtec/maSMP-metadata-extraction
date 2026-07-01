@@ -21,7 +21,7 @@ def get_openalex_work(state: ExtractionState, client: OpenAlexClient) -> tuple[O
 def _resolve_effective_doi(metadata: MetadataCollector, doi: Optional[str]) -> Optional[str]:
     if doi:
         return doi.replace("https://doi.org/", "")
-    id_value = [val.property_value for val in metadata.get('identifier').values()]
+    id_value = [val.property_value for val in metadata.get("identifier").values()]
     candidate = None
     if isinstance(id_value, list):
         candidate = next((v for v in id_value if isinstance(v, str) and "doi.org" in v), None)

@@ -11,7 +11,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGithubLicenseStep(ExtractionPlugin):
     name = "github.extract_license"
 
-    extracts = {"license"}
+    extracts = {"https://schema.org/license"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -20,7 +20,7 @@ class ExtractGithubLicenseStep(ExtractionPlugin):
         license_info = payload.get("license") if isinstance(payload, dict) else None
         if license_info:
             license = License(name=license_info.get("name"), url=license_info.get("url"))
-            state.metadata_collector.collect(self.name, 'license', license)
+            state.metadata_collector.collect(self.name, "https://schema.org/license", license)
         return state
 
 

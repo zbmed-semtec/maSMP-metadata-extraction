@@ -19,7 +19,7 @@ class MergeSoftwareKeywordsStep(ExtractionPlugin):
 
     name = "software.merge_keywords"
     platforms = {"gitlab", "github"}
-    extracts = {"keywords"}
+    extracts = {"https://schema.org/keywords"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
 
@@ -31,11 +31,11 @@ class MergeSoftwareKeywordsStep(ExtractionPlugin):
         if not keywords:
             return state
 
-        # state.metadata_collector.collect(ExtractCitationKeywordsStep.name, 'keywords', citation_keywords)
-        # state.metadata_collector.collect(ExtractOpenAlexKeywordsStep.name, 'keywords', openalex_keywords)
-        # state.metadata_collector.collect(ExtractGitlabKeywordsStep.name, 'keywords', platform_keywords)
+        # state.metadata_collector.collect(ExtractCitationKeywordsStep.name, "https://schema.org/keywords", citation_keywords)
+        # state.metadata_collector.collect(ExtractOpenAlexKeywordsStep.name, "https://schema.org/keywords", openalex_keywords)
+        # state.metadata_collector.collect(ExtractGitlabKeywordsStep.name, "https://schema.org/keywords", platform_keywords)
 
-        state.metadata_collector.collect(self.name, 'keywords', keywords)
+        state.metadata_collector.collect(self.name, "https://schema.org/keywords", keywords)
 
         return state
 

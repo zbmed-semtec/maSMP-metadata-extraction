@@ -12,7 +12,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGitlabRepositoryWebUrlStep(ExtractionPlugin):
     name = "gitlab.extract_repository_web_url"
     platforms = {"gitlab"}
-    extracts = {"url"}
+    extracts = {"https://schema.org/url"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
@@ -21,7 +21,7 @@ class ExtractGitlabRepositoryWebUrlStep(ExtractionPlugin):
         record: Callable[[str], None] | None = state.data.get("record_field")
 
         url = project.get("web_url")
-        state.metadata_collector.collect(self.name, "url", url)
+        state.metadata_collector.collect(self.name, "https://schema.org/url", url)
 
         return state
 

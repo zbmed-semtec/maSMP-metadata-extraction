@@ -12,7 +12,7 @@ class MergeSoftwareCitationEntriesStep(ExtractionPlugin):
 
     name = "software.merge_citation_entries"
     platforms = {"gitlab", "github"}
-    extracts = {'citation'}
+    extracts = {"https://schema.org/citation"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         self.plugin_manager.get(ExtractCitationDoiStep.name).extract(context, state)
@@ -30,7 +30,7 @@ class MergeSoftwareCitationEntriesStep(ExtractionPlugin):
                 merged.append(entry)
 
         if len(merged) > 0:
-            state.metadata_collector.collect(self.name, 'citation', merged)
+            state.metadata_collector.collect(self.name, "https://schema.org/citation", merged)
 
         return state
 

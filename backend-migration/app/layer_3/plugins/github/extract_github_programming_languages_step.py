@@ -7,7 +7,7 @@ from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 class ExtractGithubProgrammingLanguagesStep(ExtractionPlugin):
     name = "github.extract_programming_languages"
 
-    extracts = {"programmingLanguage"}
+    extracts = {"https://schema.org/programmingLanguage"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -16,7 +16,7 @@ class ExtractGithubProgrammingLanguagesStep(ExtractionPlugin):
         languages = ppp.github_languages_payload(context, state)
         if languages:
             programmingLanguage =list(languages.keys())
-            state.metadata_collector.collect(self.name, "programmingLanguage", programmingLanguage)
+            state.metadata_collector.collect(self.name, "https://schema.org/programmingLanguage", programmingLanguage)
         return state
 
 def github_programming_language_steps() -> tuple[ExtractionStep, ...]:

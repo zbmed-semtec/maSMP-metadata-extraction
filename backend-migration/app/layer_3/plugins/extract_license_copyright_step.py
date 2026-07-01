@@ -14,7 +14,7 @@ class ExtractLicenseCopyrightStep(ExtractionPlugin):
 
     name = "license.extract_copyright"
     platforms = {"gitlab", "github"}
-    extracts = {'license', "copyrightHolder"}
+    extracts = {"https://schema.org/license", "https://schema.org/copyrightHolder"}
     priority_level = 102
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:

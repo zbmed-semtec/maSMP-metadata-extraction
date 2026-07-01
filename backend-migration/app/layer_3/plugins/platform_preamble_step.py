@@ -11,7 +11,7 @@ class CommonPlatformPreambleStep(ExtractionPlugin):
     # higher priority, runs before other plugins
     priority_level = 102
 
-    extracts = {"readme", "changelog", "softwareRequirements"}
+    extracts = {"https://codemeta.github.io/terms/readme", "https://discovery.biothings.io/ns/maSMP/changeLog", "softwareRequirements"}
     
     # always applicable
     platforms = {}

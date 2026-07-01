@@ -5,15 +5,12 @@ description: Metadata Schema for Scientific Software
 
 prefixes:
   linkml: https://w3id.org/linkml/
-  schema: https://schema.org/
   codemeta: https://codemeta.github.io/terms/
   maSMP: https://discovery.biothings.io/ns/maSMP/
+  schema: https://schema.org/
 
 default_prefix: maSMP
 default_range: string
-
-imports:
-  - linkml:types
 
 classes:
 
@@ -60,7 +57,6 @@ classes:
       - deployInstructions
       - installInstructions
       - testInstructions
-      - testObject
 
   SoftwareApplication:
     description: A deployed software application
@@ -137,7 +133,7 @@ slots:
     categories:
       - recommended
     range: string
-    slot_uri: schtestInputema:citation
+    slot_uri: schema:citation
 
   license:
     categories:
@@ -193,3 +189,187 @@ slots:
       - recommended
     range: string
     slot_uri: schema:softwareVersion
+
+  hasSourceCode:
+    categories:
+      - required
+    required: true
+    slot_uri: codemeta:hasSourceCode
+
+  contributor:
+    categories:
+      - recommended
+    required: false
+    slot_uri: schema:contributor
+
+  copyrightHolder:
+    categories:
+      - optional
+    required: false
+    slot_uri: schema:copyrightHolder
+
+  dateCreated:
+    categories:
+      - recommended
+    required: false
+    slot_uri: schema:dateCreated
+
+  dateModified:
+    categories:
+      - recommended
+    required: false
+    slot_uri: schema:dateModified
+
+  datePublished:
+    categories:
+      - recommended
+    required: false
+    slot_uri: schema:datePublished
+
+  isAccessibleForFree:
+    categories:
+      - optional
+    required: false
+    slot_uri: schema:isAccessibleForFree
+
+  issueTracker:
+    categories:
+      - optional
+    required: false
+    slot_uri: schema:issueTracker
+
+  # --- Optional Properties (NEWLY ADDED) ---
+  codeSampleType:
+    description: The type of code sample (e.g., example, snippet, template)
+    categories:
+      - optional
+    required: false
+    range: string
+    slot_uri: maSMP:codeSampleType
+
+  runtimePlatform:
+    description: The runtime platform(s) required to run the software (e.g., Python 3.8+, Java 11)
+    categories:
+      - optional
+    required: false
+    range: string
+    multivalued: true
+    slot_uri: schema:runtimePlatform
+
+  conditionOfAccess:
+    description: The conditions under which the software is accessible (e.g., login required, open access)
+    categories:
+      - optional
+    required: false
+    range: string
+    slot_uri: schema:conditionOfAccess
+
+  discussionUrl:
+    description: URL to a forum or discussion thread for the software
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: schema:discussionUrl
+
+  maintainer:
+    description: The person or organization that maintains the software
+    categories:
+      - optional
+    required: false
+    range: string
+    multivalued: true
+    slot_uri: schema:maintainer
+
+  buildInstructions:
+    description: URL to build or compilation instructions
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: maSMP:buildInstructions
+
+  referencePublication:
+    description: Reference to a publication associated with this software
+    categories:
+      - optional
+    required: false
+    range: uri
+    multivalued: true
+    slot_uri: maSMP:referencePublication
+
+  developerDocumentation:
+    description: URL to developer or API documentation
+    categories:
+      - optional
+    required: false
+    range: uri
+    multivalued: true
+    slot_uri: maSMP:developerDocumentation
+
+  learningResource:
+    description: URL to learning resources, tutorials, or training materials
+    categories:
+      - optional
+    required: false
+    range: uri
+    multivalued: true
+    slot_uri: maSMP:learningResource
+
+  changeLog:
+    description: URL to the software change log or release history
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: maSMP:changeLog
+
+  testedWith:
+    description: List of software versions or environments the software has been tested with
+    categories:
+      - optional
+    required: false
+    range: string
+    multivalued: true
+    slot_uri: maSMP:testedWith
+
+  userDocumentation:
+    description: URL to end-user documentation
+    categories:
+      - optional
+    required: false
+    range: uri
+    multivalued: true
+    slot_uri: maSMP:userDocumentation
+
+  deployInstructions:
+    description: URL to deployment instructions
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: maSMP:deployInstructions
+
+  installInstructions:
+    description: URL to installation instructions
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: maSMP:installInstructions
+
+  testInstructions:
+    description: URL to testing instructions
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: maSMP:testInstructions
+
+  softwareRequirement:
+    description: URL to testing instructions
+    categories:
+      - optional
+    required: false
+    range: uri
+    slot_uri: maSMP:softwareRequirements

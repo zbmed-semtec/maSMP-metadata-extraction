@@ -19,7 +19,7 @@ class ExtractReadmeIdentifierStep(ExtractionPlugin):
 
     name = "readme.extract_identifier"
     platforms = {"gitlab", "github"}
-    extracts = {"identifier"}
+    extracts = {"https://schema.org/identifier"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         rfp : RepositoryFilesPlugin = self.plugin_manager.get("repository-files-plugin")

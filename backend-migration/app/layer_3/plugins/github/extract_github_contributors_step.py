@@ -9,7 +9,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGithubContributorsStep(ExtractionPlugin):
     name = "github.extract_contributors"
 
-    extracts = {"contributor"}
+    extracts = {"https://schema.org/contributor"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -17,7 +17,7 @@ class ExtractGithubContributorsStep(ExtractionPlugin):
         payload = ppp.github_contributors_payload(context, state)
         if payload:
             contributor = [{"@type": "Person", "url": c.get("html_url")} for c in payload]
-            state.metadata_collector.collect(self.name, "contributor", contributor)
+            state.metadata_collector.collect(self.name, "https://schema.org/contributor", contributor)
         return state
 
 
