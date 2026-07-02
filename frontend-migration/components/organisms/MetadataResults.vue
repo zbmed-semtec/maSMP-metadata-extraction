@@ -18,73 +18,41 @@
       </Button>
     </div>
 
-    <!-- maSMP: tabs + Required / Recommended / Optional -->
-    <template v-if="false">
-      <div class="border-b border-gray-200">
-        <nav class="-mb-px flex gap-4" aria-label="Result profiles">
-          <button
-            v-for="tab in masmpTabs"
-            :key="tab.key"
-            type="button"
-            :class="[
-              'border-b-2 px-1 py-3 text-sm font-medium transition-colors',
-              activeTab === tab.key
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-            ]"
-            @click="activeTab = tab.key"
-          >
-            {{ tab.label }}
-          </button>
-        </nav>
-      </div>
-      <div class="space-y-8">
-        <section
-          v-for="cat in categoryConfig"
-          :key="cat.key"
-          class="rounded-xl border-2 overflow-hidden"
-          :class="cat.sectionClass"
+    <!-- Required / Recommended / Optional sections (works for maSMP and CodeMeta alike) -->
+    <div class="space-y-8">
+      <section
+        v-for="cat in categoryConfig"
+        :key="cat.key"
+        class="rounded-xl border-2 overflow-hidden"
+        :class="cat.sectionClass"
+      >
+        <header
+          class="flex items-center gap-3 px-4 py-3 font-semibold"
+          :class="cat.headerClass"
         >
-          <header
-            class="flex items-center gap-3 px-4 py-3 font-semibold"
-            :class="cat.headerClass"
+          <span
+            class="rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
+            :class="cat.badgeClass"
           >
-            <span
-              class="rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
-              :class="cat.badgeClass"
-            >
-              {{ cat.key }}
-            </span>
-            <span :class="cat.titleClass">{{ cat.label }}</span>
-          </header>
-          <div class="border-t bg-white" :class="cat.borderClass">
-            <ResultTable
-              :rows="rowsByCategory(activeTab, cat.key)"
-              :show-source="true"
-              :show-confidence="true"
-            />
-          </div>
-        </section>
-      </div>
-    </template>
-
-    <!-- CodeMeta: single section -->
-    <template v-else>
-      <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-600">
-        CodeMeta metadata
-      </h3>
-      <ResultTable
-        :rows="codemetaRows"
-        :show-source="true"
-        :show-confidence="true"
-      />
-    </template>
+            {{ cat.key }}
+          </span>
+          <span :class="cat.titleClass">{{ cat.label }}</span>
+        </header>
+        <div class="border-t bg-white" :class="cat.borderClass">
+          <ResultTable
+            :rows="rowsByCategory(cat.key)"
+            :show-source="true"
+            :show-confidence="true"
+          />
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ExtractionStreamResult, EnrichedProperty } from '../../composables/useApi'
-import {ref, computed} from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps<{
   result: ExtractionStreamResult
@@ -120,51 +88,40 @@ const categoryConfig = [
   }
 ] as const
 
-const masmpTabs = [
-  { key: 'maSMP:SoftwareSourceCode', label: 'Software source code' },
-  { key: 'maSMP:SoftwareApplication', label: 'Software application' }
-]
-
-const activeTab = ref('maSMP:SoftwareSourceCode')
-
-const isMaSMP = computed(() => {
-  const s = props.result.schema?.toLowerCase()
-  return s === 'masmp' || s === 'maSMP'
-})
-
-const profileData = (profileKey: string): Record<string, unknown> => {
-  const data = props.result.results?.[profileKey]
-  return data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, unknown> : {}
-}
-
-const enrichedForProfile = (profileKey: string): Record<string, EnrichedProperty> => {
-  const data = props.result.enriched_metadata?.[profileKey]
-  return data && typeof data === 'object' ? data as Record<string, EnrichedProperty> : {}
-}
-
 export interface AuthorDisplayItem {
   name: string
   url?: string
 }
 
-/** Single name + optional URL (e.g. license, identifier). */
 export interface NamedLinkItem {
   name: string
   url?: string
 }
 
-/** Reference publication as a bibliography card. */
 export interface BibCardItem {
   title: string
   authors: string
   url?: string
 }
 
-function rowsByCategory(profileKey: string, category: string): { property: string; value: string; source: string | string[]; confidence: string; authorItems?: AuthorDisplayItem[] }[] {
-  const data = profileData(profileKey)
-  const enriched = enrichedForProfile(profileKey)
+/** The actual data object (flat map of property -> value). */
+const resultData = computed<Record<string, unknown>>(() => {
+  const data = props.result?.results
+  return data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, unknown> : {}
+})
+
+/** The enriched metadata map (flat map of property -> { confidence, source, category }). */
+const enrichedData = computed<Record<string, EnrichedProperty>>(() => {
+  const data = props.result?.enriched_metadata
+  return data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, EnrichedProperty> : {}
+})
+
+function rowsByCategory(category: string) {
+  const data = resultData.value
+  const enriched = enrichedData.value
   const skip = new Set(['@context', '@type'])
   const catLower = category.toLowerCase()
+
   return Object.entries(data)
     .filter(([k]) => !skip.has(k))
     .filter(([k]) => {
@@ -191,46 +148,15 @@ function rowsByCategory(profileKey: string, category: string): { property: strin
     })
 }
 
-const codemetaRows = computed(() => {
-  const data = props.result.results
-  if (!data || typeof data !== 'object' || Array.isArray(data)) return []
-
-  const enriched = (props.result.enriched_metadata ?? {}) as Record<string, EnrichedProperty>
-  const skip = new Set(['@context', '@type'])
-
-  return Object.entries(data)
-    .filter(([k]) => !skip.has(k))
-    .map(([prop, val]) => {
-      const meta = enriched[prop] ?? {}
-      const authorItems = getAuthorItems(prop, val)
-      const contributorItems = getContributorItems(prop, val)
-      const namedLink = getNamedLink(prop, val)
-      const bibCard = getBibCard(prop, val)
-      const useSpecial = authorItems ?? contributorItems ?? namedLink ?? bibCard
-      return {
-        property: formatPropertyName(prop),
-        value: useSpecial ? '' : formatValueForProperty(prop, val),
-        source: meta.source ?? '—',
-        confidence: meta.confidence != null ? `${Math.round(Number(meta.confidence) * 100)}%` : '—',
-        ...(authorItems ? { authorItems } : {}),
-        ...(contributorItems ? { contributorItems } : {}),
-        ...(namedLink ? { namedLink } : {}),
-        ...(bibCard ? { bibCard } : {})
-      }
-    })
-})
-
 function formatPropertyName(key: string): string {
   return key.replace(/^[^:]+:/, '').replace(/([A-Z])/g, ' $1').trim() || key
 }
 
-/** If property is reference publication or citation, return bib card data; else null. */
 function getBibCard(prop: string, val: unknown): BibCardItem | null {
   const propLowerRaw = (formatPropertyName(prop) || prop).toLowerCase().replace(/\s+/g, '')
-  const refKeys = ['referencepublication', 'referencePublication', 'codemetareferencepublication', 'citation']
+  const refKeys = ['referencepublication', 'citation']
   if (!refKeys.some(k => propLowerRaw.includes(k))) return null
 
-  // For citation list, use the first entry.
   let refVal: unknown = val
   if (Array.isArray(val) && val.length > 0) {
     refVal = val[0]
@@ -268,7 +194,6 @@ function formatRefAuthors(author: unknown): string {
   return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
 }
 
-/** If property is license / identifier / version control system with object { name, url? }, return single named link; else null. */
 function getNamedLink(prop: string, val: unknown): NamedLinkItem | null {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
   if (propLower !== 'license' && propLower !== 'identifier' && propLower !== 'version control system') return null
@@ -284,7 +209,6 @@ function getNamedLink(prop: string, val: unknown): NamedLinkItem | null {
   return { name: name.trim(), ...(url ? { url } : {}) }
 }
 
-/** If property is author, return structured items for pill display; otherwise null. */
 function getAuthorItems(prop: string, val: unknown): AuthorDisplayItem[] | null {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
   if (propLower !== 'author') return null
@@ -299,7 +223,6 @@ function getAuthorItems(prop: string, val: unknown): AuthorDisplayItem[] | null 
   return items.length ? items : null
 }
 
-/** If property is contributor, return structured items (name or URL-derived label + link); else null. */
 function getContributorItems(prop: string, val: unknown): AuthorDisplayItem[] | null {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
   if (propLower !== 'contributor') return null
@@ -314,7 +237,6 @@ function getContributorItems(prop: string, val: unknown): AuthorDisplayItem[] | 
   return items.length ? items : null
 }
 
-/** Build a short label from a URL for display (e.g. "dgarijo" from github.com/dgarijo). */
 function labelFromUrl(url: string): string {
   try {
     const u = new URL(url)
@@ -328,20 +250,32 @@ function labelFromUrl(url: string): string {
   }
 }
 
-/** One contributor: name (or URL label) + optional url. Supports Person with only url (e.g. GitHub). */
 function toContributorDisplayItem(person: unknown): AuthorDisplayItem | null {
   if (person == null || typeof person !== 'object') return null
   const p = person as Record<string, unknown>
-  const withName = toAuthorDisplayItem(person)
-  if (withName) return withName
+
+  // Contributors in the new payload use "https://schema.org/name" instead of "name"
+  const name = (p.name ?? p['https://schema.org/name'] ?? '') as string
+  const given = (p.givenName ?? p.given_name ?? '') as string
+  const family = (p.familyName ?? p.family_name ?? '') as string
+  const fullName = (name && name.trim()) || [given, family].filter(Boolean).join(' ').trim()
+
+  if (fullName) {
+    let url: string | undefined
+    const rawId = (p['@id'] ?? p.id ?? p.url ?? '') as string
+    if (rawId && typeof rawId === 'string' && rawId.trim()) {
+      url = /^https?:\/\//i.test(rawId) ? rawId : rawId
+    }
+    return { name: fullName, ...(url ? { url } : {}) }
+  }
+
   const rawUrl = (p.url ?? p['@id'] ?? p.id ?? '') as string
   if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null
   const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl.replace(/^\/+/, '')}`
-  const name = labelFromUrl(url)
-  return { name, url }
+  const label = labelFromUrl(url)
+  return { name: label, url }
 }
 
-/** Format value for display; use author-specific formatting when property is author (fallback only). */
 function formatValueForProperty(prop: string, val: unknown): string {
   const propLower = (formatPropertyName(prop) || prop).toLowerCase()
   if (propLower === 'author') return formatAuthor(val)
@@ -351,13 +285,13 @@ function formatValueForProperty(prop: string, val: unknown): string {
 function toAuthorDisplayItem(person: unknown): AuthorDisplayItem | null {
   if (person == null || typeof person !== 'object') return null
   const p = person as Record<string, unknown>
+  const name = (p.name ?? p['https://schema.org/name'] ?? '') as string
   const given = (p.givenName ?? p.given_name ?? '') as string
   const family = (p.familyName ?? p.family_name ?? '') as string
-  const name = ((p.name as string) ?? [given, family].filter(Boolean).join(' ').trim()) || null
-  const fullName = (name && name.trim() ? name : [given, family].filter(Boolean).join(' ').trim()) || ''
+  const fullName = (name && name.trim()) || [given, family].filter(Boolean).join(' ').trim()
   if (!fullName) return null
   let url: string | undefined
-  const rawId = (p['@id'] ?? p.id ?? '') as string
+  const rawId = (p['@id'] ?? p.id ?? p.url ?? '') as string
   if (rawId && typeof rawId === 'string' && rawId.trim()) {
     url = /^https?:\/\//i.test(rawId) ? rawId : (rawId.startsWith('orcid.org') ? `https://${rawId}` : rawId)
   }
@@ -373,7 +307,6 @@ function formatValue(val: unknown): string {
   return String(val)
 }
 
-/** Format author (Person or array of Person) as readable "Full Name (ID)" lines, no JSON. */
 function formatAuthor(val: unknown): string {
   if (val == null) return '—'
   if (Array.isArray(val)) {
@@ -387,10 +320,10 @@ function formatAuthor(val: unknown): string {
 function formatOneAuthor(person: unknown): string {
   if (person == null || typeof person !== 'object') return ''
   const p = person as Record<string, unknown>
+  const name = (p.name ?? p['https://schema.org/name'] ?? '') as string
   const given = (p.givenName ?? p.given_name ?? '') as string
   const family = (p.familyName ?? p.family_name ?? '') as string
-  const name = ((p.name as string) ?? [given, family].filter(Boolean).join(' ').trim()) || null
-  const fullName = (name && name.trim() ? name : [given, family].filter(Boolean).join(' ').trim()) || ''
+  const fullName = (name && name.trim()) || [given, family].filter(Boolean).join(' ').trim()
   if (!fullName) return ''
 
   let id = (p['@id'] ?? p.id ?? '') as string

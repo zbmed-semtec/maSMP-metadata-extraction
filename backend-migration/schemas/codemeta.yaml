@@ -17,9 +17,6 @@ prefixes:
 default_prefix: codemeta
 default_range: string
 
-imports:
-  - linkml:types
-
 # ──────────────────────────────────────────────
 # SUBSETS  (map to required / recommended / optional)
 # ──────────────────────────────────────────────

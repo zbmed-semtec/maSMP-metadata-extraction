@@ -159,7 +159,7 @@
               </Button>
             </div>
 
-            <label
+            <!-- <label
               for="run-fairness"
               class="inline-flex items-center justify-start gap-2 w-full sm:flex-[0_0_26.5%]"
             >
@@ -172,7 +172,7 @@
               <span class="text-sm text-secondary-800">
                 Assess FAIRness
               </span>
-            </label>
+            </label> -->
           </div>
 
           <p v-if="error" class="text-sm text-red-600 sm:col-span-2">
@@ -368,7 +368,7 @@ const accessToken = computed({
   set: (v: string) => { extractionStore.accessToken = v },
 })
 
-const runFairness = ref(true)
+const runFairness = ref(false)
 
 const isLoading = ref(false)
 const error = computed({

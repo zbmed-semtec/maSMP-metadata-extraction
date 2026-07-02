@@ -81,42 +81,42 @@ slots:
   name:
     required: true
     categories:
-      - required
+      - Required
     range: string
     slot_uri: schema:name
 
   description:
     required: true
     categories:
-      - required
+      - Required
     range: string
     slot_uri: schema:description
 
   url:
     required: true
     categories:
-      - required
+      - Required
     range: uri
     slot_uri: schema:url
 
   codeRepository:
     required: true
     categories:
-      - required
+      - Required
     range: uri
     slot_uri: schema:codeRepository
 
   version:
     required: true
     categories:
-      - required
+      - Required
     range: string
     slot_uri: schema:version
 
   programmingLanguage:
     required: true
     categories:
-      - required
+      - Required
     range: string
     multivalued: true
     slot_uri: schema:programmingLanguage
@@ -124,117 +124,117 @@ slots:
   # --- Recommended ---
   author:
     categories:
-      - recommended
+      - Recommended
     range: string
     multivalued: true
     slot_uri: schema:author
 
   citation:
     categories:
-      - recommended
+      - Recommended
     range: string
     slot_uri: schema:citation
 
   license:
     categories:
-      - recommended
+      - Recommended
     range: uri
     slot_uri: schema:license
 
   identifier:
     categories:
-      - recommended
+      - Recommended
     range: string
     slot_uri: schema:identifier
 
   keywords:
     categories:
-      - recommended
+      - Recommended
     range: string
     multivalued: true
     slot_uri: schema:keywords
 
   readme:
     categories:
-      - recommended
+      - Recommended
     range: uri
     slot_uri: codemeta:readme
 
   versionControlSystem:
     categories:
-      - recommended
+      - Recommended
     range: string
     slot_uri: maSMP:versionControlSystem
 
   intendedUse:
     categories:
-      - recommended
+      - Recommended
     range: string
     slot_uri: maSMP:intendedUse
 
   archivedAt:
     categories:
-      - recommended
+      - Recommended
     range: uri
     slot_uri: schema:archivedAt
 
   releaseNotes:
     categories:
-      - recommended
+      - Recommended
     range: string
     slot_uri: schema:releaseNotes
 
   softwareVersion:
     categories:
-      - recommended
+      - Recommended
     range: string
     slot_uri: schema:softwareVersion
 
   hasSourceCode:
     categories:
-      - required
+      - Required
     required: true
     slot_uri: codemeta:hasSourceCode
 
   contributor:
     categories:
-      - recommended
+      - Recommended
     required: false
     slot_uri: schema:contributor
 
   copyrightHolder:
     categories:
-      - optional
+      - Optional
     required: false
     slot_uri: schema:copyrightHolder
 
   dateCreated:
     categories:
-      - recommended
+      - Recommended
     required: false
     slot_uri: schema:dateCreated
 
   dateModified:
     categories:
-      - recommended
+      - Recommended
     required: false
     slot_uri: schema:dateModified
 
   datePublished:
     categories:
-      - recommended
+      - Recommended
     required: false
     slot_uri: schema:datePublished
 
   isAccessibleForFree:
     categories:
-      - optional
+      - Optional
     required: false
     slot_uri: schema:isAccessibleForFree
 
   issueTracker:
     categories:
-      - optional
+      - Optional
     required: false
     slot_uri: schema:issueTracker
 
@@ -242,7 +242,7 @@ slots:
   codeSampleType:
     description: The type of code sample (e.g., example, snippet, template)
     categories:
-      - optional
+      - Optional
     required: false
     range: string
     slot_uri: maSMP:codeSampleType
@@ -250,7 +250,7 @@ slots:
   runtimePlatform:
     description: The runtime platform(s) required to run the software (e.g., Python 3.8+, Java 11)
     categories:
-      - optional
+      - Optional
     required: false
     range: string
     multivalued: true
@@ -259,7 +259,7 @@ slots:
   conditionOfAccess:
     description: The conditions under which the software is accessible (e.g., login required, open access)
     categories:
-      - optional
+      - Optional
     required: false
     range: string
     slot_uri: schema:conditionOfAccess
@@ -267,7 +267,7 @@ slots:
   discussionUrl:
     description: URL to a forum or discussion thread for the software
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: schema:discussionUrl
@@ -275,7 +275,7 @@ slots:
   maintainer:
     description: The person or organization that maintains the software
     categories:
-      - optional
+      - Optional
     required: false
     range: string
     multivalued: true
@@ -284,7 +284,7 @@ slots:
   buildInstructions:
     description: URL to build or compilation instructions
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: maSMP:buildInstructions
@@ -292,7 +292,7 @@ slots:
   referencePublication:
     description: Reference to a publication associated with this software
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     multivalued: true
@@ -301,7 +301,7 @@ slots:
   developerDocumentation:
     description: URL to developer or API documentation
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     multivalued: true
@@ -310,7 +310,7 @@ slots:
   learningResource:
     description: URL to learning resources, tutorials, or training materials
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     multivalued: true
@@ -319,7 +319,7 @@ slots:
   changeLog:
     description: URL to the software change log or release history
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: maSMP:changeLog
@@ -327,7 +327,7 @@ slots:
   testedWith:
     description: List of software versions or environments the software has been tested with
     categories:
-      - optional
+      - Optional
     required: false
     range: string
     multivalued: true
@@ -336,7 +336,7 @@ slots:
   userDocumentation:
     description: URL to end-user documentation
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     multivalued: true
@@ -345,7 +345,7 @@ slots:
   deployInstructions:
     description: URL to deployment instructions
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: maSMP:deployInstructions
@@ -353,7 +353,7 @@ slots:
   installInstructions:
     description: URL to installation instructions
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: maSMP:installInstructions
@@ -361,7 +361,7 @@ slots:
   testInstructions:
     description: URL to testing instructions
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: maSMP:testInstructions
@@ -369,7 +369,7 @@ slots:
   softwareRequirement:
     description: URL to testing instructions
     categories:
-      - optional
+      - Optional
     required: false
     range: uri
     slot_uri: maSMP:softwareRequirements

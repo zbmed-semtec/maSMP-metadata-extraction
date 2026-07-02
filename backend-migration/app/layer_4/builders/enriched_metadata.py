@@ -37,7 +37,7 @@ def build_enriched_metadata(
         uri = schema.get_uri(prop)
         for record in collector.get(uri).values():
             record : MetadataProperty = record
-            category = schema.get_categories_of(property_name=record.property_name)
+            category = schema.get_categories_of(property_name=prop)
             if isinstance(category, list):
                 if len(category) > 0:
                     category = category[0]

@@ -103,7 +103,7 @@ async def extract_metadata_enriched(
 
         jsonld_document, enriched = run_extraction(
             repo_url=str(repo_url),
-            schema=schema,
+            schema_name=schema,
             access_token=access_token,
             with_enrichment=True,
         )

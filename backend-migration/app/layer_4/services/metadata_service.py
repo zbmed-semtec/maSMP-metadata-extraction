@@ -74,7 +74,7 @@ def run_extraction(
     result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
     jsonld_document = result.jsonld_document
 
-    if with_enrichment and result.extraction_metadata:
+    if with_enrichment:
         enriched = build_enriched_metadata(
             collector,
             schema,
