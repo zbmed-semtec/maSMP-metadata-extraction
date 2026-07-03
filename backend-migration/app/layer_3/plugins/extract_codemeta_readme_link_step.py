@@ -25,10 +25,10 @@ class ExtractCodemetaReadmeLinkStep(ExtractionPlugin):
         if not callable(is_file_reachable_fn):
             return state
         ppp : PlatformPayloadsPlugin = self.plugin_manager.get('platform-payloads-plugin')
-        readme_url = first_reachable_url(candidates.get("readme") or [], is_file_reachable_fn)
+        readme_url = first_reachable_url(candidates.get("https://codemeta.github.io/terms/readme") or [], is_file_reachable_fn)
         if readme_url:
             codemeta_readme =readme_url
-            state.metadata_collector.collect(self.name, "readme", codemeta_readme)
+            state.metadata_collector.collect(self.name, "https://codemeta.github.io/terms/readme", codemeta_readme)
 
         return state
 

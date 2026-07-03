@@ -1,15 +1,6 @@
 """Merge extracted reference-publication candidates into software metadata."""
 
 from app.layer_1.entities.shared_primitives import ReferencePublication
-from app.layer_1.provenance.software.defaults import (
-    CONFIDENCE_CITATION,
-    CONFIDENCE_OPENALEX,
-    CONFIDENCE_README,
-    SOURCE_CITATION_CFF,
-    SOURCE_OPENALEX,
-    SOURCE_README_PARSER,
-)
-from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 

@@ -39,7 +39,7 @@ def _create_extraction_use_case(
     (plain extraction, extraction with progress, FAIRness assessment, etc.)
     can all share the same composition.
     """
-    collector = MetadataCollector() if with_enrichment else None
+    collector = MetadataCollector()
 
     use_case = ExtractMetadataUseCase(
         jsonld_builder=_jsonld_builder,
@@ -56,6 +56,7 @@ def run_extraction(
     schema_name: str,
     access_token: Optional[str],
     with_enrichment: bool,
+    schema_class: str = "SoftwareSourceCode",
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """
     Run metadata extraction once.
@@ -69,7 +70,7 @@ def run_extraction(
         with_enrichment=with_enrichment,
     )
 
-    schema = _schema_registry.get(schema_name, "SoftwareSourceCode")
+    schema = _schema_registry.get(schema_name, schema_class)
 
     result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
     jsonld_document = result.jsonld_document
@@ -89,6 +90,7 @@ def run_extraction_with_progress(
     access_token: Optional[str],
     with_enrichment: bool,
     progress_callback: Optional[Callable[[str, str], None]] = None,
+    schema_class: str = "SoftwareSourceCode",
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """
     Run metadata extraction with optional progress callbacks.
@@ -105,7 +107,7 @@ def run_extraction_with_progress(
         with_enrichment=with_enrichment,
     )
 
-    schema = _schema_registry.get(schema_name, "SoftwareSourceCode")
+    schema = _schema_registry.get(schema_name, schema_class)
 
     result = use_case.execute(
         repo_url=repo_url,
@@ -129,6 +131,7 @@ def run_single_property_extraction(
     schema_name: str,
     access_token: Optional[str],
     property_name: str,
+    schema_class: str = "SoftwareSourceCode",
 ) -> tuple[str, List[Dict[str, Any]]]:
     """
     Run extraction with enrichment and project down to a single property's
@@ -137,13 +140,14 @@ def run_single_property_extraction(
     Returns:
         (extracted_at_iso, [ {profile, value, source, confidence}, ... ])
     """
-    schema = _schema_registry.get(schema_name, "SoftwareSourceCode")
+    schema = _schema_registry.get(schema_name, schema_class)
 
     jsonld_document, enriched = run_extraction(
         repo_url=repo_url,
         schema=schema,
         access_token=access_token,
         with_enrichment=True,
+        schema_class=schema_class,
     )
 
     extracted_at = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"

@@ -11,12 +11,11 @@ schema still controls the shape of the JSON-LD returned alongside the report.
 from typing import Dict, Optional, Tuple
 
 from app.layer_2.use_cases.extract_metadata import ExtractMetadataUseCase
-from app.layer_1.entities.fair_assessment import FairnessReport
 from app.layer_3.evaluators.fairness_evaluator import evaluate_fairness_from_metadata
 from app.layer_3.composers import PipelineComposer
 from app.layer_3.builders.jsonld_builder import JSONLDBuilder
-from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner
+from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
 
 
 _jsonld_builder = JSONLDBuilder()
@@ -29,7 +28,7 @@ def run_fairness_assessment(
     schema: str,
     access_token: Optional[str] = None,
     with_enrichment: bool = False,
-) -> Tuple[Dict, FairnessReport]:
+) -> Tuple[Dict, "FairnessReport"]:
     """
     Run metadata extraction and FAIRness assessment once.
 
@@ -40,7 +39,7 @@ def run_fairness_assessment(
     Returns:
         (jsonld_document, fairness_report)
     """
-    collector = InMemoryExtractionMetadataCollector() if with_enrichment else None
+    collector = MetadataCollector()
 
     use_case = ExtractMetadataUseCase(
         jsonld_builder=_jsonld_builder,

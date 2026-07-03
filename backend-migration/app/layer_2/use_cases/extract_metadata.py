@@ -4,27 +4,7 @@ Orchestration: compose and run extraction pipeline, then build JSON-LD.
 """
 from dataclasses import dataclass
 from typing import Protocol, Optional, Dict, Any, Callable
-
-from app.layer_1.entities.software_metadata import SoftwareMetadata
-from app.layer_1.provenance.software.defaults import (
-    CONFIDENCE_ARCHIVE,
-    CONFIDENCE_CITATION,
-    CONFIDENCE_LICENSE,
-    CONFIDENCE_OPENALEX,
-    CONFIDENCE_PLATFORM,
-    CONFIDENCE_README,
-    SOURCE_CITATION_CFF,
-    SOURCE_GITHUB_API,
-    SOURCE_GITLAB_API,
-    SOURCE_LICENSE_FILE,
-    SOURCE_OPENALEX,
-    SOURCE_README_PARSER,
-    SOURCE_SOFTWARE_HERITAGE,
-    SOURCE_WAYBACK,
-    SOURCE_ZENODO_BADGE,
-)
 from app.layer_3.composers import PipelineComposer
-from app.layer_3.extraction_metadata import ExtractionMetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner, ExtractionContext, ExtractionState
 from app.layer_1.schemas.base_schema import BaseSchema
 from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
@@ -51,7 +31,6 @@ class ExtractMetadataResult:
     """
     jsonld_document: dict
     extraction_metadata: Dict[str, Dict[str, Any]]  # entity_field -> {source, confidence}
-    metadata: SoftwareMetadata
 
 
 class JSONLDBuilder(Protocol):
@@ -120,7 +99,6 @@ class ExtractMetadataUseCase:
         state = ExtractionState(
             metadata_collector=self.extraction_metadata_collector,
             data={
-                "record_field": _build_record_field(collector, platform),
             },
         )
         context = ExtractionContext(
@@ -152,55 +130,4 @@ class ExtractMetadataUseCase:
         return ExtractMetadataResult(
             jsonld_document=jsonld_document,
             extraction_metadata=extraction_metadata,
-            metadata=metadata,
         )
-
-
-def _build_record_field(
-    collector: Optional[MetadataCollector],
-    platform: str,
-) -> Callable[[str], None]:
-
-    def record(
-        source: str,
-        property_name: str,
-        property_value: Any, 
-    ) -> None:
-        if collector is None:
-            return
-        collector.collect(source, property_name, property_value)
-
-    return record
-
-
-def _source_for_field(field: str, platform_source: str) -> str:
-    if field in {
-        "author",
-        "alternateName",
-        "identifier",
-        "codemeta_referencePublication",
-        "citation",
-    }:
-        return SOURCE_CITATION_CFF
-    if field == "copyrightHolder":
-        return SOURCE_LICENSE_FILE
-    if field in {"archivedAt"}:
-        return SOURCE_ZENODO_BADGE
-    return platform_source
-
-
-def _confidence_for_field(field: str) -> float:
-    if field in {
-        "author",
-        "alternateName",
-        "identifier",
-        "codemeta_referencePublication",
-        "citation",
-    }:
-        return CONFIDENCE_CITATION
-    if field == "copyrightHolder":
-        return CONFIDENCE_LICENSE
-    if field in {"archivedAt"}:
-        return CONFIDENCE_ARCHIVE
-    return CONFIDENCE_PLATFORM
-

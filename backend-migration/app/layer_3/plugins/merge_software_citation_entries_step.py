@@ -1,7 +1,5 @@
 """Merge extracted citation-entry candidates into software metadata."""
 
-from app.layer_1.provenance.software.defaults import CONFIDENCE_CITATION, SOURCE_CITATION_CFF
-from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 from app.layer_3.plugins.extract_citation_doi_step import ExtractCitationDoiStep

@@ -1,10 +1,7 @@
 """Merge extracted copyright holder candidates into software metadata."""
 
-from app.layer_1.provenance.software.defaults import CONFIDENCE_LICENSE, SOURCE_LICENSE_FILE
-from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
-
 
 class MergeSoftwareCopyrightHolderStep(ExtractionPlugin):
     """Merge copyright-holder candidates from any extraction source."""

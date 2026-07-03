@@ -18,10 +18,10 @@
       </Button>
     </div>
 
-    <!-- Required / Recommended / Optional sections (works for maSMP and CodeMeta alike) -->
+    <!-- Required / Recommended / Optional sections; only shown when they have content -->
     <div class="space-y-8">
       <section
-        v-for="cat in categoryConfig"
+        v-for="cat in visibleCategories"
         :key="cat.key"
         class="rounded-xl border-2 overflow-hidden"
         :class="cat.sectionClass"
@@ -40,7 +40,7 @@
         </header>
         <div class="border-t bg-white" :class="cat.borderClass">
           <ResultTable
-            :rows="rowsByCategory(cat.key)"
+            :rows="cat.rows"
             :show-source="true"
             :show-confidence="true"
           />
@@ -116,6 +116,13 @@ const enrichedData = computed<Record<string, EnrichedProperty>>(() => {
   return data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, EnrichedProperty> : {}
 })
 
+/** Only include categories that actually have at least one row (avoids empty CodeMeta sections). */
+const visibleCategories = computed(() => {
+  return categoryConfig
+    .map(cat => ({ ...cat, rows: rowsByCategory(cat.key) }))
+    .filter(cat => cat.rows.length > 0)
+})
+
 function rowsByCategory(category: string) {
   const data = resultData.value
   const enriched = enrichedData.value
@@ -125,8 +132,10 @@ function rowsByCategory(category: string) {
   return Object.entries(data)
     .filter(([k]) => !skip.has(k))
     .filter(([k]) => {
-      const c = enriched[k]?.category ?? 'optional'
-      return (typeof c === 'string' ? c.toLowerCase() : 'optional') === catLower
+      const c = enriched[k]?.category
+      // Only include a property under a category if it's *explicitly* tagged with that category.
+      // Properties with no enrichment metadata / no category are not forced into "Optional".
+      return typeof c === 'string' && c.toLowerCase() === catLower
     })
     .map(([prop, val]) => {
       const meta = enriched[prop]
@@ -254,7 +263,6 @@ function toContributorDisplayItem(person: unknown): AuthorDisplayItem | null {
   if (person == null || typeof person !== 'object') return null
   const p = person as Record<string, unknown>
 
-  // Contributors in the new payload use "https://schema.org/name" instead of "name"
   const name = (p.name ?? p['https://schema.org/name'] ?? '') as string
   const given = (p.givenName ?? p.given_name ?? '') as string
   const family = (p.familyName ?? p.family_name ?? '') as string

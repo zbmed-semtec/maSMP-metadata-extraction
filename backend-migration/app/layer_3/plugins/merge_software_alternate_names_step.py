@@ -1,15 +1,7 @@
 """Merge extracted alternate-name candidates into software metadata."""
 
-from app.layer_1.provenance.software.defaults import (
-    CONFIDENCE_CITATION,
-    CONFIDENCE_OPENALEX,
-    SOURCE_CITATION_CFF,
-    SOURCE_OPENALEX,
-)
-from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
-
 
 class MergeSoftwareAlternateNamesStep(ExtractionPlugin):
     """Merge alternate-name candidates from any extraction source."""

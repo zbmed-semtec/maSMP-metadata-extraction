@@ -3,7 +3,6 @@ from urllib.parse import urlparse
 from typing import Optional, Tuple
 from app.layer_2.base_plugin import BasePlugin
 
-
 class URLPatternMatcher(BasePlugin):
 
     name = "url-pattern-matcher-plugin"

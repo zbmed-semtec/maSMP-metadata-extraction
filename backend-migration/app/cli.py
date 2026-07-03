@@ -7,8 +7,6 @@ from typing import Any, Dict, List, Tuple
 
 from fastapi.encoders import jsonable_encoder
 
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.github_utils.github_client import GitHubRateLimitError
-from app.layer_3.steps.extract_steps.adapters.platform.helpers.gitlab_utils.gitlab_client import GitLabRateLimitError
 from app.layer_4.services.metadata_service import run_extraction, initialize
 from app.layer_4.services.fairness_service import run_fairness_assessment
 
@@ -27,6 +25,7 @@ def _extract_command(args: argparse.Namespace) -> None:
         schema_name=args.schema,
         access_token=args.token,
         with_enrichment=args.with_enrichment,
+        schema_class=args.schema_class,
     )
 
     result = {
@@ -125,6 +124,7 @@ def _extract_property_command(args: argparse.Namespace) -> None:
         schema=args.schema,
         access_token=args.token,
         with_enrichment=True,
+        schema_class=args.schema_class,
     )
 
     result = _collect_property_results(
@@ -198,6 +198,12 @@ def main() -> None:
         help="Schema to analyze against.",
     )
     extract_parser.add_argument(
+        "--schema-class",
+        choices=["SoftwareSourceCode", "SoftwareApplication"],
+        default="SoftwareSourceCode",
+        help="Schema class to use (default: SoftwareSourceCode).",
+    )
+    extract_parser.add_argument(
         "--token",
         help="GitHub/GitLab token (or set GITHUB_TOKEN / GITLAB_TOKEN). Raises rate limits when unset.",
     )
@@ -265,7 +271,7 @@ def main() -> None:
 
     try:
         args.func(args)
-    except (GitHubRateLimitError, GitLabRateLimitError) as e:
+    except Exception as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
 

@@ -1,18 +1,7 @@
 """Merge extracted archive URL candidates into software metadata."""
 
-from app.layer_1.provenance.software.defaults import (
-    CONFIDENCE_ARCHIVE,
-    SOURCE_SOFTWARE_HERITAGE,
-    SOURCE_WAYBACK,
-    SOURCE_ZENODO_BADGE,
-)
-from app.layer_3.extraction_metadata.record import record_field_provenance
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
-from app.layer_3.plugins.extract_software_heritage_archived_url_step import ExtractSoftwareHeritageArchivedUrlStep
-from app.layer_3.plugins.extract_zenodo_archived_urls_step import ExtractZenodoArchivedUrlsStep
-from app.layer_3.plugins.extract_wayback_archived_url_step import ExtractWaybackArchivedUrlStep
-
 
 class MergeSoftwareArchivedUrlsStep(ExtractionPlugin):
     """Merge archive URL candidates from any extraction source."""
