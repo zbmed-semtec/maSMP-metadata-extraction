@@ -358,3 +358,30 @@ async def get_supported_platforms():
             {"name": "GitLab", "url_pattern": "gitlab.com", "description": "GitLab repositories"},
         ]
     }
+
+from app.layer_4.services.validation_service import validate
+@router.post("/validate")
+async def validate_metadata(
+    metadata: dict,
+    schema_name: str = Query(
+        "maSMP",
+        description="Schema to validate against",
+        enum=["maSMP", "CODEMETA"],
+    ),
+    schema_class: str = Query(
+        "SoftwareSourceCode",
+        description="Schema class to validate against",
+    ),
+):
+    """
+    Validate metadata against a schema.
+
+    Returns a list of validation errors, or an empty list if valid.
+    """
+    try:
+        errors = validate(metadata, schema_name, schema_class)
+        return {"status": "success", "errors": errors}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

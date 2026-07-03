@@ -1,16 +1,18 @@
-# masmp_schema_linkml.yaml
 id: https://example.org/masmp
 name: maSMP
-description: Metadata Schema for Scientific Software
+description: Metadata schema for Scientific Software
 
 prefixes:
+  sdo: https://schema.org/
   linkml: https://w3id.org/linkml/
   codemeta: https://codemeta.github.io/terms/
   maSMP: https://discovery.biothings.io/ns/maSMP/
-  schema: https://schema.org/
 
 default_prefix: maSMP
 default_range: string
+
+imports:
+  - linkml:types
 
 classes:
 
@@ -75,7 +77,24 @@ classes:
       - intendedUse
       - softwareVersion
 
+  Person:
+    description: A person entity
+    slots:
+      - familyName
+      - givenName
+
 slots:
+
+  # Person slots
+  familyName:
+    description: The family name of a person
+    range: string
+    slot_uri: sdo:familyName
+  
+  givenName:
+    description: The given name of a person
+    range: string
+    slot_uri: sdo:givenName
 
   # --- Required for SoftwareSourceCode ---
   name:
@@ -83,35 +102,35 @@ slots:
     categories:
       - Required
     range: string
-    slot_uri: schema:name
+    slot_uri: sdo:name
 
   description:
     required: true
     categories:
       - Required
     range: string
-    slot_uri: schema:description
+    slot_uri: sdo:description
 
   url:
     required: true
     categories:
       - Required
     range: uri
-    slot_uri: schema:url
+    slot_uri: sdo:url
 
   codeRepository:
     required: true
     categories:
       - Required
     range: uri
-    slot_uri: schema:codeRepository
+    slot_uri: sdo:codeRepository
 
   version:
     required: true
     categories:
       - Required
     range: string
-    slot_uri: schema:version
+    slot_uri: sdo:version
 
   programmingLanguage:
     required: true
@@ -119,40 +138,40 @@ slots:
       - Required
     range: string
     multivalued: true
-    slot_uri: schema:programmingLanguage
+    slot_uri: sdo:programmingLanguage
 
   # --- Recommended ---
   author:
     categories:
       - Recommended
-    range: string
+    range: Person
     multivalued: true
-    slot_uri: schema:author
+    slot_uri: sdo:author
 
   citation:
     categories:
       - Recommended
     range: string
-    slot_uri: schema:citation
+    slot_uri: sdo:citation
 
   license:
     categories:
       - Recommended
     range: uri
-    slot_uri: schema:license
+    slot_uri: sdo:license
 
   identifier:
     categories:
       - Recommended
     range: string
-    slot_uri: schema:identifier
+    slot_uri: sdo:identifier
 
   keywords:
     categories:
       - Recommended
     range: string
     multivalued: true
-    slot_uri: schema:keywords
+    slot_uri: sdo:keywords
 
   readme:
     categories:
@@ -176,19 +195,19 @@ slots:
     categories:
       - Recommended
     range: uri
-    slot_uri: schema:archivedAt
+    slot_uri: sdo:archivedAt
 
   releaseNotes:
     categories:
       - Recommended
     range: string
-    slot_uri: schema:releaseNotes
+    slot_uri: sdo:releaseNotes
 
   softwareVersion:
     categories:
       - Recommended
     range: string
-    slot_uri: schema:softwareVersion
+    slot_uri: sdo:softwareVersion
 
   hasSourceCode:
     categories:
@@ -200,43 +219,44 @@ slots:
     categories:
       - Recommended
     required: false
-    slot_uri: schema:contributor
+    slot_uri: sdo:contributor
 
   copyrightHolder:
     categories:
       - Optional
     required: false
-    slot_uri: schema:copyrightHolder
+    slot_uri: sdo:copyrightHolder
 
   dateCreated:
     categories:
       - Recommended
     required: false
-    slot_uri: schema:dateCreated
+    slot_uri: sdo:dateCreated
 
   dateModified:
     categories:
       - Recommended
     required: false
-    slot_uri: schema:dateModified
+    slot_uri: sdo:dateModified
 
   datePublished:
     categories:
       - Recommended
     required: false
-    slot_uri: schema:datePublished
+    slot_uri: sdo:datePublished
 
   isAccessibleForFree:
     categories:
       - Optional
     required: false
-    slot_uri: schema:isAccessibleForFree
+    range: boolean
+    slot_uri: sdo:isAccessibleForFree
 
   issueTracker:
     categories:
       - Optional
     required: false
-    slot_uri: schema:issueTracker
+    slot_uri: sdo:issueTracker
 
   # --- Optional Properties (NEWLY ADDED) ---
   codeSampleType:
@@ -254,7 +274,7 @@ slots:
     required: false
     range: string
     multivalued: true
-    slot_uri: schema:runtimePlatform
+    slot_uri: sdo:runtimePlatform
 
   conditionOfAccess:
     description: The conditions under which the software is accessible (e.g., login required, open access)
@@ -262,7 +282,7 @@ slots:
       - Optional
     required: false
     range: string
-    slot_uri: schema:conditionOfAccess
+    slot_uri: sdo:conditionOfAccess
 
   discussionUrl:
     description: URL to a forum or discussion thread for the software
@@ -270,7 +290,7 @@ slots:
       - Optional
     required: false
     range: uri
-    slot_uri: schema:discussionUrl
+    slot_uri: sdo:discussionUrl
 
   maintainer:
     description: The person or organization that maintains the software
@@ -279,7 +299,7 @@ slots:
     required: false
     range: string
     multivalued: true
-    slot_uri: schema:maintainer
+    slot_uri: sdo:maintainer
 
   buildInstructions:
     description: URL to build or compilation instructions
