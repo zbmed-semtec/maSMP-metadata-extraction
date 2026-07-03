@@ -9,7 +9,7 @@ from app.layer_2.extraction_plugin import ExtractionPlugin
 class ExtractGithubReleaseStep(ExtractionPlugin):
     name = "github.extract_release"
 
-    extracts = {"https://schema.org/version"}
+    extracts = {"https://schema.org/version","https://schema.org/softwareVersion"}
     platforms = {"github"}
 
     def extract(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
@@ -22,6 +22,7 @@ class ExtractGithubReleaseStep(ExtractionPlugin):
         softwareVersion = release.get("tag_name")
         state.metadata_collector.collect(self.name, 'hasRelease', True)
         state.metadata_collector.collect(self.name, "https://schema.org/softwareVersion", softwareVersion)
+        state.metadata_collector.collect(self.name, "https://schema.org/version", softwareVersion)
 
         release_date = str(release.get("published_at") or "")[:10]
         commits = ppp.github_commits_payload(context, state)

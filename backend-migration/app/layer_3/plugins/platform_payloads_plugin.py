@@ -85,6 +85,11 @@ class PlatformPayloadsPlugin(BasePlugin):
                 state.data["release_payload"] = self.github_client(context, state).get_latest_release(owner, repo) or {}
             except Exception:
                 state.data["release_payload"] = {}
+            if not state.data["release_payload"]:
+                try:
+                    state.data["release_payload"] = self.github_client(context, state).get_releases(owner, repo)[0] or {}
+                except Exception:
+                    state.data["release_payload"] = {}
         return state.data.get("release_payload") or {}
 
 

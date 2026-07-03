@@ -15,7 +15,7 @@ class ExtractGithubAccessStep(ExtractionPlugin):
         repo_data = ppp.github_repo_payload(context, state)
         is_private = bool(repo_data.get("private", False))
         conditionOfAccess = "Private" if is_private else "Public"
-        isAccessibleForFree = str(not is_private)
+        isAccessibleForFree = not is_private
         state.metadata_collector.collect(
             self.name, "https://schema.org/conditionOfAccess", conditionOfAccess)
         state.metadata_collector.collect(

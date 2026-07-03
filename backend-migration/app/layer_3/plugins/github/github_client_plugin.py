@@ -75,6 +75,12 @@ class GitHubClient(BasePlugin):
             return self.rate_limit_get(f"{self.BASE_URL}/repos/{owner}/{repo}/releases/latest")
         except requests.exceptions.RequestException:
             return None
+    
+    def get_releases(self, owner: str, repo: str) -> list[Dict[str, Any]]:
+        try:
+            return self.rate_limit_get(f"{self.BASE_URL}/repos/{owner}/{repo}/releases")
+        except requests.exceptions.RequestException:
+            return []
 
     def get_commits(self, owner: str, repo: str, per_page: int = 1) -> list[Dict[str, Any]]:
         return self.rate_limit_get(f"{self.BASE_URL}/repos/{owner}/{repo}/commits")
