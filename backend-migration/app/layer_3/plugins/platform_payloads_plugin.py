@@ -51,10 +51,10 @@ class PlatformPayloadsPlugin(BasePlugin):
     def github_languages_payload(self, context: ExtractionContext, state: ExtractionState) -> dict:
         if "languages_payload" not in state.data:
             owner, repo = self.repo_parts(context)
-            try:
-                state.data["languages_payload"] = self.github_client(context, state).get_languages(owner, repo)
-            except Exception:
-                state.data["languages_payload"] = {}
+            # try:
+            state.data["languages_payload"] = self.github_client(context, state).get_languages(owner, repo)
+            # except Exception:
+                # state.data["languages_payload"] = {}
         return state.data.get("languages_payload") or {}
 
 
