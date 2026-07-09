@@ -192,8 +192,8 @@ slots:
 
   hasSourceCode:
     categories:
-      - Required
-    required: true
+      - Recommended
+    required: false
     slot_uri: codemeta:hasSourceCode
 
   contributor:

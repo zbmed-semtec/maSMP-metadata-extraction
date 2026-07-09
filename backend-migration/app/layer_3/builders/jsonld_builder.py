@@ -21,14 +21,13 @@ class JSONLDBuilder(BaseJsonLdBuilder):
         # return result
         for property_name in schema.get_property_list():
             uri = schema.get_uri(property_name)
-            sources = metadata.get(uri)
-            for source in sources.keys():
-                val = sources[source].property_value
+            record = metadata.get_most_confident(uri)
+            if record:
+                val = record.property_value
                 if isinstance(val, BaseModel):
                     result[property_name] = val.model_dump(mode='json')
                 else:
                     result[property_name] = val
-                break
         return result
     #     definition = get_schema_definition(schema.get_name())
 

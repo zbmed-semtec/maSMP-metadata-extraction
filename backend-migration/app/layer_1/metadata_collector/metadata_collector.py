@@ -26,3 +26,11 @@ class MetadataCollector:
         if source is None:
             return all_records
         return all_records.get(source, default)
+    
+    def get_most_confident(self, uri: str) -> MetadataProperty[Any]:
+        all = self.data.get(uri, dict())
+        values = sorted(all.values(), key=lambda x : x.confidence, reverse=True)
+        try:
+            return values[0]
+        except:
+            return None
