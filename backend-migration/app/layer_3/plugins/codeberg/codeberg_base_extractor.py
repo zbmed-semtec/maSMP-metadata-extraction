@@ -1,0 +1,15 @@
+from app.layer_2.extraction_plugin import ExtractionPlugin
+from app.layer_3.steps.contracts.step import ExtractionContext, ExtractionState
+from app.layer_3.plugins.codeberg.codeberg_client import CodebergClient
+
+class CodebergBaseExtractor(ExtractionPlugin):
+
+    platforms = {'codeberg.org'}
+    name = "please.specify.plugin.name"
+    extracts = {'https://schema.org/codeRepository'}
+
+    def get_client(self, context: ExtractionContext, state: ExtractionState) -> CodebergClient:
+        if not state.data.get('codeberg_client'):
+            state.data['codeberg_client'] = CodebergClient(context, state)
+        return state.data['codeberg_client']
+    
