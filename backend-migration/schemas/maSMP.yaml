@@ -210,19 +210,19 @@ slots:
 
   dateCreated:
     categories:
-      - Recommended
+      - Optional
     required: false
     slot_uri: schema:dateCreated
 
   dateModified:
     categories:
-      - Recommended
+      - Optional
     required: false
     slot_uri: schema:dateModified
 
   datePublished:
     categories:
-      - Recommended
+      - Optional
     required: false
     slot_uri: schema:datePublished
 
