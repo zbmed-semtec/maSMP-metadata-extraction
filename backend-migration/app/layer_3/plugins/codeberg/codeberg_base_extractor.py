@@ -6,7 +6,7 @@ class CodebergBaseExtractor(ExtractionPlugin):
 
     platforms = {'codeberg.org'}
     name = "please.specify.plugin.name"
-    extracts = {'https://schema.org/codeRepository'}
+    extracts = {'please.specify.what.is.being.extracted'}
 
     def get_client(self, context: ExtractionContext, state: ExtractionState) -> CodebergClient:
         if not state.data.get('codeberg_client'):

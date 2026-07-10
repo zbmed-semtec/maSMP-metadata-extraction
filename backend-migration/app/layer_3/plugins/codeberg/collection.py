@@ -5,14 +5,13 @@ README files, and license files."""
 from app.layer_3.plugins.codeberg.codeberg_client import CodebergClient
 from app.layer_3.plugins.codeberg.codeberg_base_extractor import CodebergBaseExtractor
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
-from app.layer_3.plugins.codeberg.utils import match_license_text
+from app.layer_3.plugins.codeberg.utils import match_license_text, dependency_files
 from app.layer_3.plugins.extract_wayback_archived_url_step import WaybackClient
 
 class CodebergNameExtractor(CodebergBaseExtractor):
     """schema:name"""
 
     extracts = {'https://schema.org/name'}
-    platforms = {'codeberg.org'}
     name = "codeberg.name_extractor"
 
     def extract(self, context, state):
@@ -32,7 +31,6 @@ class CodebergDescriptionExtractor(CodebergBaseExtractor):
     """schema:description"""
 
     extracts = {'https://schema.org/description'}
-    platforms = {'codeberg.org'}
     name = "codeberg.description_extractor"
 
     def extract(self, context, state):
@@ -56,7 +54,6 @@ class CodebergUrlExtractor(CodebergBaseExtractor):
     """schema:url"""
 
     extracts = {'https://schema.org/url'}
-    platforms = {'codeberg.org'}
     name = "codeberg.url_extractor"
 
     def extract(self, context, state):
@@ -75,8 +72,7 @@ class CodebergUrlExtractor(CodebergBaseExtractor):
 class CodebergCodeRepositoryExtractor(CodebergBaseExtractor):
     """schema:codeRepository"""
 
-    extracts = {'https://schema.org/codeRepository'}
-    platforms = {'codeberg.org'}
+    extracts = {'https://schema.org/codeRepository', 'https://codemeta.github.io/terms/codeRepository'}
     name = "codeberg.code_repository_extractor"
 
     def extract(self, context, state):
@@ -84,13 +80,13 @@ class CodebergCodeRepositoryExtractor(CodebergBaseExtractor):
         clone_url = result.get("clone_url") or result.get("html_url")
         if clone_url:
             state.metadata_collector.collect("Codeberg API", "https://schema.org/codeRepository", clone_url, 0.95)
+            state.metadata_collector.collect("Codeberg API", 'https://codemeta.github.io/terms/codeRepository', clone_url, 0.95)
         return state
 
 class CodebergProgrammingLanguageExtractor(CodebergBaseExtractor):
     """schema:programmingLanguage"""
 
     extracts = {'https://schema.org/programmingLanguage'}
-    platforms = {'codeberg.org'}
     name = "codeberg.programming_language_extractor"
 
     def extract(self, context, state):
@@ -101,10 +97,9 @@ class CodebergProgrammingLanguageExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergAuthorExtractor(CodebergBaseExtractor):
-    """schema:author - multivalued, so we combine owner + contributors"""
+    """schema:author"""
 
     extracts = {'https://schema.org/author'}
-    platforms = {'codeberg.org'}
     name = "codeberg.author_extractor"
 
     def extract(self, context, state):
@@ -131,7 +126,6 @@ class CodebergLicenseExtractor(CodebergBaseExtractor):
     """schema:license"""
 
     extracts = {'https://schema.org/license'}
-    platforms = {'codeberg.org'}
     name = "codeberg.license_extractor"
 
     def extract(self, context, state):
@@ -158,10 +152,9 @@ class CodebergLicenseExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergIdentifierExtractor(CodebergBaseExtractor):
-    """schema:identifier - use repository numeric id"""
+    """schema:identifier"""
 
     extracts = {'https://schema.org/identifier'}
-    platforms = {'codeberg.org'}
     name = "codeberg.identifier_extractor"
 
     def extract(self, context, state):
@@ -187,10 +180,9 @@ class CodebergIdentifierExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergCitationExtractor(CodebergBaseExtractor):
-    """schema:citation - from CFF preferred-citation"""
+    """schema:citation"""
 
     extracts = {'https://schema.org/citation'}
-    platforms = {'codeberg.org'}
     name = "codeberg.citation_extractor"
 
     def extract(self, context, state):
@@ -240,7 +232,6 @@ class CodebergKeywordsExtractor(CodebergBaseExtractor):
     """schema:keywords"""
 
     extracts = {'https://schema.org/keywords'}
-    platforms = {'codeberg.org'}
     name = "codeberg.keywords_extractor"
 
     def extract(self, context, state):
@@ -260,7 +251,6 @@ class CodebergReadmeExtractor(CodebergBaseExtractor):
     """codemeta:readme"""
 
     extracts = {'https://codemeta.github.io/terms/readme'}
-    platforms = {'codeberg.org'}
     name = "codeberg.readme_extractor"
 
     def extract(self, context, state):
@@ -279,7 +269,6 @@ class CodebergVersionControlSystemExtractor(CodebergBaseExtractor):
     """maSMP:versionControlSystem - hardcoded, since Codeberg is a Git-only forge"""
 
     extracts = {'https://discovery.biothings.io/ns/maSMP/versionControlSystem'}
-    platforms = {'codeberg.org'}
     name = "codeberg.version_control_system_extractor"
 
     def extract(self, context, state):
@@ -291,10 +280,9 @@ class CodebergVersionControlSystemExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergArchivedAtExtractor(CodebergBaseExtractor):
-    """schema:archivedAt - only meaningful if the repo is archived"""
+    """schema:archivedAt"""
 
     extracts = {'https://schema.org/archivedAt'}
-    platforms = {'codeberg.org'}
     name = "codeberg.archived_at_extractor"
 
     def extract(self, context, state):
@@ -313,11 +301,8 @@ class CodebergArchivedAtExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergContributorsExtractor(CodebergBaseExtractor):
-    """Not in schema explicitly, but kept for downstream use / possible mapping to author.
-       Not registered against a schema slot at this time."""
 
     extracts = {'https://schema.org/contributor'}
-    platforms = {'codeberg.org'}
     name = "codeberg.contributors_extractor"
 
     def extract(self, context, state):
@@ -330,25 +315,28 @@ class CodebergContributorsExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergReleaseNotesExtractor(CodebergBaseExtractor):
-    """schema:releaseNotes - SoftwareApplication slot, from latest release body"""
+    """schema:releaseNotes"""
 
-    extracts = {'https://schema.org/releaseNotes'}
-    platforms = {'codeberg.org'}
+    extracts = {'https://schema.org/releaseNotes','https://codemeta.github.io/terms/releaseNotes'}
     name = "codeberg.release_notes_extractor"
 
     def extract(self, context, state):
-        result = self.get_client(context, state).get_releases()
-        if isinstance(result, list) and len(result) > 0:
-            body = result[0].get("body")
-            if body:
-                state.metadata_collector.collect("Codeberg API", "https://schema.org/releaseNotes", body, 0.95)
+        client = self.get_client(context, state)
+        repo = client.get_repository()
+        has_release = repo.get("has_release", False)
+        if has_release:
+            result = self.get_client(context, state).get_releases()
+            if isinstance(result, list) and len(result) > 0:
+                body = result[0].get("body")
+                if body:
+                    state.metadata_collector.collect("Codeberg API", "https://schema.org/releaseNotes", body, 0.95)
+                    state.metadata_collector.collect("Codeberg API", 'https://codemeta.github.io/terms/releaseNotes', body, 0.95)
         return state
 
 class CodebergSoftwareVersionExtractor(CodebergBaseExtractor):
-    """schema:softwareVersion - SoftwareApplication slot, mirrors version"""
+    """schema:softwareVersion"""
 
     extracts = {'https://schema.org/softwareVersion', 'https://schema.org/version'}
-    platforms = {'codeberg.org'}
     name = "codeberg.software_version_extractor"
 
     def extract(self, context, state):
@@ -367,10 +355,9 @@ class CodebergSoftwareVersionExtractor(CodebergBaseExtractor):
         return state
 
 class CodebergHasSourceCodeExtractor(CodebergBaseExtractor):
-    """maSMP:hasSourceCode - SoftwareApplication slot, mirrors codeRepository"""
+    """maSMP:hasSourceCode"""
 
     extracts = {'https://codemeta.github.io/terms/hasSourceCode'}
-    platforms = {'codeberg.org'}
     name = "codeberg.has_source_code_extractor"
 
     def extract(self, context, state):
@@ -384,7 +371,6 @@ class CodebergConditionsOfAccessExtractor(CodebergBaseExtractor):
     """schema:conditionsOfAccess - SoftwareApplication slot, mirrors license"""
 
     extracts = {'https://schema.org/conditionOfAccess'}
-    platforms = {'codeberg.org'}
     name = "codeberg.conditions_of_access_extractor"
 
     def extract(self, context, state):
@@ -400,7 +386,6 @@ class CodebergIsAccessibleForFreeExtractor(CodebergBaseExtractor):
     """maSMP:isAccessibleForFree - SoftwareApplication slot, hardcoded to True"""
 
     extracts = {'https://schema.org/isAccessibleForFree', 'https://schema.org/conditionOfAccess'}
-    platforms = {'codeberg.org'}
     name = "codeberg.is_accessible_for_free_extractor"
 
     def extract(self, context, state):
@@ -420,7 +405,6 @@ class CodebergDateExtractor(CodebergBaseExtractor):
     falling back to the latest tag's commit date if no releases exist"""
 
     extracts = {'https://schema.org/dateCreated', 'https://schema.org/datePublished', 'https://schema.org/dateModified'}
-    platforms = {'codeberg.org'}
     name = "codeberg.date_extractor"
 
     def extract(self, context, state):
@@ -452,8 +436,7 @@ class CodebergDateExtractor(CodebergBaseExtractor):
 class CodebergIssueTrackerExtractor(CodebergBaseExtractor):
     """extracts the issue tracker URL for a Codeberg repository"""
 
-    extracts = {'https://schema.org/issueTracker'}
-    platforms = {'codeberg.org'}
+    extracts = {'https://schema.org/issueTracker','https://codemeta.github.io/terms/issueTracker'}
     name = "codeberg.issue_tracker_extractor"
 
     def extract(self, context, state):
@@ -462,13 +445,13 @@ class CodebergIssueTrackerExtractor(CodebergBaseExtractor):
         if repo.get('has_issues', False) and 'html_url' in repo:
             issue_tracker_url = f"{repo['html_url']}/issues"
             state.metadata_collector.collect("Codeberg API", 'https://schema.org/issueTracker', issue_tracker_url, 0.95)
+            state.metadata_collector.collect("Codeberg API", 'https://codemeta.github.io/terms/issueTracker', issue_tracker_url, 0.95)
         return state
 
 class CodebergChangelogExtractor(CodebergBaseExtractor):
     """maSMP:changeLog - derived from the releases page and/or a CHANGELOG file in the repo root"""
 
     extracts = {'https://discovery.biothings.io/ns/maSMP/changeLog'}
-    platforms = {'codeberg.org'}
     name = "codeberg.changelog_extractor"
 
     def extract(self, context, state):
@@ -484,4 +467,20 @@ class CodebergChangelogExtractor(CodebergBaseExtractor):
                 changelog_url = file.get('download_url')
                 if changelog_url:
                     state.metadata_collector.collect("Changelog File", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.6)
+        return state
+
+class CodebergSoftwareRequirementExtractor(CodebergBaseExtractor):
+    
+    extracts = {'https://schema.org/softwareRequirements'}
+    name = "codeberg.software_requirements_extractor"
+
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        files = client.list_contents()
+        found = []
+        for file in files:
+            if file.get('name', '').lower() in dependency_files and file.get('download_url'):
+                found.append(file['download_url'])
+        if len(found) > 0:
+            state.metadata_collector.collect("Codeberg API", 'https://schema.org/softwareRequirements', found, 0.95)
         return state
