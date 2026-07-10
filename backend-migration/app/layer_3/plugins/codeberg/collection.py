@@ -1,8 +1,12 @@
+"""Codeberg extractor plugins for populating schema.org / codemeta / maSMP
+metadata fields from a repository's Codeberg API data, CITATION.cff files,
+README files, and license files."""
+
 from app.layer_3.plugins.codeberg.codeberg_client import CodebergClient
 from app.layer_3.plugins.codeberg.codeberg_base_extractor import CodebergBaseExtractor
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 from app.layer_3.plugins.codeberg.utils import match_license_text
-
+from app.layer_3.plugins.extract_wayback_archived_url_step import WaybackClient
 
 class CodebergNameExtractor(CodebergBaseExtractor):
     """schema:name"""
@@ -12,18 +16,17 @@ class CodebergNameExtractor(CodebergBaseExtractor):
     name = "codeberg.name_extractor"
 
     def extract(self, context, state):
-        # getting the name from the APIre
+        # getting the name from the API
         result = self.get_client(context, state).get_repository()
         if result.get("name"):
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/name", result['name'], 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/name", result['name'], 0.95)
         # getting the name from the CFF
         client = self.get_client(context, state)
         cffs = client.get_parsed_citations()
         for cff in cffs:
             if 'title' in cff:
-                state.metadata_collector.collect("CFF File", "https://schema.org/name", cff['title'], 0.8)
+                state.metadata_collector.collect("CFF File", "https://schema.org/name", cff['title'], 0.85)
         return state
-
 
 class CodebergDescriptionExtractor(CodebergBaseExtractor):
     """schema:description"""
@@ -36,17 +39,17 @@ class CodebergDescriptionExtractor(CodebergBaseExtractor):
         # getting the description from the Codeberg API
         result = self.get_client(context, state).get_repository()
         if result.get("description"):
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/description", result['description'], 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/description", result['description'], 0.95)
         # getting the description from the CFF
         client = self.get_client(context, state)
         cffs = client.get_parsed_citations()
         for cff in cffs:
             # non standard but seen 'in the wild'
             if 'abstract' in cff:
-                state.metadata_collector.collect("CFF File", "https://schema.org/description", cff['abstract'], 0.8)
+                state.metadata_collector.collect("CFF File", "https://schema.org/description", cff['abstract'], 0.85)
             # non standard but seen 'in the wild'
             if 'description' in cff:
-                state.metadata_collector.collect("CFF File", "https://schema.org/description", cff['description'], 0.8)
+                state.metadata_collector.collect("CFF File", "https://schema.org/description", cff['description'], 0.85)
         return state
 
 class CodebergUrlExtractor(CodebergBaseExtractor):
@@ -60,15 +63,14 @@ class CodebergUrlExtractor(CodebergBaseExtractor):
         # getting the URL from the Codeberg API
         result = self.get_client(context, state).get_repository()
         if result.get("html_url"):
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/url", result['html_url'], 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/url", result['html_url'], 0.95)
         # getting the URL from CITATION.cff
         client = self.get_client(context, state)
         cffs = client.get_parsed_citations()
         for cff in cffs:
             if 'url' in cff:
-                state.metadata_collector.collect("CFF File", 'https://schema.org/url', cff['url'], 0.8)
+                state.metadata_collector.collect("CFF File", 'https://schema.org/url', cff['url'], 0.85)
         return state
-
 
 class CodebergCodeRepositoryExtractor(CodebergBaseExtractor):
     """schema:codeRepository"""
@@ -81,7 +83,7 @@ class CodebergCodeRepositoryExtractor(CodebergBaseExtractor):
         result = self.get_client(context, state).get_repository()
         clone_url = result.get("clone_url") or result.get("html_url")
         if clone_url:
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/codeRepository", clone_url, 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/codeRepository", clone_url, 0.95)
         return state
 
 class CodebergProgrammingLanguageExtractor(CodebergBaseExtractor):
@@ -95,9 +97,8 @@ class CodebergProgrammingLanguageExtractor(CodebergBaseExtractor):
         result = self.get_client(context, state).get_languages()
         if isinstance(result, dict) and result:
             languages = list(result.keys())
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/programmingLanguage", languages, 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/programmingLanguage", languages, 0.95)
         return state
-
 
 class CodebergAuthorExtractor(CodebergBaseExtractor):
     """schema:author - multivalued, so we combine owner + contributors"""
@@ -123,9 +124,8 @@ class CodebergAuthorExtractor(CodebergBaseExtractor):
                     person["name"] = cffAuthor["name"]
                 authors.append(person)
             if len(authors) > 0:
-                state.metadata_collector.collect("CFF File", "https://schema.org/author", authors, 0.99)
+                state.metadata_collector.collect("CFF File", "https://schema.org/author", authors, 0.85)
         return state
-
 
 class CodebergLicenseExtractor(CodebergBaseExtractor):
     """schema:license"""
@@ -141,16 +141,21 @@ class CodebergLicenseExtractor(CodebergBaseExtractor):
             text = license_candidate.get("content")
             result = match_license_text(text)
             spdx_id = result["detected_license_expression_spdx"]
-            conf    = result["percentage_of_license_text"] / 100.0
+            conf    = result["percentage_of_license_text"] * 0.95 / 100.0
             license_object = {
                 '@type': 'CreativeWork',
                 '@context': 'https://schema.org',
                 'name': spdx_id,
                 'url' : f'https://spdx.org/licenses/{spdx_id}.html'
             }
-            state.metadata_collector.collect("License File",'https://schema.org/license', license_object, conf)
+            state.metadata_collector.collect("License File", 'https://schema.org/license', license_object, conf)
+        citations = client.get_parsed_citations()
+        for citation in citations:
+            if 'license' in citation:
+                pass # TODO: Implement
+            if 'license-url' in citation:
+                pass # TODO: Implement
         return state
-
 
 class CodebergIdentifierExtractor(CodebergBaseExtractor):
     """schema:identifier - use repository numeric id"""
@@ -170,7 +175,7 @@ class CodebergIdentifierExtractor(CodebergBaseExtractor):
                     doi_url = f"https://doi.org/{cffIdentifier['value']}"
                     identifiers.append(doi_url)
             if len(identifiers) > 0:
-                state.metadata_collector.collect("CFF File", "https://schema.org/identifier", identifiers, 0.99)
+                state.metadata_collector.collect("CFF File", "https://schema.org/identifier", identifiers, 0.85)
         # from README
         readmes = client.get_readme_candidate_files()
         for readme in readmes:
@@ -178,7 +183,7 @@ class CodebergIdentifierExtractor(CodebergBaseExtractor):
             if readme_content:
                 doi_candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
                 for doi_url in doi_candidates:
-                    state.metadata_collector.collect("README", "https://schema.org/identifier", doi_url, 0.7)
+                    state.metadata_collector.collect("README", "https://schema.org/identifier", doi_url, 0.6)
         return state
 
 class CodebergCitationExtractor(CodebergBaseExtractor):
@@ -221,14 +226,14 @@ class CodebergCitationExtractor(CodebergBaseExtractor):
                     author_list.append(person)
                 if author_list:
                     citation_entry["author"] = author_list
-                state.metadata_collector.collect("CFF File", "https://schema.org/citation", citation_entry, 0.99)
+                state.metadata_collector.collect("CFF File", "https://schema.org/citation", citation_entry, 0.85)
             else:
                 # If no preferred-citation, we can still try to extract a DOI from the CFF file
                 doi_value = cff.get("doi")
                 if doi_value:
                     doi_url = f"https://doi.org/{str(doi_value)}"
                     citation_entry = {"@type": "Article", "@id": doi_url}
-                    state.metadata_collector.collect("CFF File", "https://schema.org/citation", citation_entry, 0.99)
+                    state.metadata_collector.collect("CFF File", "https://schema.org/citation", citation_entry, 0.85)
         return state
 
 class CodebergKeywordsExtractor(CodebergBaseExtractor):
@@ -241,16 +246,15 @@ class CodebergKeywordsExtractor(CodebergBaseExtractor):
     def extract(self, context, state):
         result = self.get_client(context, state).get_repository()
         if "topics" in result and result["topics"]:
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/keywords", result['topics'], 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/keywords", result['topics'], 0.95)
         client = self.get_client(context, state)
         citations = client.get_parsed_citations()
         keywords = []
         for cff in citations:
             keywords.extend(cff.get('keywords', []))
         if len(keywords) > 0:
-            state.metadata_collector.collect("CFF File", "https://schema.org/keywords", keywords, 0.95)
+            state.metadata_collector.collect("CFF File", "https://schema.org/keywords", keywords, 0.85)
         return state
-
 
 class CodebergReadmeExtractor(CodebergBaseExtractor):
     """codemeta:readme"""
@@ -268,9 +272,8 @@ class CodebergReadmeExtractor(CodebergBaseExtractor):
             if readme_content:
                 urls.add(readme.get("html_url"))
         if urls:
-            state.metadata_collector.collect("Codeberg API", "https://codemeta.github.io/terms/readme", list(urls), 0.7)
+            state.metadata_collector.collect("Codeberg API", "https://codemeta.github.io/terms/readme", list(urls), 0.95)
         return state
-
 
 class CodebergVersionControlSystemExtractor(CodebergBaseExtractor):
     """maSMP:versionControlSystem - hardcoded, since Codeberg is a Git-only forge"""
@@ -284,9 +287,8 @@ class CodebergVersionControlSystemExtractor(CodebergBaseExtractor):
             "@type": "VersionControlSystem",
             "name": "Git",
             "url": "https://git-scm.com/",
-        }, 1)
+        }, 1.0)
         return state
-
 
 class CodebergArchivedAtExtractor(CodebergBaseExtractor):
     """schema:archivedAt - only meaningful if the repo is archived"""
@@ -304,9 +306,11 @@ class CodebergArchivedAtExtractor(CodebergBaseExtractor):
             for url in candidates:
                 zenodoUrls.add(url)
         if zenodoUrls:
-            state.metadata_collector.collect("README", "https://schema.org/archivedAt", list(zenodoUrls), 0.7)
+            state.metadata_collector.collect("README", "https://schema.org/archivedAt", list(zenodoUrls), 0.6)
+        waybackUrl = WaybackClient.check_archive_url(context.repo_url)
+        if waybackUrl:
+            state.metadata_collector.collect("Wayback API", "https://schema.org/archivedAt", [waybackUrl], 0.95)
         return state
-
 
 class CodebergContributorsExtractor(CodebergBaseExtractor):
     """Not in schema explicitly, but kept for downstream use / possible mapping to author.
@@ -319,12 +323,11 @@ class CodebergContributorsExtractor(CodebergBaseExtractor):
     def extract(self, context, state):
         try:
             result = self.get_client(context, state).get_contributors()
-            contributors = [{'name': contributor['name'], 'email':email, '@type': 'Person', "@context": 'https://schema.org'} for email, contributor in result.items() if email != 'Total']
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/contributor", contributors, 0.99)
+            contributors = [{'name': contributor['name'], 'email':email, '@type': 'Person', "@context": 'https://schema.org'} for email, contributor in result.items() if email.lower() != 'total']
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/contributor", contributors, 0.95)
         except:
             pass
         return state
-
 
 class CodebergReleaseNotesExtractor(CodebergBaseExtractor):
     """schema:releaseNotes - SoftwareApplication slot, from latest release body"""
@@ -338,9 +341,8 @@ class CodebergReleaseNotesExtractor(CodebergBaseExtractor):
         if isinstance(result, list) and len(result) > 0:
             body = result[0].get("body")
             if body:
-                state.metadata_collector.collect("Codeberg API", "https://schema.org/releaseNotes", body, 0.9)
+                state.metadata_collector.collect("Codeberg API", "https://schema.org/releaseNotes", body, 0.95)
         return state
-
 
 class CodebergSoftwareVersionExtractor(CodebergBaseExtractor):
     """schema:softwareVersion - SoftwareApplication slot, mirrors version"""
@@ -354,8 +356,14 @@ class CodebergSoftwareVersionExtractor(CodebergBaseExtractor):
         if isinstance(result, list) and len(result) > 0:
             tag_name = result[0].get("name")
             if tag_name:
-                state.metadata_collector.collect("Codeberg API", "https://schema.org/softwareVersion", tag_name, 0.9)
-                state.metadata_collector.collect("Codeberg API", "https://schema.org/version", tag_name, 0.9)
+                state.metadata_collector.collect("Codeberg API", "https://schema.org/softwareVersion", tag_name, 0.85)
+                state.metadata_collector.collect("Codeberg API", "https://schema.org/version", tag_name, 0.85)
+        client = self.get_client(context, state)
+        citations = client.get_parsed_citations()
+        for citation in citations:
+            if 'version' in citation:
+                state.metadata_collector.collect("CFF File", "https://schema.org/softwareVersion", citation['version'], 0.85)
+                state.metadata_collector.collect("CFF File", "https://schema.org/version", citation['version'], 0.85)
         return state
 
 class CodebergHasSourceCodeExtractor(CodebergBaseExtractor):
@@ -369,7 +377,7 @@ class CodebergHasSourceCodeExtractor(CodebergBaseExtractor):
         c = self.get_client(context, state)
         hasSourceCodeUrl = f"https://codeberg.org/{c.get_repository_owner()}/{c.get_repository_name()}/#id" 
         if hasSourceCodeUrl:
-            state.metadata_collector.collect("Pattern", "https://codemeta.github.io/terms/hasSourceCode", hasSourceCodeUrl, 0.99)
+            state.metadata_collector.collect("Pattern", "https://codemeta.github.io/terms/hasSourceCode", hasSourceCodeUrl, 0.75)
         return state
 
 class CodebergConditionsOfAccessExtractor(CodebergBaseExtractor):
@@ -385,7 +393,7 @@ class CodebergConditionsOfAccessExtractor(CodebergBaseExtractor):
         if license_info and isinstance(license_info, dict):
             license_url = license_info.get("url") or license_info.get("key")
             if license_url:
-                state.metadata_collector.collect("Codeberg API", "https://schema.org/conditionOfAccess", license_url, 0.99)
+                state.metadata_collector.collect("Codeberg API", "https://schema.org/conditionOfAccess", license_url, 0.95)
         return state
 
 class CodebergIsAccessibleForFreeExtractor(CodebergBaseExtractor):
@@ -400,15 +408,16 @@ class CodebergIsAccessibleForFreeExtractor(CodebergBaseExtractor):
         repo = client.get_repository()
         private = repo.get("private")
         if private == False:
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/isAccessibleForFree", True, 0.99)
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/conditionOfAccess", 'Public', 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/isAccessibleForFree", True, 0.95)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/conditionOfAccess", 'Public', 0.95)
         elif private == True:
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/isAccessibleForFree", False, 0.99)
-            state.metadata_collector.collect("Codeberg API", "https://schema.org/conditionOfAccess", 'Private', 0.99)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/isAccessibleForFree", False, 0.95)
+            state.metadata_collector.collect("Codeberg API", "https://schema.org/conditionOfAccess", 'Private', 0.95)
         return state
 
 class CodebergDateExtractor(CodebergBaseExtractor):
-    """extracts the issue tracker URL for a Codeberg repository"""
+    """extracts creation, modification, and publication dates for a Codeberg repository,
+    falling back to the latest tag's commit date if no releases exist"""
 
     extracts = {'https://schema.org/dateCreated', 'https://schema.org/datePublished', 'https://schema.org/dateModified'}
     platforms = {'codeberg.org'}
@@ -418,15 +427,15 @@ class CodebergDateExtractor(CodebergBaseExtractor):
         client = self.get_client(context, state)
         repo = client.get_repository()
         if "created_at" in repo:
-            state.metadata_collector.collect("Codeberg API", 'https://schema.org/dateCreated', repo['created_at'], 1)
+            state.metadata_collector.collect("Codeberg API", 'https://schema.org/dateCreated', repo['created_at'], 0.95)
         if 'updated_at' in repo:
-            state.metadata_collector.collect("Codeberg API", 'https://schema.org/dateModified', repo['updated_at'])
+            state.metadata_collector.collect("Codeberg API", 'https://schema.org/dateModified', repo['updated_at'], 0.95)
         if repo.get("has_releases", False):
             releases = client.get_releases()
             if len(releases) > 0:
                 latest = releases[0]
                 if 'published_at' in latest:
-                    state.metadata_collector.collect("Codeberg API", 'https://schema.org/datePublished', latest['published_at'], 0.8)
+                    state.metadata_collector.collect("Codeberg API", 'https://schema.org/datePublished', latest['published_at'], 0.85)
         else: # if there are no releases, assume the latest tag acts as a release
             tags = client.get_tags()
             if len(tags) > 0:
@@ -434,6 +443,10 @@ class CodebergDateExtractor(CodebergBaseExtractor):
                 tag_time = latest.get('commit', {}).get('created')
                 if tag_time:
                     state.metadata_collector.collect("Codeberg API", 'https://schema.org/datePublished', tag_time, 0.6)
+        citations = client.get_parsed_citations()
+        for citation in citations:
+            if 'date-released' in citation:
+                state.metadata_collector.collect('CFF File', 'https://schema.org/datePublished', citation['date-released'], 0.85)
         return state
 
 class CodebergIssueTrackerExtractor(CodebergBaseExtractor):
@@ -448,11 +461,11 @@ class CodebergIssueTrackerExtractor(CodebergBaseExtractor):
         repo = client.get_repository()
         if repo.get('has_issues', False) and 'html_url' in repo:
             issue_tracker_url = f"{repo['html_url']}/issues"
-            state.metadata_collector.collect("Codeberg API", 'https://schema.org/issueTracker', issue_tracker_url)
+            state.metadata_collector.collect("Codeberg API", 'https://schema.org/issueTracker', issue_tracker_url, 0.95)
         return state
-    
+
 class CodebergChangelogExtractor(CodebergBaseExtractor):
-    """extracts the changelog URL for a Codeberg repository"""
+    """maSMP:changeLog - derived from the releases page and/or a CHANGELOG file in the repo root"""
 
     extracts = {'https://discovery.biothings.io/ns/maSMP/changeLog'}
     platforms = {'codeberg.org'}
@@ -464,11 +477,11 @@ class CodebergChangelogExtractor(CodebergBaseExtractor):
         if repo.get('has_releases', False):
             if 'html_url' in repo:
                 changelog_url = f"{repo['html_url']}/releases"
-                state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.9)
+                state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.75)
         files = client.list_contents()
         for file in files:
             if file.get('name', '').lower().startswith('changelog'):
                 changelog_url = file.get('download_url')
                 if changelog_url:
-                    state.metadata_collector.collect("Changelog File", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.8)
+                    state.metadata_collector.collect("Changelog File", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.6)
         return state
