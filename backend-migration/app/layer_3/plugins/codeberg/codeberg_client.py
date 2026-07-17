@@ -116,7 +116,7 @@ class CodebergClient:
             return []
         content = self.get_content(path)
         for item in content:
-            if item["type"] == "dir":
+            if item["type"] == "dir" and "path" in item:
                 content.extend(self.list_contents(item["path"], depth - 1))
         return content
 

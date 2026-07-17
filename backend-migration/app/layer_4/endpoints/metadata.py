@@ -83,15 +83,12 @@ async def extract_metadata_enriched(
         ...,
         description="URL of the code repository (GitHub, GitLab)",
     ),
-    schema: str = Query(
-        "maSMP",
-        description="Schema to analyze against",
-        enum=["maSMP", "CODEMETA"],
-    ),
+    schema: str = 'maSMP',
     access_token: Optional[str] = Query(
         None,
         description="Optional access token for private repositories",
     ),
+    schema_class:str="SoftwareSourceCode"
 ) -> MetadataEnrichedResponse:
     """
     Extract metadata and return JSON-LD **plus** per-property enrichment.
@@ -104,6 +101,7 @@ async def extract_metadata_enriched(
         jsonld_document, enriched = run_extraction(
             repo_url=str(repo_url),
             schema_name=schema,
+            schema_class=schema_class,
             access_token=access_token,
             with_enrichment=True,
         )
