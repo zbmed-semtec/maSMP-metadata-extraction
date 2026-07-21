@@ -8,7 +8,7 @@ from app.layer_3.plugins.codeberg.codeberg_client import CodebergClient
 from app.layer_3.plugins.codeberg.codeberg_base_extractor import CodebergBaseExtractor
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 from app.layer_3.plugins.codeberg.utils import match_license_text, dependency_files
-from app.layer_3.plugins.extract_wayback_archived_url_step import WaybackClient
+from app.layer_3.plugins.shared.wayback_client import WaybackClient
 import datetime
 
 class CodebergNameExtractor(CodebergBaseExtractor):
@@ -153,9 +153,43 @@ class CodebergLicenseExtractor(CodebergBaseExtractor):
         citations = client.get_parsed_citations()
         for citation in citations:
             if 'license' in citation:
-                pass # TODO: Implement
+                license_value = citation.get('license')
+                if license_value:
+                    result = match_license_text(license_value)
+                    spdx_id = result["detected_license_expression_spdx"]
+                    conf    = result["percentage_of_license_text"] * 0.95 / 100.0
+                    if spdx_id:
+                        license_object = {
+                            '@type': 'CreativeWork',
+                            '@context': 'https://schema.org',
+                            'name': spdx_id,
+                            'url' : f'https://spdx.org/licenses/{spdx_id}.html'
+                        }
+                    else:
+                        # Fall back to using the raw citation value as the name
+                        # if no SPDX match could be determined.
+                        license_object = {
+                            '@type': 'CreativeWork',
+                            '@context': 'https://schema.org',
+                            'name': license_value
+                        }
+                    state.metadata_collector.collect(
+                        "CITATION.cff", 'https://schema.org/license', license_object, conf
+                    )
             if 'license-url' in citation:
-                pass # TODO: Implement
+                license_url = citation.get('license-url')
+                if license_url:
+                    license_object = {
+                        '@type': 'CreativeWork',
+                        '@context': 'https://schema.org',
+                        'url': license_url
+                    }
+                    # license-url is an explicit, author-provided value, so we treat
+                    # it with high confidence, similar to other direct metadata fields.
+                    conf = 0.9
+                    state.metadata_collector.collect(
+                        "CITATION.cff", 'https://schema.org/license', license_object, conf
+                    )
         return state
 
 class CodebergIdentifierExtractor(CodebergBaseExtractor):
@@ -360,7 +394,7 @@ class CodebergArchivedAtExtractor(CodebergBaseExtractor):
                 zenodoUrls.add(url)
         if zenodoUrls:
             state.metadata_collector.collect("README", "https://schema.org/archivedAt", list(zenodoUrls), 0.6)
-        waybackUrl = WaybackClient.check_archive_url(context.repo_url)
+        waybackUrl = WaybackClient.get_or_create(context, state).get_archive_url()
         if waybackUrl:
             state.metadata_collector.collect("Wayback API", "https://schema.org/archivedAt", [waybackUrl], 0.95)
         return state
@@ -528,7 +562,7 @@ class CodebergChangelogExtractor(CodebergBaseExtractor):
             if 'html_url' in repo:
                 changelog_url = f"{repo['html_url']}/releases"
                 state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.75)
-        files = client.list_contents()
+        files = client.get_changelog_candidate_files()
         for file in files:
             if file.get('name', '').lower().startswith('changelog'):
                 changelog_url = file.get('download_url')
@@ -546,8 +580,10 @@ class CodebergSoftwareRequirementExtractor(CodebergBaseExtractor):
         files = client.list_contents()
         found = []
         for file in files:
-            if file.get('name', '').lower() in dependency_files and file.get('download_url'):
-                found.append(file['download_url'])
+            if file.name.lower() in dependency_files:
+                download_url = client.get_file(file.path).get('download_url')
+                if download_url:
+                    found.append(download_url)
         if len(found) > 0:
             state.metadata_collector.collect("Codeberg API", 'https://schema.org/softwareRequirements', found, 0.95)
         return state

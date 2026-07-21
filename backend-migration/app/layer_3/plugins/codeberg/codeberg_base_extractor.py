@@ -9,7 +9,5 @@ class CodebergBaseExtractor(ExtractionPlugin):
     extracts = {'please.specify.what.is.being.extracted'}
 
     def get_client(self, context: ExtractionContext, state: ExtractionState) -> CodebergClient:
-        if not state.data.get('codeberg_client'):
-            state.data['codeberg_client'] = CodebergClient(context, state)
-        return state.data['codeberg_client']
+        return CodebergClient.get_or_create(context, state)
     

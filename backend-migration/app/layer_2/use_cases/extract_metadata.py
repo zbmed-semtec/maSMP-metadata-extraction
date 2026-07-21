@@ -33,7 +33,7 @@ class ExtractMetadataResult:
     extraction_metadata: Dict[str, Dict[str, Any]]  # entity_field -> {source, confidence}
 
 
-class JSONLDBuilder(Protocol):
+class JSONLDBuilderBase(Protocol):
     """Protocol for building JSON-LD documents"""
     def build_jsonld(self, metadata: MetadataCollector, schema: BaseSchema) -> dict:
         """Build JSON-LD document from metadata"""
@@ -47,7 +47,7 @@ class ExtractMetadataUseCase:
     
     def __init__(
         self,
-        jsonld_builder: JSONLDBuilder,
+        jsonld_builder: JSONLDBuilderBase,
         pipeline_composer: Optional[PipelineComposer] = None,
         pipeline_runner: Optional[ExtractionPipelineRunner] = None,
         extraction_metadata_collector: Optional[MetadataCollector] = None,

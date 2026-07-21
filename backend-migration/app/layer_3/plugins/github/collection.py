@@ -8,8 +8,8 @@ import datetime
 from app.layer_3.plugins.github.github_client import GitHubClient
 from app.layer_3.plugins.github.github_base_extractor import GitHubBaseExtractor
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
-from app.layer_3.plugins.extract_wayback_archived_url_step import WaybackClient
-from app.layer_3.plugins.utils import match_license_text
+from app.layer_3.plugins.shared.wayback_client import WaybackClient
+from app.layer_3.plugins.shared.utils import match_license_text
 
 
 class GitHubNameExtractor(GitHubBaseExtractor):
@@ -101,12 +101,26 @@ class GitHubProgrammingLanguageExtractor(GitHubBaseExtractor):
 
     def extract(self, context, state):
         client = self.get_client(context, state)
-        result = client.get_repository()
-        
-        # GitHub API provides a single primary language
-        primary_language = result.get("language")
-        if primary_language:
-            state.metadata_collector.collect("GitHub API", "https://schema.org/programmingLanguage", [primary_language], 0.95)
+
+        # GitHub's dedicated /languages endpoint returns all detected
+        # languages with their byte counts, not just the single primary
+        # language exposed on the repository object.
+        try:
+            languages = client.get_languages()
+        except Exception:
+            languages = None
+
+        if isinstance(languages, dict) and languages:
+            # Sort by byte count descending, so the primary language comes first
+            sorted_languages = sorted(languages.items(), key=lambda kv: kv[1], reverse=True)
+            language_names = [lang for lang, _ in sorted_languages]
+            state.metadata_collector.collect("GitHub API", "https://schema.org/programmingLanguage", language_names, 0.95)
+        else:
+            # Fallback to the single primary language field on the repository object
+            result = client.get_repository()
+            primary_language = result.get("language")
+            if primary_language:
+                state.metadata_collector.collect("GitHub API", "https://schema.org/programmingLanguage", [primary_language], 0.85)
         return state
 
 
@@ -145,7 +159,7 @@ class GitHubLicenseExtractor(GitHubBaseExtractor):
 
     def extract(self, context, state):
         client = self.get_client(context, state)
-        
+
         # Try to get license from GitHub API first
         result = client.get_repository()
         license_info = result.get("license")
@@ -159,7 +173,7 @@ class GitHubLicenseExtractor(GitHubBaseExtractor):
                     'url': f'https://spdx.org/licenses/{spdx_id}.html'
                 }
                 state.metadata_collector.collect("GitHub API", 'https://schema.org/license', license_object, 0.95)
-        
+
         # Fallback to license candidate files
         license_candidates = client.get_license_candidate_files()
         for license_candidate in license_candidates:
@@ -174,14 +188,29 @@ class GitHubLicenseExtractor(GitHubBaseExtractor):
                 'url': f'https://spdx.org/licenses/{spdx_id}.html'
             }
             state.metadata_collector.collect("License File", 'https://schema.org/license', license_object, conf)
-        
+
         # Check CFF for license information
         citations = client.get_parsed_citations()
         for citation in citations:
             if 'license' in citation:
-                pass  # TODO: Implement
+                spdx_id = citation['license']
+                if spdx_id and spdx_id != "NOASSERTION":
+                    license_object = {
+                        '@type': 'CreativeWork',
+                        '@context': 'https://schema.org',
+                        'name': spdx_id,
+                        'url': f'https://spdx.org/licenses/{spdx_id}.html'
+                    }
+                    state.metadata_collector.collect("CFF File", 'https://schema.org/license', license_object, 0.85)
             if 'license-url' in citation:
-                pass  # TODO: Implement
+                license_url = citation['license-url']
+                if license_url:
+                    license_object = {
+                        '@type': 'CreativeWork',
+                        '@context': 'https://schema.org',
+                        'url': license_url
+                    }
+                    state.metadata_collector.collect("CFF File", 'https://schema.org/license', license_object, 0.85)
         return state
 
 
@@ -403,7 +432,7 @@ class GitHubArchivedAtExtractor(GitHubBaseExtractor):
         if zenodoUrls:
             state.metadata_collector.collect("README", "https://schema.org/archivedAt", list(zenodoUrls), 0.6)
         
-        waybackUrl = WaybackClient.check_archive_url(context.repo_url)
+        waybackUrl = WaybackClient.get_or_create(context, state).get_archive_url()
         if waybackUrl:
             state.metadata_collector.collect("Wayback API", "https://schema.org/archivedAt", [waybackUrl], 0.95)
         return state
