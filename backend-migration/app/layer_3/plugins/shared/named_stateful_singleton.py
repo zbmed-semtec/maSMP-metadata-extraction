@@ -10,7 +10,7 @@ class NamedStatefulSingleton(ABC):
         self.state   = state
     
     @classmethod
-    def get_or_create(cls, context: ExtractionContext, state: ExtractionState) -> "OptionalClient":
+    def get_or_create(cls, context: ExtractionContext, state: ExtractionState) -> "NamedStatefulSingleton":
         if not cls.name in state.data:
             state.data[cls.name] = cls(context, state)
         return state.data[cls.name]

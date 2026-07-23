@@ -17,7 +17,7 @@ import yaml
 
 from app.layer_3.plugins.shared.caching_http_client import CachingHttpClient
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
-
+from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 
 @dataclass
 class RepositoryItem:
@@ -50,6 +50,8 @@ class GitPlatformClient(CachingHttpClient, ABC):
         self._repository_owner: str | None = None
         self._repository_name: str | None = None
         self._parsed_citations: list[dict] | None = None
+        self._dois_from_citation: set[str] | None = None
+        self._dois_from_readme: set[str] | None = None
         self.headers = self._build_headers()
 
     # ------------------------------------------------------------------
@@ -266,3 +268,32 @@ class GitPlatformClient(CachingHttpClient, ABC):
                     parsed.append(cff_data)
             self._parsed_citations = parsed
         return self._parsed_citations
+    
+    def get_dois_from_readmes(self) -> list[str]:
+        if self._dois_from_readme is None:
+            result = set()
+            readmes = self.get_readme_candidate_files()
+            for readme in readmes:
+                readme_content = readme.get("content")
+                if readme_content:
+                    doi_candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
+                    for doi_url in doi_candidates:
+                        result.add(doi_url)
+            self._dois_from_readme = result
+        return self._dois_from_readme
+    
+    def get_dois_from_parsed_citaitons(self) -> set[str]:
+        if self._dois_from_citation is None:
+            citations = self.get_parsed_citations()
+            identifiers = set()
+            for cff in citations:
+                for cffIdentifier in cff.get("identifiers", []):
+                    if cffIdentifier.get("type") == "doi" and cffIdentifier.get("value"):
+                        doi_url = f"https://doi.org/{cffIdentifier['value']}"
+                        identifiers.add(doi_url)
+                doi = cff.get("doi")
+                if doi:
+                    doi_url = f"https://doi.org/{doi}"
+                    identifiers.add(doi_url)
+            self._dois_from_citation = identifiers
+        return self._dois_from_citation

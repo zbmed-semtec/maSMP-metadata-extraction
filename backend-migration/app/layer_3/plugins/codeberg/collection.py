@@ -9,6 +9,8 @@ from app.layer_3.plugins.codeberg.codeberg_base_extractor import CodebergBaseExt
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 from app.layer_3.plugins.codeberg.utils import match_license_text, dependency_files
 from app.layer_3.plugins.shared.wayback_client import WaybackClient
+from app.layer_3.plugins.shared.software_heritage_client import SoftwareHeritageClient
+from app.layer_3.plugins.shared.open_alex_client import OpenAlexClient
 import datetime
 
 class CodebergNameExtractor(CodebergBaseExtractor):
@@ -127,6 +129,13 @@ class CodebergAuthorExtractor(CodebergBaseExtractor):
                 authors.append(person)
             if len(authors) > 0:
                 state.metadata_collector.collect("CFF File", "https://schema.org/author", authors, 0.85)
+        
+        # Query OpenAlex
+        for doi in client.get_dois_from_parsed_citaitons().union(client.get_dois_from_readmes()):
+            authors = OpenAlexClient.get_or_create(context, state).get_authors(doi)
+            if authors:
+                state.metadata_collector.collect("OpenAlex", "https://schema.org/author", authors, 0.95)
+
         return state
 
 class CodebergLicenseExtractor(CodebergBaseExtractor):
@@ -202,28 +211,14 @@ class CodebergIdentifierExtractor(CodebergBaseExtractor):
         client = self.get_client(context, state)
         
         # from CFF
-        citations = client.get_parsed_citations()
-        for cff in citations:
-            identifiers = []
-            for cffIdentifier in cff.get("identifiers", []):
-                if cffIdentifier.get("type") == "doi" and cffIdentifier.get("value"):
-                    doi_url = f"https://doi.org/{cffIdentifier['value']}"
-                    identifiers.append(doi_url)
-            doi = cff.get("doi")
-            if doi:
-                doi_url = f"https://doi.org/{doi}"
-                identifiers.append(doi_url)
-            if len(identifiers) > 0:
-                state.metadata_collector.collect("CFF File", "https://schema.org/identifier", identifiers, 0.85)
+        identifiers = list(client.get_dois_from_parsed_citaitons())
+        if len(identifiers) > 0:
+            state.metadata_collector.collect("CFF File", "https://schema.org/identifier", identifiers, 0.85)
 
         # from README
-        readmes = client.get_readme_candidate_files()
-        for readme in readmes:
-            readme_content = readme.get("content")
-            if readme_content:
-                doi_candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
-                for doi_url in doi_candidates:
-                    state.metadata_collector.collect("README", "https://schema.org/identifier", doi_url, 0.6)
+        identifiers = list(client.get_dois_from_readmes())
+        if len(identifiers) > 0:
+            state.metadata_collector.collect("README", "https://schema.org/identifier", identifiers, 0.6)
         return state
 
 class CodebergCitationExtractor(CodebergBaseExtractor):
@@ -344,6 +339,12 @@ class CodebergKeywordsExtractor(CodebergBaseExtractor):
             keywords.extend(cff.get('keywords', []))
         if len(keywords) > 0:
             state.metadata_collector.collect("CFF File", "https://schema.org/keywords", keywords, 0.85)
+        
+        # Query OpenAlex
+        for doi in client.get_dois_from_parsed_citaitons().union(client.get_dois_from_readmes()):
+            keywords = OpenAlexClient.get_or_create(context, state).get_keywords(doi)
+            if len(keywords) > 0:
+                state.metadata_collector.collect("OpenAlex", "https://schema.org/keywords", keywords, 0.95)
         return state
 
 class CodebergReadmeExtractor(CodebergBaseExtractor):
@@ -397,6 +398,9 @@ class CodebergArchivedAtExtractor(CodebergBaseExtractor):
         waybackUrl = WaybackClient.get_or_create(context, state).get_archive_url()
         if waybackUrl:
             state.metadata_collector.collect("Wayback API", "https://schema.org/archivedAt", [waybackUrl], 0.95)
+        softwareHeritageUrl = SoftwareHeritageClient.get_or_create(context, state).get_archive_url()
+        if softwareHeritageUrl:
+            state.metadata_collector.collect("SoftwareHeritage API", "https://schema.org/archivedAt", [softwareHeritageUrl], 0.95)
         return state
 
 class CodebergContributorsExtractor(CodebergBaseExtractor):
@@ -508,7 +512,7 @@ class CodebergDateExtractor(CodebergBaseExtractor):
 
     def extract(self, context, state):
         def iso_dt_to_str(iso_dt):
-            return str(datetime.datetime.fromisoformat(iso_dt).date())
+            return str(datetime.datetime.fromisoformat(str(iso_dt)).date())
         client = self.get_client(context, state)
         repo = client.get_repository()
         if "created_at" in repo:
@@ -531,7 +535,7 @@ class CodebergDateExtractor(CodebergBaseExtractor):
         citations = client.get_parsed_citations()
         for citation in citations:
             if 'date-released' in citation:
-                state.metadata_collector.collect('CFF File', 'https://schema.org/datePublished', citation['date-released'], 0.85)
+                state.metadata_collector.collect('CFF File', 'https://schema.org/datePublished', iso_dt_to_str(citation['date-released']), 0.85)
         return state
 
 class CodebergIssueTrackerExtractor(CodebergBaseExtractor):

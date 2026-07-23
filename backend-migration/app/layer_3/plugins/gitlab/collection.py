@@ -5,6 +5,8 @@ from app.layer_3.plugins.gitlab.gitlab_client import GitLabClient
 from app.layer_3.plugins.gitlab.gitlab_base_extractor import GitLabBaseExtractor
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 from app.layer_3.plugins.shared.wayback_client import WaybackClient
+from app.layer_3.plugins.shared.software_heritage_client import SoftwareHeritageClient
+from app.layer_3.plugins.shared.open_alex_client import OpenAlexClient
 from app.layer_3.plugins.shared.utils import match_license_text
 
 
@@ -87,6 +89,29 @@ class GitLabProgrammingLanguageExtractor(GitLabBaseExtractor):
             pass
         return state
 
+class GitLabKeywordsExtractor(GitLabBaseExtractor):
+    """schema:keywords"""
+
+    extracts = {'https://schema.org/keywords'}
+    name = "gitlab.keywords_extractor"
+
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        
+        citations = client.get_parsed_citations()
+        keywords = []
+        for cff in citations:
+            keywords.extend(cff.get('keywords', []))
+        if len(keywords) > 0:
+            state.metadata_collector.collect("CFF File", "https://schema.org/keywords", keywords, 0.85)
+        
+        # Query OpenAlex
+        for doi in client.get_dois_from_parsed_citaitons().union(client.get_dois_from_readmes()):
+            keywords = OpenAlexClient.get_or_create(context, state).get_keywords(doi)
+            if len(keywords) > 0:
+                state.metadata_collector.collect("OpenAlex", "https://schema.org/keywords", keywords, 0.95)
+                
+        return state
 
 class GitLabAuthorExtractor(GitLabBaseExtractor):
     """schema:author"""
@@ -112,6 +137,15 @@ class GitLabAuthorExtractor(GitLabBaseExtractor):
                 authors.append(person)
             if len(authors) > 0:
                 state.metadata_collector.collect("CFF File", "https://schema.org/author", authors, 0.85)
+        
+        # Query OpenAlex
+        for citation in client.get_parsed_citations():
+            if 'doi' in citation:
+                doi = citation['doi']
+                authors = OpenAlexClient.get_or_create(context, state).get_authors(doi)
+                if authors:
+                    state.metadata_collector.collect("OpenAlex", "https://schema.org/author", authors, 0.95)
+        
         return state
 
 
@@ -259,14 +293,14 @@ class GitLabCitationExtractor(GitLabBaseExtractor):
 class GitLabReadmeExtractor(GitLabBaseExtractor):
     """codemeta:readme"""
 
-    extracts = {'https://codemeta.github.io/terms/readme'}
+    extracts = {'https://codemeta.gitLab.io/terms/readme'}
     name = "gitlab.readme_extractor"
 
     def extract(self, context, state):
         client = self.get_client(context, state)
         repo = client.get_repository()        
         if 'readme_url' in repo:
-            state.metadata_collector.collect("GitLab API", "https://codemeta.github.io/terms/readme", repo['readme_url'], 0.95)
+            state.metadata_collector.collect("GitLab API", "https://codemeta.gitLab.io/terms/readme", repo['readme_url'], 0.95)
         return state
 
 
@@ -302,7 +336,7 @@ class GitLabContributorsExtractor(GitLabBaseExtractor):
                     }
                     # GitLab contributor objects don't include a profile URL or
                     # login handle, only name/email/commits/additions/deletions,
-                    # so no 'url' field can be populated here (unlike GitHub's html_url).
+                    # so no 'url' field can be populated here (unlike GitLab's html_url).
                     contributors.append(person)
             if contributors:
                 state.metadata_collector.collect("GitLab API", "https://schema.org/contributor", contributors, 0.95)
@@ -314,7 +348,7 @@ class GitLabContributorsExtractor(GitLabBaseExtractor):
 class GitLabReleaseNotesExtractor(GitLabBaseExtractor):
     """schema:releaseNotes"""
 
-    extracts = {'https://schema.org/releaseNotes', 'https://codemeta.github.io/terms/releaseNotes'}
+    extracts = {'https://schema.org/releaseNotes', 'https://codemeta.gitLab.io/terms/releaseNotes'}
     name = "gitlab.release_notes_extractor"
 
     def extract(self, context, state):
@@ -326,7 +360,7 @@ class GitLabReleaseNotesExtractor(GitLabBaseExtractor):
                 description = latest_release.get("description")
                 if description:
                     state.metadata_collector.collect("GitLab API", "https://schema.org/releaseNotes", description, 0.95)
-                    state.metadata_collector.collect("GitLab API", "https://codemeta.github.io/terms/releaseNotes", description, 0.95)
+                    state.metadata_collector.collect("GitLab API", "https://codemeta.gitLab.io/terms/releaseNotes", description, 0.95)
         except Exception:
             pass
         return state
@@ -373,7 +407,7 @@ class GitLabVersionExtractor(GitLabBaseExtractor):
 class GitLabHasSourceCodeExtractor(GitLabBaseExtractor):
     """maSMP:hasSourceCode"""
 
-    extracts = {'https://codemeta.github.io/terms/hasSourceCode'}
+    extracts = {'https://codemeta.gitLab.io/terms/hasSourceCode'}
     name = "gitlab.has_source_code_extractor"
 
     def extract(self, context, state):
@@ -381,7 +415,7 @@ class GitLabHasSourceCodeExtractor(GitLabBaseExtractor):
         repo = client.get_repository()
         if 'web_url' in repo:
             has_source_code_url = repo['web_url']
-            state.metadata_collector.collect("GitLab API", "https://codemeta.github.io/terms/hasSourceCode", has_source_code_url, 0.95)
+            state.metadata_collector.collect("GitLab API", "https://codemeta.gitLab.io/terms/hasSourceCode", has_source_code_url, 0.95)
         return state
 
 
@@ -462,7 +496,7 @@ class GitLabDateExtractor(GitLabBaseExtractor):
 class GitLabIssueTrackerExtractor(GitLabBaseExtractor):
     """extracts the issue tracker URL for a GitLab repository"""
 
-    extracts = {'https://schema.org/issueTracker', 'https://codemeta.github.io/terms/issueTracker'}
+    extracts = {'https://schema.org/issueTracker', 'https://codemeta.gitLab.io/terms/issueTracker'}
     name = "gitlab.issue_tracker_extractor"
 
     def extract(self, context, state):
@@ -471,7 +505,7 @@ class GitLabIssueTrackerExtractor(GitLabBaseExtractor):
         if repo.get('issues_enabled', False) and 'web_url' in repo:
             issue_tracker_url = f"{repo['web_url']}/-/issues"
             state.metadata_collector.collect("GitLab API", 'https://schema.org/issueTracker', issue_tracker_url, 0.95)
-            state.metadata_collector.collect("GitLab API", 'https://codemeta.github.io/terms/issueTracker', issue_tracker_url, 0.95)
+            state.metadata_collector.collect("GitLab API", 'https://codemeta.gitLab.io/terms/issueTracker', issue_tracker_url, 0.95)
         return state
 
 
@@ -534,6 +568,34 @@ class GitLabSoftwareRequirementExtractor(GitLabBaseExtractor):
         return state
 
 
+class GitLabArchivedAtExtractor(GitLabBaseExtractor):
+    """schema:archivedAt"""
+
+    extracts = {'https://schema.org/archivedAt'}
+    name = "gitlab.archived_at_extractor"
+
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        zenodoUrls = set()
+        for file in client.get_readme_candidate_files():
+            readme_content = file.get("content")
+            if readme_content:
+                candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
+                for url in candidates:
+                    zenodoUrls.add(url)
+        if zenodoUrls:
+            state.metadata_collector.collect("README", "https://schema.org/archivedAt", list(zenodoUrls), 0.6)
+        
+        waybackUrl = WaybackClient.get_or_create(context, state).get_archive_url()
+        if waybackUrl:
+            state.metadata_collector.collect("Wayback API", "https://schema.org/archivedAt", [waybackUrl], 0.95)
+
+        softwareHeritageUrl = SoftwareHeritageClient.get_or_create(context, state).get_archive_url()
+        if softwareHeritageUrl:
+            state.metadata_collector.collect("Software Heritage API", "https://schema.org/archivedAt", [softwareHeritageUrl], 0.95)
+
+        return state
+
 class GitLabLicenseCopyrightHolderExtractor(GitLabBaseExtractor):
     """extracts the copyright holder and year from the license file"""
 
@@ -585,7 +647,7 @@ class GitLabStorageRequirementExtractor(GitLabBaseExtractor):
         try:
             # GitLab exposes repository size (in bytes) via the /statistics
             # endpoint, requires the `statistics=true` query param on the
-            # project fetch, unlike GitHub which returns size in KB directly
+            # project fetch, unlike GitLab which returns size in KB directly
             # on the base repository object.
             repo = client.get_repository()
             statistics = repo.get("statistics", {})
@@ -602,12 +664,12 @@ class GitLabForksCountExtractor(GitLabBaseExtractor):
     """extracts the number of forks for a GitLab repository"""
 
     name = "gitlab.forks_count_extractor"
-    extracts = {"https://codemeta.github.io/terms/forks"}
+    extracts = {"https://codemeta.gitLab.io/terms/forks"}
 
     def extract(self, context, state):
         client = self.get_client(context, state)
         repo = client.get_repository()
         forks_count = repo.get('forks_count', 0)
         if forks_count >= 0:
-            state.metadata_collector.collect("GitLab API", "https://codemeta.github.io/terms/forks", forks_count, 0.95)
+            state.metadata_collector.collect("GitLab API", "https://codemeta.gitLab.io/terms/forks", forks_count, 0.95)
         return state

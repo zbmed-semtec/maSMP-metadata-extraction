@@ -9,6 +9,8 @@ from app.layer_3.plugins.github.github_client import GitHubClient
 from app.layer_3.plugins.github.github_base_extractor import GitHubBaseExtractor
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 from app.layer_3.plugins.shared.wayback_client import WaybackClient
+from app.layer_3.plugins.shared.software_heritage_client import SoftwareHeritageClient
+from app.layer_3.plugins.shared.open_alex_client import OpenAlexClient
 from app.layer_3.plugins.shared.utils import match_license_text
 
 
@@ -148,6 +150,13 @@ class GitHubAuthorExtractor(GitHubBaseExtractor):
                 authors.append(person)
             if len(authors) > 0:
                 state.metadata_collector.collect("CFF File", "https://schema.org/author", authors, 0.85)
+        
+        # Query OpenAlex
+        for doi in client.get_dois_from_parsed_citaitons().union(client.get_dois_from_readmes()):
+            authors = OpenAlexClient.get_or_create(context, state).get_authors(doi)
+            if authors:
+                state.metadata_collector.collect("OpenAlex", "https://schema.org/author", authors, 0.95)
+        
         return state
 
 
@@ -371,6 +380,13 @@ class GitHubKeywordsExtractor(GitHubBaseExtractor):
             keywords.extend(cff.get('keywords', []))
         if len(keywords) > 0:
             state.metadata_collector.collect("CFF File", "https://schema.org/keywords", keywords, 0.85)
+        
+        # Query OpenAlex
+        for doi in client.get_dois_from_parsed_citaitons().union(client.get_dois_from_readmes()):
+            keywords = OpenAlexClient.get_or_create(context, state).get_keywords(doi)
+            if len(keywords) > 0:
+                state.metadata_collector.collect("OpenAlex", "https://schema.org/keywords", keywords, 0.95)
+
         return state
 
 
@@ -435,7 +451,14 @@ class GitHubArchivedAtExtractor(GitHubBaseExtractor):
         waybackUrl = WaybackClient.get_or_create(context, state).get_archive_url()
         if waybackUrl:
             state.metadata_collector.collect("Wayback API", "https://schema.org/archivedAt", [waybackUrl], 0.95)
+
+        softwareHeritageUrl = SoftwareHeritageClient.get_or_create(context, state).get_archive_url()
+        if softwareHeritageUrl:
+            state.metadata_collector.collect("Software Heritage API", "https://schema.org/archivedAt", [softwareHeritageUrl], 0.95)
+
         return state
+
+
 
 
 class GitHubContributorsExtractor(GitHubBaseExtractor):
