@@ -174,7 +174,7 @@ class GitLabLicenseExtractor(GitLabBaseExtractor):
         # Fallback to license candidate files
         license_candidates = client.get_license_candidate_files()
         for license_candidate in license_candidates:
-            text = license_candidate.get("content")
+            text = license_candidate.get_content()
             result = match_license_text(text)
             spdx_id = result["detected_license_expression_spdx"]
             conf = result["percentage_of_license_text"] * 0.95 / 100.0
@@ -238,7 +238,7 @@ class GitLabIdentifierExtractor(GitLabBaseExtractor):
         # from README
         readmes = client.get_readme_candidate_files()
         for readme in readmes:
-            readme_content = readme.get("content")
+            readme_content = readme.get_content()
             if readme_content:
                 doi_candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
                 for doi_url in doi_candidates:
@@ -578,7 +578,7 @@ class GitLabArchivedAtExtractor(GitLabBaseExtractor):
         client = self.get_client(context, state)
         zenodoUrls = set()
         for file in client.get_readme_candidate_files():
-            readme_content = file.get("content")
+            readme_content = file.get_content()
             if readme_content:
                 candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
                 for url in candidates:

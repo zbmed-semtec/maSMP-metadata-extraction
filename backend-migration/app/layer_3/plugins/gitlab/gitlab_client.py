@@ -17,10 +17,38 @@ import requests
 from app.layer_3.plugins.shared.git_platform_client import (
     GitPlatformClient,
     RepositoryItem,
+    RepositoryFile,
     FileNotFoundOnPlatformError,
 )
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 
+class GitLabRepositoryItem(RepositoryItem):
+    @property
+    def name(self) -> str:
+        return self._raw["name"]
+
+    @property
+    def path(self) -> str:
+        return self._raw["path"]
+
+    @property
+    def is_dir(self) -> bool:
+        return self._raw["type"] == "tree"
+
+class GitLabRepositoryFile(GitLabRepositoryItem, RepositoryFile):
+    def get_content(self) -> str | None:
+        raw_content = self._raw.get("content")
+        if raw_content is None:
+            return None
+        if self._raw.get("encoding") == "base64":
+            try:
+                return base64.b64decode(raw_content).decode("utf-8")
+            except (ValueError, UnicodeDecodeError):
+                return None
+        return raw_content
+
+    def get_html_url(self):
+        return self._raw.get("web_url")
 
 class GitLabClient(GitPlatformClient):
     """Client for interacting with the GitLab API,
@@ -139,12 +167,9 @@ class GitLabClient(GitPlatformClient):
             raise
 
         raw_entries = response.json()
-        return [
-            RepositoryItem(name=e["name"], path=e["path"], is_dir=e["type"] == "tree")
-            for e in raw_entries
-        ]
+        return [GitLabRepositoryFile(entry) for entry in raw_entries]
 
-    def get_file(self, path: str, ref: str | None = None) -> dict:
+    def _fetch_file(self, path: str, ref: str | None = None) -> dict:
         """Fetches a single file's metadata and decoded content via GitLab's files API.
 
         Args:
@@ -165,9 +190,7 @@ class GitLabClient(GitPlatformClient):
                 raise FileNotFoundOnPlatformError(path) from e
             raise
 
-        if raw.get("encoding") == "base64" and "content" in raw:
-            raw["content"] = base64.b64decode(raw["content"]).decode("utf-8")
-        return raw
+        return GitLabRepositoryFile(raw)
 
     # ------------------------------------------------------------------
     # GitLab-specific extras (not part of the shared base-class contract)

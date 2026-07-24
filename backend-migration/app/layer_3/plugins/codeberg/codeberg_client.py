@@ -4,8 +4,39 @@ from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.shared.git_platform_client import (
     GitPlatformClient,
     RepositoryItem,
+    RepositoryFile,
     FileNotFoundOnPlatformError,
 )
+
+
+class CodbergRepositoryItem(RepositoryItem):
+    @property
+    def name(self) -> str:
+        return self._raw["name"]
+
+    @property
+    def path(self) -> str:
+        return self._raw["path"]
+
+    @property
+    def is_dir(self) -> bool:
+        return self._raw["type"] == "dir"
+
+
+class CodbergRepositoryFile(CodbergRepositoryItem, RepositoryFile):
+    def get_content(self) -> str | None:
+        raw_content = self._raw.get("content")
+        if raw_content is None:
+            return None
+        if self._raw.get("encoding") == "base64":
+            try:
+                return base64.b64decode(raw_content).decode("utf-8")
+            except (ValueError, UnicodeDecodeError):
+                return None
+        return raw_content
+
+    def get_html_url(self):
+        return self._raw.get('html_url')
 
 class CodebergClient(GitPlatformClient):
     """Client for interacting with the Codeberg API and web endpoints,
@@ -18,7 +49,7 @@ class CodebergClient(GitPlatformClient):
     def _build_headers(self) -> dict:
         """Builds request headers for Codeberg API."""
         return {
-            "Accept": "application/vnd.github.v3+json",
+            "Accept": "application/vnd.Codberg.v3+json",
             "User-Agent": "maSMP-metadata-extraction",
             "Authorization": f"token {self.context.access_token}" if self.context.access_token else None
         }
@@ -70,13 +101,10 @@ class CodebergClient(GitPlatformClient):
         raw = response.json()
         if not isinstance(raw, list):
             raise FileNotFoundOnPlatformError(path)
-        return [
-            RepositoryItem(name=e["name"], path=e["path"], is_dir=e["type"] == "dir")
-            for e in raw
-        ]
+        return [CodbergRepositoryItem(entry) for entry in raw]
 
-    def get_file(self, path: str, ref: str = None) -> dict:
-        """Fetches a single file's metadata and decoded content via Codeberg's contents API."""
+    def _fetch_file(self, path: str, ref: str | None = None) -> RepositoryFile:
+        """Fetches a single file's metadata and content via GitHub's contents API."""
         url = f"{self._get_api_base_url()}/repos/{self.get_repository_owner()}/{self.get_repository_name()}/contents/{path}"
         params = {"ref": ref} if ref else None
         response = self._caching_get(url, params=params)
@@ -85,6 +113,4 @@ class CodebergClient(GitPlatformClient):
         raw = response.json()
         if isinstance(raw, list):
             raise FileNotFoundOnPlatformError(path)
-        if raw.get("encoding") == "base64" and "content" in raw:
-            raw["content"] = base64.b64decode(raw["content"]).decode("utf-8")
-        return raw
+        return CodbergRepositoryFile(raw)

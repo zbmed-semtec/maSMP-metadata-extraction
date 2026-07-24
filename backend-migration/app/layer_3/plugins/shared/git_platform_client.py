@@ -19,13 +19,51 @@ from app.layer_3.plugins.shared.caching_http_client import CachingHttpClient
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
 
-@dataclass
-class RepositoryItem:
-    """A normalized representation of a single file/directory entry in a repository tree."""
-    name: str
-    path: str
-    is_dir: bool
+class RepositoryItem(ABC):
+    """Thin wrapper around a platform's raw JSON representation of a single
+    file/directory entry in a repository tree.
 
+    Subclasses interpret the raw payload according to their platform's API
+    shape and expose a normalized surface (name/path/is_dir) to the rest of
+    the codebase.
+    """
+
+    def __init__(self, raw: dict):
+        self._raw = raw
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def path(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def is_dir(self) -> bool:
+        pass
+
+
+class RepositoryFile(RepositoryItem, ABC):
+    """Thin wrapper around a platform's raw JSON representation of a single
+    fetched file (metadata + content).
+
+    Subclasses know how their platform encodes file content (e.g. base64)
+    and decode it in `get_content`.
+    """
+
+    @abstractmethod
+    def get_content(self) -> str | None:
+        """Returns the file's decoded text content, or None if the file is
+        binary / not text-decodable."""
+        pass
+
+    @abstractmethod
+    def get_html_url() -> str | None:
+        ...
 
 class FileNotFoundOnPlatformError(Exception):
     """Raised when a requested file path does not exist / is not a file on the platform."""
@@ -52,6 +90,7 @@ class GitPlatformClient(CachingHttpClient, ABC):
         self._parsed_citations: list[dict] | None = None
         self._dois_from_citation: set[str] | None = None
         self._dois_from_readme: set[str] | None = None
+        self._file_cache: dict[tuple[str, str | None], RepositoryFile] = {}
         self.headers = self._build_headers()
 
     # ------------------------------------------------------------------
@@ -146,8 +185,7 @@ class GitPlatformClient(CachingHttpClient, ABC):
         """
         pass
 
-    @abstractmethod
-    def get_file(self, path: str, ref: str | None = None) -> dict:
+    def get_file(self, path: str, ref: str | None = None) -> RepositoryFile:
         """Fetches a single file's metadata and content.
 
         Args:
@@ -155,17 +193,28 @@ class GitPlatformClient(CachingHttpClient, ABC):
             ref: Branch, tag, or commit SHA (defaults to the repository's default branch).
 
         Returns:
-            A dict containing at least a "content" key with the file's decoded
-            (UTF-8 text) content, when the file exists and is text-decodable.
+            A RepositoryFile wrapping the platform's raw response for `path`.
+
+        Raises:
+            FileNotFoundOnPlatformError: if `path` does not exist or is not a file.
+        """
+        cache_key = (path, ref)
+        if cache_key not in self._file_cache:
+            self._file_cache[cache_key] = self._fetch_file(path, ref)
+        return self._file_cache[cache_key]
+
+    @abstractmethod
+    def _fetch_file(self, path: str, ref: str | None = None) -> RepositoryFile:
+        """Platform-specific fetch of a single file's metadata + content.
+
+        Subclasses implement this instead of `get_file` directly; `get_file`
+        wraps this with an in-memory cache so repeated lookups of the same
+        (path, ref) don't re-hit the platform API shape parsing / decoding.
 
         Raises:
             FileNotFoundOnPlatformError: if `path` does not exist or is not a file.
         """
         pass
-
-    def get_raw_file(self, path: str) -> str:
-        """Fetches the raw text content of a file at the given path in the repository."""
-        return self.get_file(path).get("content", "")
 
     # ------------------------------------------------------------------
     # Generic traversal built on the normalized contract above
@@ -219,45 +268,43 @@ class GitPlatformClient(CachingHttpClient, ABC):
         """Finds files in the repository whose names suggest they are changelog files."""
         return self._discover_files_by_prefix("changelog")
 
-    def get_multiple_files(self, paths: list[str]) -> list[dict]:
-        """Fetches the content for multiple file paths, skipping files that can't be fetched."""
+    def get_multiple_files(self, paths: list[str]) -> list[RepositoryFile]:
         files = []
         for path in paths:
             try:
                 file = self.get_file(path)
             except FileNotFoundOnPlatformError:
                 continue
-            if "content" in file:
+            if file.get_content() is not None:
                 files.append(file)
         return files
 
-    def get_readme_candidate_files(self) -> list[dict]:
+    def get_readme_candidate_files(self) -> list[RepositoryFile]:
         """Fetches the content of all discovered README candidate files."""
         candidates = self.discover_readme_candidates()
         return self.get_multiple_files([c.path for c in candidates])
 
-    def get_license_candidate_files(self) -> list[dict]:
+    def get_license_candidate_files(self) -> list[RepositoryFile]:
         """Fetches the content of all discovered license candidate files."""
         candidates = self.discover_license_candidates()
         return self.get_multiple_files([c.path for c in candidates])
 
-    def get_citation_candidate_files(self) -> list[dict]:
+    def get_citation_candidate_files(self) -> list[RepositoryFile]:
         """Fetches the content of all discovered citation candidate files."""
         candidates = self.discover_citation_candidates()
         return self.get_multiple_files([c.path for c in candidates])
 
-    def get_changelog_candidate_files(self) -> list[dict]:
+    def get_changelog_candidate_files(self) -> list[RepositoryFile]:
         """Fetches the content of all discovered changelog candidate files."""
         candidates = self.discover_changelog_candidates()
         return self.get_multiple_files([c.path for c in candidates])
 
     def get_parsed_citations(self) -> list[dict]:
-        """Parses discovered citation files (e.g. CITATION.cff) as YAML, caching the result."""
         if self._parsed_citations is None:
             citation_files = self.get_citation_candidate_files()
             parsed = []
             for file in citation_files:
-                content = file.get("content")
+                content = file.get_content()
                 if not content:
                     continue
                 try:
@@ -269,16 +316,14 @@ class GitPlatformClient(CachingHttpClient, ABC):
             self._parsed_citations = parsed
         return self._parsed_citations
     
-    def get_dois_from_readmes(self) -> list[str]:
+    def get_dois_from_readmes(self) -> set[str]:
         if self._dois_from_readme is None:
             result = set()
             readmes = self.get_readme_candidate_files()
             for readme in readmes:
-                readme_content = readme.get("content")
-                if readme_content:
-                    doi_candidates = URLPatternMatcher.check_zenodo_badge(readme_content)
-                    for doi_url in doi_candidates:
-                        result.add(doi_url)
+                content = readme.get_content()
+                if content:
+                    result.update(URLPatternMatcher.check_zenodo_badge(content))
             self._dois_from_readme = result
         return self._dois_from_readme
     
