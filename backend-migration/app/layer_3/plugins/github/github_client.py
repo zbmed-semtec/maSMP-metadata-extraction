@@ -44,7 +44,7 @@ class GitHubRepositoryFile(GitHubRepositoryItem, RepositoryFile):
                 return None
         return raw_content
 
-    def get_html_url(self):
+    def get_html_url(self, _client):
         return self._raw.get("html_url")
 
 class GitHubClient(GitPlatformClient):
@@ -103,6 +103,17 @@ class GitHubClient(GitPlatformClient):
         repository = self.get_repository()
         return repository.get("default_branch", "main")
 
+    def get_clone_url(self):
+        repository = self.get_repository()
+        return repository.get("clone_url")
+
+    def get_download_url(self):
+        return f"https://github.com/{self.get_repository_owner()}/{self.get_repository_name()}/archive/refs/heads/{self.get_default_branch()}.zip"
+
+    def get_license(self):
+        response = self._caching_get(f"{self._get_api_base_url()}/repos/{self.get_repository_owner()}/{self.get_repository_name()}/license")
+        return response.json().get('license')
+        
     def list_directory(self, path: str = "") -> list[RepositoryItem]:
         """Lists the immediate entries at `path` via GitHub's contents API."""
         url = f"{self._get_api_base_url()}/repos/{self.get_repository_owner()}/{self.get_repository_name()}/contents/{path}"

@@ -62,7 +62,7 @@ class RepositoryFile(RepositoryItem, ABC):
         pass
 
     @abstractmethod
-    def get_html_url() -> str | None:
+    def get_html_url(client : "GitPlatformClient") -> str | None:
         ...
 
 class FileNotFoundOnPlatformError(Exception):
@@ -160,6 +160,16 @@ class GitPlatformClient(CachingHttpClient, ABC):
     @abstractmethod
     def get_default_branch(self) -> str:
         """Fetches the default branch name for the repository."""
+        pass
+
+    @abstractmethod
+    def get_clone_url(self) -> str | None:
+        """Fetches the repositories' clone url using the api"""
+        pass
+
+    @abstractmethod
+    def get_download_url(self) -> str | None:
+        """Fetches the repositories' download url using the api"""
         pass
 
     # ------------------------------------------------------------------

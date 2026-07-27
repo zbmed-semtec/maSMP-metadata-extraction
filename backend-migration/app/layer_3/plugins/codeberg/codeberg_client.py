@@ -35,7 +35,7 @@ class CodbergRepositoryFile(CodbergRepositoryItem, RepositoryFile):
                 return None
         return raw_content
 
-    def get_html_url(self):
+    def get_html_url(self, _client):
         return self._raw.get('html_url')
 
 class CodebergClient(GitPlatformClient):
@@ -91,6 +91,13 @@ class CodebergClient(GitPlatformClient):
         """Fetches the default branch name for the repository."""
         repository = self.get_repository()
         return repository.get("default_branch", "main")
+
+    def get_clone_url(self):
+        repository = self.get_repository()
+        return repository.get("clone_url")
+
+    def get_download_url(self):
+        return f"https://codeberg.org/{self.get_repository_owner()}/{self.get_repository_name()}/archive/{self.get_default_branch()}.zip"
 
     def list_directory(self, path: str = "") -> list[RepositoryItem]:
         """Lists the immediate entries at `path` via Codeberg's (Gitea-compatible) contents API."""

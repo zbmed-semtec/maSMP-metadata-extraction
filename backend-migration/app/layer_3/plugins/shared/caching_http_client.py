@@ -15,6 +15,7 @@ def fetchFunction(
     headers: dict = None,
     params: dict = None,
     retries: int = 3,
+    timeout: int = 5,
 ) -> requests.Response:
     """Performs a GET request with up to `retries` attempts on transient failures.
 
@@ -26,7 +27,7 @@ def fetchFunction(
 
     for attempt in range(1, retries + 1):
         try:
-            response = requests.get(url, headers=headers, params=params, timeout=5)
+            response = requests.get(url, headers=headers, params=params, timeout=timeout)
             response.raise_for_status()
             return response
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as exc:

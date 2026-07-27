@@ -56,6 +56,22 @@ class GitHubLicenseExtractor(GitPlatformLicenseExtractor, GitHubBaseExtractor):
     """schema:license"""
     name = "github.license_extractor"
 
+    def extract(self, context, state):
+
+        # GitHub specific License Extraction:
+        try:
+            license_dict = self.get_client(context, state).get_license()
+            license_object = {
+                '@type': 'CreativeWork',
+                '@context': 'https://schema.org',
+                'name': license_dict.get('name'),
+                'url' : f'https://spdx.org/licenses/{license_dict.get('spdx_id')}.html'
+            }
+            state.metadata_collector.collect("Platform API", 'https://schema.org/license', license_object, 0.95)
+        except Exception as e:
+            pass
+        return super().extract(context, state)
+
 class GitHubIdentifierExtractor(GitPlatformIdentifierExtractor, GitHubBaseExtractor):
     """schema:identifier"""
     name = "github.identifier_extractor"

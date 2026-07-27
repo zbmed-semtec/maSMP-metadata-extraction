@@ -1,8 +1,0 @@
-- [ ] fix github code
-    - [ ] programming languages
-    - [ ] add clients:
-        - OpenAlex
-        - software heritage
-        - bibtex recognition and extraction
-        - translate github license url to spdx
-- [ ] port gitlab to new base

@@ -1,8 +1,8 @@
-from app.layer_2.extraction_plugin import ExtractionPlugin
+from app.layer_3.plugins.shared.git_platform_base_extractor import GitPlatformBaseExtractor
 from app.layer_3.steps.contracts.step import ExtractionContext, ExtractionState
 from app.layer_3.plugins.gitlab.gitlab_client import GitLabClient
 
-class GitLabBaseExtractor(ExtractionPlugin):
+class GitLabBaseExtractor(GitPlatformBaseExtractor):
     """Base extractor class for GitLab-hosted repositories.
 
     Provides common functionality for extracting metadata and content from GitLab repositories,
@@ -25,6 +25,4 @@ class GitLabBaseExtractor(ExtractionPlugin):
         Returns:
             GitLabClient: A cached GitLab API client instance
         """
-        if not state.data.get('de.zbmed.gitlab.client'):
-            state.data['de.zbmed.gitlab.client'] = GitLabClient(context, state)
-        return state.data['de.zbmed.gitlab.client']
+        return GitLabClient.get_or_create(context, state)

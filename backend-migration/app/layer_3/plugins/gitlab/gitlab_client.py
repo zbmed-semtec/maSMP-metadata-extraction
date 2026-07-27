@@ -47,9 +47,15 @@ class GitLabRepositoryFile(GitLabRepositoryItem, RepositoryFile):
                 return None
         return raw_content
 
-    def get_html_url(self):
-        return self._raw.get("web_url")
-
+    def get_html_url(self, client: GitPlatformClient):
+        repo = client.get_repository_name()
+        owner = client.get_repository_owner()
+        defbra = client.get_default_branch()
+        fname = self._raw.get('file_path')
+        if repo and owner and defbra and fname:
+            return f"https://gitlab.com/{owner}/{repo}/-/raw/{defbra}/{fname}?ref_type=heads&inline=true"
+        return None
+    
 class GitLabClient(GitPlatformClient):
     """Client for interacting with the GitLab API,
     providing cached access to repository metadata, contents, and related resources."""
@@ -142,6 +148,13 @@ class GitLabClient(GitPlatformClient):
         """Fetches the default branch name for the repository."""
         repository = self.get_repository()
         return repository.get("default_branch", "main")
+
+    def get_clone_url(self):
+        repository = self.get_repository()
+        return repository.get("http_url_to_repo")
+
+    def get_download_url(self):
+        return f"https://gitlab.com/api/v4/projects/{self.get_repository_owner()}/{self.get_repository_name()}/archive.zip?sha={self.get_default_branch()}"
 
     # ------------------------------------------------------------------
     # Normalized content contract

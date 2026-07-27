@@ -74,8 +74,7 @@ class GitPlatformCodeRepositoryExtractor(GitPlatformBaseExtractor):
     extracts = {'https://schema.org/codeRepository', 'https://codemeta.github.io/terms/codeRepository'}
 
     def extract(self, context, state):
-        result = self.get_client(context, state).get_repository()
-        clone_url = result.get("clone_url") or result.get("html_url")
+        clone_url = self.get_client(context, state).get_clone_url()
         if clone_url:
             state.metadata_collector.collect("Platform API", "https://schema.org/codeRepository", clone_url, 0.95)
             state.metadata_collector.collect("Platform API", 'https://codemeta.github.io/terms/codeRepository', clone_url, 0.95)
@@ -342,7 +341,7 @@ class GitPlatformReadmeExtractor(GitPlatformBaseExtractor):
         for readme in readmes:
             readme_content = readme.get_content()
             if readme_content:
-                urls.add(readme.get_html_url())
+                urls.add(readme.get_html_url(client))
         if urls:
             state.metadata_collector.collect("Platform API", "https://codemeta.github.io/terms/readme", list(urls), 0.95)
         return state
@@ -624,13 +623,10 @@ class GitPlatformDownloadUrlExtractor(GitPlatformBaseExtractor):
     """extracts the copyright holder and year from the license file"""
 
     extracts = {"https://schema.org/downloadUrl"}
-
+    
     def extract(self, context, state):
-        client = self.get_client(context, state)
-        repo = client.get_repository()
-        default_branch = repo.get("default_branch")
-        is_empty = repo.get("empty", True)
-        if default_branch and not is_empty:
-            download_url = f"https://Platform.org/{client.get_repository_owner()}/{client.get_repository_name()}/archive/{default_branch}.zip"
-            state.metadata_collector.collect("Pattern", "https://schema.org/downloadUrl", download_url, 0.95)
+        download_url = self.get_client(context, state).get_download_url()
+        if download_url:
+            state.metadata_collector.collect("Platform API", "https://schema.org/codeRepository", download_url, 0.95)
+            state.metadata_collector.collect("Platform API", 'https://codemeta.github.io/terms/codeRepository', download_url, 0.95)
         return state
