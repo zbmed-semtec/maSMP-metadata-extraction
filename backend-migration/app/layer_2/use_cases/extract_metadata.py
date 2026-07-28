@@ -52,6 +52,7 @@ class ExtractMetadataResult:
     jsonld_document: dict
     extraction_metadata: Dict[str, Dict[str, Any]]  # entity_field -> {source, confidence}
     metadata: SoftwareMetadata
+    llm_used: bool
 
 
 class JSONLDBuilder(Protocol):
@@ -153,6 +154,7 @@ class ExtractMetadataUseCase:
             jsonld_document=jsonld_document,
             extraction_metadata=extraction_metadata,
             metadata=metadata,
+            llm_used=bool(state.data.get("llm_used", False)),
         )
 
 
