@@ -1,47 +1,42 @@
-# README LLM prompts, hints and property rules for orchestration
+property_queries:
+  license: [license, licensing, copyright, spdx]
+  installation: [installation, install, pip, conda, requirements, setup]
+  contact: [contact, email, maintainer, author]
+  contributors: [contributors, contributor, authors, maintainers, team, credits, '@', github.com]
+  links: [paper, publication, citation, arxiv, doi, docs, link, url]
+  description: [overview, about, purpose, project, toolkit, library, framework, features, introduction]
 
-default_prompt: |
-  You are a metadata extractor. Given the README content, extract the relevant properties
-  for the specified property types (identifiers, author, alternateName, keywords, citation, license).
-  Return structured values in JSON format with keys matching the property names.
+property_schema_hints:
+  license: normalized SPDX-style string if explicit, else null
+  installation: short installation instruction summary or code snippet, else null
+  contact: email or contact link, else null
+  contributors: list of contributors with name/github_url if available, else null
+  links: list of relevant links as objects {title, url, relevance, is_working, status_code}, else null
+  description: one or two concise lines describing what the repository does, else null
 
-hints:
-  - "Prefer explicit DOI/Zenodo badge links when present."
-  - "Detect BibTeX blocks and extract title/authors." 
-  - "Do not add duplicate identifiers if already present in metadata."
-  - "For license: look for 'Copyright (c) YEAR Organization' or SPDX identifiers."
+property_rules:
+  license: "Return normalized SPDX license and exact evidence quote when possible."
+  contributors: "Return value as list of objects [{\"name\": string, \"github_url\": string|null}]."
+  links: "Return value as list of objects [{\"title\": string|null, \"url\": string, \"relevance\": \"paper\"|\"docs\"|\"repo\"|\"tutorial\"|\"other\", \"is_working\": bool|null, \"status_code\": int|null}]."
+  description: "Return factual concise repository description from evidence only."
+  default: "Return concise value and evidence quote if available."
 
-property_types:
-  software:
-    - identifier
-    - author
-    - alternateName
-    - keywords
-    - citation
-    - license
-
-prompts:
-  identifier: |
-    Extract canonical identifier URLs (DOI or Zenodo) from the README. Normalize Zenodo
-    badges to DOI URLs (10.5281/zenodo.<id>). Return a JSON array of unique URL strings.
-
-  authors: |
-    Extract author names from the README. Return an array of objects with keys
-    `familyName` and `givenName` where possible.
-
-  keywords: |
-    Find a 'Keywords:' line or common keyword lists in README and return a list of keyword strings.
-
-  citation: |
-    If a BibTeX block is present, parse the first entry and extract the title, authors and DOI if present.
-
-  license: |
-    Detect license owner and license identifier. Look for SPDX short identifiers (e.g., MIT, Apache-2.0)
-    or copyright statements such as 'Copyright (c) 2024 Example Org'. Return a JSON object with
-    `identifier` and `holder` when possible.
-
-license_detection:
-  spdx_pattern: "\\b(?:MIT|Apache-2.0|GPL-3.0|BSD-3-Clause)\\b"
-  copyright_pattern: "Copyright\s*\(c\)\s*(?P<year>\\d{4})\s+(?P<holder>.+)"
+license_patterns:
+  - pattern: 'bsd\s*[- ]?3\s*[- ]?clause|bsd-3-clause'
+    spdx: BSD-3-Clause
+  - pattern: 'bsd\s*[- ]?2\s*[- ]?clause|bsd-2-clause'
+    spdx: BSD-2-Clause
+  - pattern: '\bmit\b(?:\s+license)?'
+    spdx: MIT
+  - pattern: 'apache\s*2\.0|apache-2\.0|apache license'
+    spdx: Apache-2.0
+  - pattern: 'gpl\s*v?3|gnu\s+general\s+public\s+license\s*v?3'
+    spdx: GPL-3.0
+  - pattern: 'gpl\s*v?2|gnu\s+general\s+public\s+license\s*v?2'
+    spdx: GPL-2.0
+  - pattern: 'lgpl\s*v?3|lesser\s+general\s+public\s+license\s*v?3'
+    spdx: LGPL-3.0
+  - pattern: 'mpl\s*2\.0|mozilla\s+public\s+license\s*2\.0'
+    spdx: MPL-2.0
 
 # End of prompts
