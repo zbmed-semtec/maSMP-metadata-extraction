@@ -10,6 +10,7 @@ from app.layer_1.provenance.software.defaults import (
     SOURCE_GITHUB_API,
     SOURCE_GITLAB_API,
     SOURCE_LICENSE_FILE,
+    SOURCE_LLM,
     SOURCE_OPENALEX,
     SOURCE_README_PARSER,
     SOURCE_SOFTWARE_HERITAGE,
@@ -22,6 +23,7 @@ PROPERTY_EXTRACTION_SOURCES: dict[str, tuple[str, ...]] = {
     # Platform API (GitHub / GitLab)
     "name": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "description": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
+    "documentation": (SOURCE_GITHUB_API, SOURCE_GITLAB_API, SOURCE_README_PARSER, SOURCE_LLM),
     "url": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "codeRepository": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "dateCreated": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
@@ -39,24 +41,29 @@ PROPERTY_EXTRACTION_SOURCES: dict[str, tuple[str, ...]] = {
     "masmp_versionControlSystem": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "programmingLanguage": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "contributor": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
-    "license": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
+    "license": (SOURCE_GITHUB_API, SOURCE_GITLAB_API, SOURCE_README_PARSER, SOURCE_LLM),
     "codemeta_readme": (SOURCE_GITHUB_API, SOURCE_GITLAB_API, SOURCE_README_PARSER),
     "masmp_changelog": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "softwareVersion": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "version": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     "softwareRequirements": (SOURCE_GITHUB_API, SOURCE_GITLAB_API),
     # File parsing: CITATION.cff
-    "alternateName": (SOURCE_CITATION_CFF, SOURCE_OPENALEX),
-    "author": (SOURCE_CITATION_CFF, SOURCE_README_PARSER, SOURCE_OPENALEX),
+    "alternateName": (SOURCE_CITATION_CFF, SOURCE_OPENALEX, SOURCE_LLM),
+    "author": (SOURCE_CITATION_CFF, SOURCE_README_PARSER, SOURCE_OPENALEX, SOURCE_LLM),
+    "contributor": (SOURCE_GITHUB_API, SOURCE_GITLAB_API, SOURCE_LLM),
     "codemeta_referencePublication": (
         SOURCE_CITATION_CFF,
         SOURCE_README_PARSER,
         SOURCE_OPENALEX,
+        SOURCE_LLM,
     ),
-    "citation": (SOURCE_CITATION_CFF,),
-    "identifier": (SOURCE_CITATION_CFF, SOURCE_README_PARSER),
+    "citation": (SOURCE_CITATION_CFF, SOURCE_README_PARSER, SOURCE_LLM),
+    "identifier": (SOURCE_CITATION_CFF, SOURCE_README_PARSER, SOURCE_LLM),
     # File parsing: LICENSE
-    "copyrightHolder": (SOURCE_LICENSE_FILE,),
+    "copyrightHolder": (SOURCE_LICENSE_FILE, SOURCE_LLM),
+    "maintainer": (SOURCE_GITHUB_API, SOURCE_GITLAB_API, SOURCE_LLM),
+    "masmp_installInstructions": (SOURCE_README_PARSER, SOURCE_LLM),
+    "masmp_learningResource": (SOURCE_README_PARSER, SOURCE_LLM),
     # External: Zenodo / Wayback / Software Heritage
     "archivedAt": (SOURCE_ZENODO_BADGE, SOURCE_WAYBACK, SOURCE_SOFTWARE_HERITAGE),
 }
@@ -82,6 +89,7 @@ ALL_SOURCES = {
     SOURCE_WAYBACK,
     SOURCE_SOFTWARE_HERITAGE,
     SOURCE_OPENALEX,
+    SOURCE_LLM,
 }
 
 
