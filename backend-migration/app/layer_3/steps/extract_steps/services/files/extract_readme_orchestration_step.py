@@ -42,15 +42,17 @@ class ApplyReadmeOrchestrationStep:
         state.metadata = updated_metadata
 
         # Optional: call LLM extractor to enrich properties
-        if self.llm_settings.enabled:
-            from app.layer_3.steps.extract_steps.services.llm.llm_extractor import LLMExtractor
-
-            extractor = LLMExtractor(api_key=self.llm_settings.api_key, model=self.llm_settings.model)
-            state.metadata = extractor.extract_with_llm(
-                state.metadata, repo_url=context.repo_url, extraction_metadata=None
+        if self.llm_settings.enabled and content:
+            from app.layer_3.steps.extract_steps.services.llm.extract_llm_property_step import (
+                ExtractLlmPropertyStep,
             )
 
-        return state
+            return ExtractLlmPropertyStep(
+                api_key=self.llm_settings.api_key,
+                model=self.llm_settings.model,
+                provider=self.llm_settings.provider,
+                base_url=self.llm_settings.base_url,
+            ).run(context, state)
 
 
 __all__ = ["ApplyReadmeOrchestrationStep"]
