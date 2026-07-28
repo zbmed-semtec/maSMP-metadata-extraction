@@ -12,7 +12,7 @@ def test_public_api_extract_metadata_monkeypatched(monkeypatch):
             "access_token": access_token,
             "with_enrichment": with_enrichment,
         }
-        return {"name": "dummy"}, {"enriched": True} if with_enrichment else None
+        return {"name": "dummy"}, {"enriched": True} if with_enrichment else None, True
 
     # Monkeypatch the underlying service function used by the public API
     monkeypatch.setattr(
@@ -21,7 +21,7 @@ def test_public_api_extract_metadata_monkeypatched(monkeypatch):
         fake_run_extraction,
     )
 
-    doc, enriched = comet_rs.extract_metadata(
+    doc, enriched, llm_used = comet_rs.extract_metadata(
         "https://example.com/repo",
         schema="maSMP",
         token="abc",
@@ -34,6 +34,7 @@ def test_public_api_extract_metadata_monkeypatched(monkeypatch):
     assert calls["args"]["with_enrichment"] is True
     assert doc["name"] == "dummy"
     assert enriched == {"enriched": True}
+    assert llm_used is True
 
 
 def test_public_api_assess_fairness_monkeypatched(monkeypatch):

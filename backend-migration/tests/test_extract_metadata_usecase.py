@@ -55,6 +55,7 @@ class StubPipelineRunner:
         state.data["record_field"]("description")
         state.data["record_field"]("keywords")
         state.data["record_field"]("alternateName")
+        state.data["llm_used"] = True
         return state
 
 
@@ -109,6 +110,7 @@ def test_extract_metadata_usecase_happy_path():
     # Internal metadata is exposed for downstream services (e.g. FAIRness)
     assert isinstance(result.metadata, SoftwareMetadata)
     assert result.metadata.name == "FromPlatform"
+    assert result.llm_used is True
 
     # Extraction metadata was aggregated from all steps
     meta = result.extraction_metadata
