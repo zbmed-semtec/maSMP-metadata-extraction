@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod, abstractproperty
 from app.layer_2.base_plugin import BasePlugin
-from app.layer_3.steps.contracts.step import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_2.contracts import ExtractionStep, ExtractionContext
 
 class ExtractionPlugin(BasePlugin, ExtractionStep, ABC):
     

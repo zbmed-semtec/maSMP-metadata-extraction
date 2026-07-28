@@ -4,8 +4,7 @@ Orchestration: compose and run extraction pipeline, then build JSON-LD.
 """
 from dataclasses import dataclass
 from typing import Protocol, Optional, Dict, Any, Callable
-from app.layer_3.composers import PipelineComposer
-from app.layer_3.steps.contracts import ExtractionPipelineRunner, ExtractionContext, ExtractionState
+from app.layer_2.contracts import ExtractionContext, ExtractionState, ExtractionPipeline, PipelineRunner, PipelineComposer
 from app.layer_1.schemas.base_schema import BaseSchema
 from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
 
