@@ -1,26 +1,14 @@
-"""Pipeline contracts and default runner for composable extraction steps."""
-
-from dataclasses import dataclass
 from traceback import print_exc
-
-from app.layer_3.steps.contracts.step import ExtractionStep, ExtractionContext, ExtractionState
-
-
-@dataclass(frozen=True)
-class ExtractionPipeline:
-    """Ordered extraction pipeline."""
-
-    steps: tuple[ExtractionStep, ...]
-
+from app.layer_2.contracts.pipeline import ExtractionPipeline
+from app.layer_2.contracts.step import ExtractionContext, ExtractionState
 
 class ExtractionPipelineRunner:
-    """Executes extraction steps sequentially."""
-
-    def run(self, pipeline: ExtractionPipeline, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
+    """Implements app.layer_2.contracts.pipeline.PipelineRunner (structural typing, no inheritance needed)."""
+    def run(self, pipeline, context, state):
         current = state
         for step in pipeline.steps:
             try:
                 current = step.extract(context, current)
-            except Exception as e:
+            except Exception:
                 print_exc()
         return current
