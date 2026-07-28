@@ -25,11 +25,15 @@ from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 class GitLabRepositoryItem(RepositoryItem):
     @property
     def name(self) -> str:
-        return self._raw["name"]
+        if "name" in self._raw:
+            return self._raw["name"]
+        return self._raw["file_name"]
 
     @property
     def path(self) -> str:
-        return self._raw["path"]
+        if "path" in self._raw:
+            return self._raw["path"]
+        return self._raw["file_path"]
 
     @property
     def is_dir(self) -> bool:
@@ -155,6 +159,10 @@ class GitLabClient(GitPlatformClient):
 
     def get_download_url(self):
         return f"https://gitlab.com/api/v4/projects/{self.get_repository_owner()}/{self.get_repository_name()}/archive.zip?sha={self.get_default_branch()}"
+
+    def get_html_url(self):
+        repo = self.get_repository()
+        return repo.get('html_url')
 
     # ------------------------------------------------------------------
     # Normalized content contract
@@ -376,12 +384,15 @@ class GitLabClient(GitPlatformClient):
         repository = self.get_repository()
         return repository.get("web_url", "")
 
-    def get_created_at(self) -> str:
+    def get_date_created(self) -> str:
         """Fetches the repository creation date."""
         repository = self.get_repository()
         return repository.get("created_at", "")
 
-    def get_updated_at(self) -> str:
+    def get_date_modified(self) -> str:
         """Fetches the repository last update date."""
         repository = self.get_repository()
         return repository.get("last_activity_at", "")
+
+    def get_date_published(self):
+        return None

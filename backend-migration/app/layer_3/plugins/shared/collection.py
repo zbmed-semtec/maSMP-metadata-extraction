@@ -25,6 +25,8 @@ class GitPlatformNameExtractor(GitPlatformBaseExtractor):
         for cff in cffs:
             if 'title' in cff:
                 state.metadata_collector.collect("CFF File", "https://schema.org/name", cff['title'], 0.85)
+
+        # TODO: getting the name from bibtex
         return state
 
 class GitPlatformDescriptionExtractor(GitPlatformBaseExtractor):
@@ -57,9 +59,10 @@ class GitPlatformUrlExtractor(GitPlatformBaseExtractor):
 
     def extract(self, context, state):
         # getting the URL from the Platform API
-        result = self.get_client(context, state).get_repository()
-        if result.get("html_url"):
-            state.metadata_collector.collect("Platform API", "https://schema.org/url", result['html_url'], 0.95)
+        result = self.get_client(context, state).get_html_url()
+        if result:
+            state.metadata_collector.collect("Platform API", "https://schema.org/url", result, 0.95)
+
         # getting the URL from CITATION.cff
         client = self.get_client(context, state)
         cffs = client.get_parsed_citations()
@@ -87,7 +90,7 @@ class GitPlatformProgrammingLanguageExtractor(GitPlatformBaseExtractor):
 
     def extract(self, context, state):
         result = self.get_client(context, state).get_languages()
-        if isinstance(result, dict) and result:
+        if result and len(result) > 0:
             languages = list(result.keys())
             state.metadata_collector.collect("Platform API", "https://schema.org/programmingLanguage", languages, 0.95)
         return state
@@ -98,6 +101,7 @@ class GitPlatformAuthorExtractor(GitPlatformBaseExtractor):
     extracts = {'https://schema.org/author'}
 
     def extract(self, context, state):
+        # Extract from CFF
         client = self.get_client(context, state)
         citations = client.get_parsed_citations()
         for cff in citations:
@@ -122,6 +126,37 @@ class GitPlatformAuthorExtractor(GitPlatformBaseExtractor):
             if authors:
                 state.metadata_collector.collect("OpenAlex", "https://schema.org/author", authors, 0.95)
 
+        # Extract from bibtex
+        for bibtex in client.get_parsed_bibtex():
+            author_field = bibtex.get('fields', {}).get('author')
+            if not author_field:
+                continue
+
+            persons = []
+            for entry in author_field.split(" and "):
+                entry = entry.strip()
+                if not entry:
+                    continue
+
+                person = {"@type": "Person"}
+                if "," in entry:
+                    last, given = entry.split(",", 1)
+                    last, given = last.strip(), given.strip()
+                    if last:
+                        person["familyName"] = last
+                    if given:
+                        person["givenName"] = given
+                else:
+                    person["name"] = entry
+
+                if len(person) > 1:
+                    persons.append(person)
+
+            if persons:
+                state.metadata_collector.collect(
+                    "BibTex", "https://schema.org/author", persons, 0.85
+                )
+                
         return state
 
 class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
@@ -130,6 +165,7 @@ class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
     extracts = {'https://schema.org/license'}
 
     def extract(self, context, state):
+        # from License File
         client = self.get_client(context, state)
         license_candidates = client.get_license_candidate_files()
         for license_candidate in license_candidates:
@@ -144,6 +180,7 @@ class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
                 'url' : f'https://spdx.org/licenses/{spdx_id}.html'
             }
             state.metadata_collector.collect("License File", 'https://schema.org/license', license_object, conf)
+        # From CFF File
         citations = client.get_parsed_citations()
         for citation in citations:
             if 'license' in citation:
@@ -151,7 +188,7 @@ class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
                 if license_value:
                     result = match_license_text(license_value)
                     spdx_id = result["detected_license_expression_spdx"]
-                    conf    = result["percentage_of_license_text"] * 0.95 / 100.0
+                    conf    = result["percentage_of_license_text"] * 0.85 / 100.0
                     if spdx_id:
                         license_object = {
                             '@type': 'CreativeWork',
@@ -168,7 +205,7 @@ class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
                             'name': license_value
                         }
                     state.metadata_collector.collect(
-                        "CITATION.cff", 'https://schema.org/license', license_object, conf
+                        "CFF File", 'https://schema.org/license', license_object, conf
                     )
             if 'license-url' in citation:
                 license_url = citation.get('license-url')
@@ -184,6 +221,7 @@ class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
                     state.metadata_collector.collect(
                         "CITATION.cff", 'https://schema.org/license', license_object, conf
                     )
+        # TODO: get license from API
         return state
 
 class GitPlatformIdentifierExtractor(GitPlatformBaseExtractor):
@@ -202,7 +240,9 @@ class GitPlatformIdentifierExtractor(GitPlatformBaseExtractor):
         # from README
         identifiers = list(client.get_dois_from_readmes())
         if len(identifiers) > 0:
-            state.metadata_collector.collect("README", "https://schema.org/identifier", identifiers, 0.6)
+            state.metadata_collector.collect("README", "https://schema.org/identifier", identifiers, 0.75)
+
+        #TODO: from bibtex
         return state
 
 class GitPlatformCitationExtractor(GitPlatformBaseExtractor):
@@ -419,13 +459,16 @@ class GitPlatformSoftwareVersionExtractor(GitPlatformBaseExtractor):
     extracts = {'https://schema.org/softwareVersion', 'https://schema.org/version'}
 
     def extract(self, context, state):
+        # TODO: extract from releases
+        # Extract from tags
         result = self.get_client(context, state).get_tags()
-        if isinstance(result, list) and len(result) > 0:
+        if result and len(result) > 0:
             tag_name = result[0].get("name")
             if tag_name:
                 state.metadata_collector.collect("Platform API", "https://schema.org/softwareVersion", tag_name, 0.85)
                 state.metadata_collector.collect("Platform API", "https://schema.org/version", tag_name, 0.85)
         client = self.get_client(context, state)
+        # Extract from Cff
         citations = client.get_parsed_citations()
         for citation in citations:
             if 'version' in citation:
@@ -440,7 +483,7 @@ class GitPlatformHasSourceCodeExtractor(GitPlatformBaseExtractor):
 
     def extract(self, context, state):
         c = self.get_client(context, state)
-        hasSourceCodeUrl = f"https://Platform.org/{c.get_repository_owner()}/{c.get_repository_name()}/#id" 
+        hasSourceCodeUrl = c.get_html_url() 
         if hasSourceCodeUrl:
             state.metadata_collector.collect("Pattern", "https://codemeta.github.io/terms/hasSourceCode", hasSourceCodeUrl, 0.75)
         return state
@@ -486,24 +529,19 @@ class GitPlatformDateExtractor(GitPlatformBaseExtractor):
         def iso_dt_to_str(iso_dt):
             return str(datetime.datetime.fromisoformat(str(iso_dt)).date())
         client = self.get_client(context, state)
-        repo = client.get_repository()
-        if "created_at" in repo:
-            state.metadata_collector.collect("Platform API", 'https://schema.org/dateCreated', iso_dt_to_str(repo['created_at']), 0.95)
-        if 'updated_at' in repo:
-            state.metadata_collector.collect("Platform API", 'https://schema.org/dateModified', iso_dt_to_str(repo['updated_at']), 0.95)
-        if repo.get("has_releases", False):
-            releases = client.get_releases()
-            if len(releases) > 0:
-                latest = releases[0]
-                if 'published_at' in latest:
-                    state.metadata_collector.collect("Platform API", 'https://schema.org/datePublished', iso_dt_to_str(latest['published_at']), 0.85)
-        else: # if there are no releases, assume the latest tag acts as a release
-            tags = client.get_tags()
-            if len(tags) > 0:
-                latest = tags[0]
-                tag_time = latest.get('commit', {}).get('created')
-                if tag_time:
-                    state.metadata_collector.collect("Platform API", 'https://schema.org/datePublished', iso_dt_to_str(tag_time), 0.6)
+
+        # generic
+        created = client.get_date_created()
+        if created:
+            state.metadata_collector.collect("Platform API", 'https://schema.org/dateCreated', iso_dt_to_str(created), 0.95)
+        modified = client.get_date_modified()
+        if modified:
+            state.metadata_collector.collect("Platform API", 'https://schema.org/dateModified', iso_dt_to_str(modified), 0.95)
+        published = client.get_date_published()
+        if published:
+            state.metadata_collector.collect("Platform API", 'https://schema.org/datePublished', iso_dt_to_str(published), 0.95)
+
+        # from CFF
         citations = client.get_parsed_citations()
         for citation in citations:
             if 'date-released' in citation:
@@ -536,6 +574,7 @@ class GitPlatformChangelogExtractor(GitPlatformBaseExtractor):
             if 'html_url' in repo:
                 changelog_url = f"{repo['html_url']}/releases"
                 state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.75)
+
         files = client.get_changelog_candidate_files()
         for file in files:
             if (file.get_content() or "").lower().startswith('changelog'):

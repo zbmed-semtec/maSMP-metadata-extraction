@@ -110,6 +110,27 @@ class GitHubClient(GitPlatformClient):
     def get_download_url(self):
         return f"https://github.com/{self.get_repository_owner()}/{self.get_repository_name()}/archive/refs/heads/{self.get_default_branch()}.zip"
 
+    def get_html_url(self):
+        repo = self.get_repository()
+        return repo.get('html_url')
+
+    def get_date_modified(self):
+        return self.get_repository().get('updated_at')
+
+    def get_date_created(self):
+        return self.get_repository().get('created_at')
+
+    def get_date_published(self):
+        for release in self.get_releases():
+            return release.get('published_at')
+        for tag_descriptor in self.get_tags():
+            url = tag_descriptor.get('commit', {}).get('url')
+            try:
+                tag = self._caching_get(url).json()
+                return tag.get('commit', {}).get('author', {}).get('date')
+            except:
+                pass
+
     def get_license(self):
         response = self._caching_get(f"{self._get_api_base_url()}/repos/{self.get_repository_owner()}/{self.get_repository_name()}/license")
         return response.json().get('license')

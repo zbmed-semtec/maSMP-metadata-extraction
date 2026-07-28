@@ -37,15 +37,15 @@ class PluginManager:
             if not inspect.isclass(obj):
                 continue
             if not issubclass(obj, self.PLUGIN_BASE_CLASS):
-                print("skipping", obj, "doesnt belong to base class tree")
+                # print("skipping", obj, "doesnt belong to base class tree")
                 continue
             if obj is self.PLUGIN_BASE_CLASS:
                 # skip the base class itself
-                print("skipping", obj, "is plugin base class")
+                # print("skipping", obj, "is plugin base class")
                 continue
             if inspect.isabstract(obj):
                 # skip partially implemented classes
-                print("skipping", obj, "is abstract")
+                # print("skipping", obj, "is abstract")
                 continue
             
             self._register(obj)

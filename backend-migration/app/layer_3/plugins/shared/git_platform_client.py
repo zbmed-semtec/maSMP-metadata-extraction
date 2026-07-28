@@ -18,6 +18,7 @@ import yaml
 from app.layer_3.plugins.shared.caching_http_client import CachingHttpClient
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.url_pattern_matcher_plugin import URLPatternMatcher
+from app.layer_3.plugins.shared.bibtex import parse_bibtex
 
 class RepositoryItem(ABC):
     """Thin wrapper around a platform's raw JSON representation of a single
@@ -90,6 +91,7 @@ class GitPlatformClient(CachingHttpClient, ABC):
         self._parsed_citations: list[dict] | None = None
         self._dois_from_citation: set[str] | None = None
         self._dois_from_readme: set[str] | None = None
+        self._parsed_bibtex: list[dict] | None = None
         self._file_cache: dict[tuple[str, str | None], RepositoryFile] = {}
         self.headers = self._build_headers()
 
@@ -163,6 +165,11 @@ class GitPlatformClient(CachingHttpClient, ABC):
         pass
 
     @abstractmethod
+    def get_html_url(self) -> str | None:
+        """Fetches the repositories' clone url using the api"""
+        pass
+
+    @abstractmethod
     def get_clone_url(self) -> str | None:
         """Fetches the repositories' clone url using the api"""
         pass
@@ -170,6 +177,18 @@ class GitPlatformClient(CachingHttpClient, ABC):
     @abstractmethod
     def get_download_url(self) -> str | None:
         """Fetches the repositories' download url using the api"""
+        pass
+
+    @abstractmethod
+    def get_date_created(self) -> str | None:
+        pass
+
+    @abstractmethod
+    def get_date_modified(self) -> str | None:
+        pass
+
+    @abstractmethod
+    def get_date_published(self) -> str | None:
         pass
 
     # ------------------------------------------------------------------
@@ -257,10 +276,17 @@ class GitPlatformClient(CachingHttpClient, ABC):
                 results.extend(self.list_contents(entry.path, depth - 1))
         return results
 
+    def _filter_files(self, filter_fn) -> list[RepositoryItem]:
+        files = self.list_contents()
+        return [f for f in files if not f.is_dir and filter_fn(f)]
+
     def _discover_files_by_prefix(self, prefix: str) -> list[RepositoryItem]:
         """Helper method to discover files matching a given name prefix (case-insensitive)."""
-        files = self.list_contents()
-        return [f for f in files if not f.is_dir and f.name.lower().startswith(prefix)]
+        return self._filter_files(lambda f: f.name.lower().startswith(prefix))
+
+    def _discover_files_by_postfix(self, postfix: str) -> list[RepositoryItem]:
+        """Helper method to discover files matching a given name postfix (case-insensitive)."""
+        return self._filter_files(lambda f: f.name.lower().endswith(postfix))
 
     def discover_readme_candidates(self) -> list[RepositoryItem]:
         """Finds files in the repository whose names suggest they are README files."""
@@ -309,6 +335,11 @@ class GitPlatformClient(CachingHttpClient, ABC):
         candidates = self.discover_changelog_candidates()
         return self.get_multiple_files([c.path for c in candidates])
 
+    def get_bibtex_candidate_files(self) -> list[RepositoryFile]:
+            """Fetches the content of all discovered changelog candidate files."""
+            candidates = self._discover_files_by_postfix(".bib")
+            return self.get_multiple_files([c.path for c in candidates])
+
     def get_parsed_citations(self) -> list[dict]:
         if self._parsed_citations is None:
             citation_files = self.get_citation_candidate_files()
@@ -352,3 +383,16 @@ class GitPlatformClient(CachingHttpClient, ABC):
                     identifiers.add(doi_url)
             self._dois_from_citation = identifiers
         return self._dois_from_citation
+
+    def get_parsed_bibtex(self) -> list[dict]:
+        if self._parsed_bibtex is None:
+            result = []
+            filesA = {f.name: f for f in self.get_bibtex_candidate_files()}
+            filesB = {f.name: f for f in self.get_readme_candidate_files()}
+            filesA.update(filesB)
+            files = filesA.values()
+            for readme in files:
+                for item in parse_bibtex(readme.get_content()):
+                    result.append(item)
+            self._parsed_bibtex = result
+        return self._parsed_bibtex

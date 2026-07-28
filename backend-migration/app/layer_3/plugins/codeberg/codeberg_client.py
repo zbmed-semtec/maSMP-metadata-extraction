@@ -1,5 +1,7 @@
 import base64
 
+import requests
+
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.shared.git_platform_client import (
     GitPlatformClient,
@@ -79,8 +81,11 @@ class CodebergClient(GitPlatformClient):
 
     def get_releases(self) -> list:
         """Fetches the list of releases for the repository."""
-        url = f"{self._get_api_base_url()}/repos/{self.get_repository_owner()}/{self.get_repository_name()}/releases"
-        return self._caching_get(url).json()
+        try:
+            url = f"{self._get_api_base_url()}/repos/{self.get_repository_owner()}/{self.get_repository_name()}/releases"
+            return self._caching_get(url).json()
+        except requests.exceptions.HTTPError:
+            return []
 
     def get_tags(self) -> list:
         """Fetches the list of tags for the repository."""
@@ -98,6 +103,22 @@ class CodebergClient(GitPlatformClient):
 
     def get_download_url(self):
         return f"https://codeberg.org/{self.get_repository_owner()}/{self.get_repository_name()}/archive/{self.get_default_branch()}.zip"
+
+    def get_html_url(self):
+        repo = self.get_repository()
+        return repo.get('html_url')
+
+    def get_date_modified(self):
+        return self.get_repository().get('updated_at')
+
+    def get_date_created(self):
+        return self.get_repository().get('created_at')
+
+    def get_date_published(self):
+        for release in self.get_releases():
+            return release.get('published_at')
+        for tag in self.get_tags():
+            return tag.get('commit', {}).get('created')
 
     def list_directory(self, path: str = "") -> list[RepositoryItem]:
         """Lists the immediate entries at `path` via Codeberg's (Gitea-compatible) contents API."""
