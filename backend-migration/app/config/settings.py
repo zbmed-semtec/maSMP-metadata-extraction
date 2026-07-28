@@ -2,6 +2,8 @@
 Configuration settings
 """
 from __future__ import annotations
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -29,8 +31,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     
     class Config:
-        env_file = ".env"
+        env_file = Path(__file__).resolve().parents[2] / ".env"
         case_sensitive = False
+        extra = "ignore"
 
 
 settings = Settings()
