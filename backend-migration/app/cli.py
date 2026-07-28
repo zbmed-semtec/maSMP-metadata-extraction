@@ -22,7 +22,7 @@ def _print_json(data: Any) -> None:
 
 
 def _extract_command(args: argparse.Namespace) -> None:
-    jsonld_document, enriched = run_extraction(
+    jsonld_document, enriched, llm_used = run_extraction(
         repo_url=args.url,
         schema=args.schema,
         access_token=args.token,
@@ -34,8 +34,11 @@ def _extract_command(args: argparse.Namespace) -> None:
         "code_url": args.url,
         "results": jsonld_document,
         "enriched_metadata": enriched or {},
+        "llm_used": llm_used,
     }
     _print_json(result)
+    if llm_used:
+        print("LLM-backed README extraction was used.", file=sys.stderr)
 
 
 def _normalize_property_key(property_name: str) -> Tuple[str, str]:
@@ -120,7 +123,7 @@ def _collect_property_results(
 
 
 def _extract_property_command(args: argparse.Namespace) -> None:
-    jsonld_document, enriched = run_extraction(
+    jsonld_document, enriched, llm_used = run_extraction(
         repo_url=args.url,
         schema=args.schema,
         access_token=args.token,
@@ -152,6 +155,7 @@ def _extract_property_command(args: argparse.Namespace) -> None:
         "property_value": first["value"],
         "source": source,
         "confidence": first.get("confidence"),
+        "llm_used": llm_used,
     }
     _print_json(output)
 
