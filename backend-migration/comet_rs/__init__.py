@@ -20,7 +20,7 @@ def extract_metadata(
     *,
     token: Optional[str] = None,
     with_enrichment: bool = False,
-) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+    ) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]], bool]:
     """
     High-level wrapper to extract maSMP/CODEMETA metadata for a repository.
 
@@ -41,7 +41,7 @@ def extract_property(
     schema: SchemaLiteral = "maSMP",
     *,
     token: Optional[str] = None,
-) -> Tuple[str, List[Dict[str, Any]]]:
+    ) -> Tuple[str, List[Dict[str, Any]], bool]:
     """
     Extract a single property (value + source + confidence) for a repository.
 
@@ -52,13 +52,13 @@ def extract_property(
     SoftwareApplication profiles; all matches are returned. For CODEMETA,
     a single synthetic \"codemeta\" profile is used.
     """
-    extracted_at, items = run_single_property_extraction(
+    extracted_at, items, llm_used = run_single_property_extraction(
         repo_url=repo_url,
         schema=schema,
         access_token=token,
         property_name=property_name,
     )
-    return extracted_at, items
+    return extracted_at, items, llm_used
 
 
 def assess_fairness(
