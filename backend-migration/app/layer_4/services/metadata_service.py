@@ -49,7 +49,7 @@ def run_extraction(
     schema: str,
     access_token: Optional[str],
     with_enrichment: bool,
-) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+) -> tuple[Dict[str, Any], Optional[Dict[str, Any]], bool]:
     """
     Run metadata extraction once.
     
@@ -71,8 +71,8 @@ def run_extraction(
             result.extraction_metadata,
             schema,
         )
-        return jsonld_document, enriched
-    return jsonld_document, None
+        return jsonld_document, enriched, result.llm_used
+    return jsonld_document, None, result.llm_used
 
 
 def run_extraction_with_progress(
@@ -81,7 +81,7 @@ def run_extraction_with_progress(
     access_token: Optional[str],
     with_enrichment: bool,
     progress_callback: Optional[Callable[[str, str], None]] = None,
-) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+) -> tuple[Dict[str, Any], Optional[Dict[str, Any]], bool]:
     """
     Run metadata extraction with optional progress callbacks.
 
@@ -111,8 +111,8 @@ def run_extraction_with_progress(
             result.extraction_metadata,
             schema,
         )
-        return jsonld_document, enriched
-    return jsonld_document, None
+        return jsonld_document, enriched, result.llm_used
+    return jsonld_document, None, result.llm_used
 
 
 def run_single_property_extraction(
@@ -120,7 +120,7 @@ def run_single_property_extraction(
     schema: str,
     access_token: Optional[str],
     property_name: str,
-) -> tuple[str, List[Dict[str, Any]]]:
+) -> tuple[str, List[Dict[str, Any]], bool]:
     """
     Run extraction with enrichment and project down to a single property's
     value, source, and confidence.
@@ -128,7 +128,7 @@ def run_single_property_extraction(
     Returns:
         (extracted_at_iso, [ {profile, value, source, confidence}, ... ])
     """
-    jsonld_document, enriched = run_extraction(
+    jsonld_document, enriched, llm_used = run_extraction(
         repo_url=repo_url,
         schema=schema,
         access_token=access_token,
@@ -153,7 +153,7 @@ def run_single_property_extraction(
                 "confidence": record.get("confidence"),
             }
         )
-        return extracted_at, results
+        return extracted_at, results, llm_used
 
     # maSMP profiles – property may appear in SoftwareSourceCode and/or SoftwareApplication
     for profile_key in ("maSMP:SoftwareSourceCode", "maSMP:SoftwareApplication"):
@@ -174,4 +174,4 @@ def run_single_property_extraction(
             }
         )
 
-    return extracted_at, results
+    return extracted_at, results, llm_used

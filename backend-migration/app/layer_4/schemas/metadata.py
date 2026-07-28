@@ -16,6 +16,7 @@ class MetadataPlainResponse(BaseModel):
     code_url: HttpUrl
     message: str
     results: Dict[str, Any]
+    llm_used: bool
 
     class Config:
         populate_by_name = True
@@ -30,6 +31,7 @@ class MetadataEnrichedResponse(BaseModel):
     message: str
     results: Dict[str, Any]
     enriched_metadata: Dict[str, Any]
+    llm_used: bool
 
     class Config:
         populate_by_name = True
@@ -68,6 +70,7 @@ class SinglePropertyResponse(BaseModel):
     property: str
     extracted_at: str
     results: List[SinglePropertyItem]
+    llm_used: bool
 
     class Config:
         populate_by_name = True

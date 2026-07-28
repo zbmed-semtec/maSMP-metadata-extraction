@@ -65,7 +65,7 @@ async def extract_metadata_plain(
                 detail="Unsupported repository platform. Supported: GitHub, GitLab",
             )
 
-        jsonld_document, _ = run_extraction(
+        jsonld_document, _, llm_used = run_extraction(
             repo_url=str(repo_url),
             schema=schema,
             access_token=access_token,
@@ -78,6 +78,7 @@ async def extract_metadata_plain(
             code_url=repo_url,
             message="Code analysis completed.",
             results=jsonld_document,
+            llm_used=llm_used,
         )
 
     except ValueError as e:
@@ -117,7 +118,7 @@ async def extract_metadata_enriched(
                 detail="Unsupported repository platform. Supported: GitHub, GitLab",
             )
 
-        jsonld_document, enriched = run_extraction(
+        jsonld_document, enriched, llm_used = run_extraction(
             repo_url=str(repo_url),
             schema=schema,
             access_token=access_token,
@@ -134,6 +135,7 @@ async def extract_metadata_enriched(
             message="Code analysis completed.",
             results=jsonld_document,
             enriched_metadata=enriched,
+            llm_used=llm_used,
         )
 
     except ValueError as e:
@@ -173,14 +175,14 @@ async def _stream_metadata_events(
 
     def run_extraction_sync() -> None:
         try:
-            jsonld_document, enriched = run_extraction_with_progress(
+            jsonld_document, enriched, llm_used = run_extraction_with_progress(
                 repo_url=repo_url,
                 schema=schema,
                 access_token=access_token,
                 with_enrichment=True,
                 progress_callback=progress_callback,
             )
-            result_holder.append(("ok", jsonld_document, enriched))
+            result_holder.append(("ok", jsonld_document, enriched, llm_used))
         except Exception as e:
             result_holder.append(("error", str(e), None))
 
@@ -200,11 +202,12 @@ async def _stream_metadata_events(
     if not result_holder:
         yield _format_sse("error", {"detail": "Extraction produced no result."})
         return
-    status, first, second = result_holder[0]
+    status, first, second = result_holder[0][0], result_holder[0][1], result_holder[0][2]
     if status == "error":
         yield _format_sse("error", {"detail": first})
         return
     jsonld_document, enriched = first, second
+    llm_used = result_holder[0][3] if len(result_holder[0]) > 3 else False
     payload = {
         "status": "success",
         "schema": schema,
@@ -212,6 +215,7 @@ async def _stream_metadata_events(
         "message": "Code analysis completed.",
         "results": jsonld_document,
         "enriched_metadata": enriched or {},
+        "llm_used": llm_used,
     }
     yield _format_sse("result", payload)
 
@@ -361,7 +365,7 @@ async def extract_single_property(
                 detail="Unsupported repository platform. Supported: GitHub, GitLab",
             )
 
-        extracted_at, items = run_single_property_extraction(
+        extracted_at, items, llm_used = run_single_property_extraction(
             repo_url=str(repo_url),
             schema=schema,
             access_token=access_token,
@@ -376,6 +380,7 @@ async def extract_single_property(
             property=property_name,
             extracted_at=extracted_at,
             results=items,
+            llm_used=llm_used,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
