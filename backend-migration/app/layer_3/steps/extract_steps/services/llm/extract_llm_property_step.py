@@ -111,7 +111,12 @@ def _normalize_people(value: Any) -> list[dict[str, Any]]:
             family_name = item.get("familyName")
             if not given_name and not family_name and isinstance(name, str):
                 given_name, family_name = _split_name(name)
-            url = item.get("url") or item.get("github_url")
+            url = (
+                item.get("url")
+                or item.get("profile_url")
+                or item.get("github_url")
+                or item.get("gitlab_url")
+            )
             email = item.get("email")
         else:
             text = str(item).strip()
@@ -384,13 +389,26 @@ class ExtractLlmPropertyStep:
         context = "\n\n".join(part for part in rendered if part).strip()
         return context[:7000] if context else text[:6000]
 
-    def _build_prompt(self, property_name: str, context: str, prompts: dict[str, Any]) -> str:
+    def _build_prompt(
+        self,
+        property_name: str,
+        context: str,
+        prompts: dict[str, Any],
+        *,
+        platform: str = "repository hosting service",
+        repo_url: str | None = None,
+    ) -> str:
         prompt_templates = prompts.get("prompts", {}) if isinstance(prompts.get("prompts", {}), dict) else {}
         property_prompt = prompt_templates.get(property_name) or prompts.get("default_prompt") or f"Extract {property_name} from the README."
         schema_hint = prompts.get("property_schema_hints", {}).get(property_name, "null if unknown")
         rule_hint = prompts.get("property_rules", {}).get(property_name, prompts.get("property_rules", {}).get("default", "Return concise value and evidence quote if available."))
         return (
             f"{property_prompt}\n\n"
+            f"Source platform: {platform}."
+            + (f" Repository URL: {repo_url}." if repo_url else "")
+            + "\n"
+            "Treat GitHub and GitLab URLs, usernames, groups, and project references equivalently. "
+            "When returning a person or contributor profile, use the platform-neutral `url` field.\n\n"
             f"Rules: {rule_hint}\n"
             f"Expected value shape: {schema_hint}\n\n"
             "No guessing. Return JSON only with keys: value, evidence, confidence.\n"
@@ -628,8 +646,22 @@ class ExtractLlmPropertyStep:
                     record_field_provenance(state, "codemeta_referencePublication", SOURCE_LLM, CONFIDENCE_LLM)
             return
 
-    def _extract_with_llm(self, property_name: str, context: str, prompts: dict[str, Any]) -> dict[str, Any]:
-        prompt = self._build_prompt(property_name, context, prompts)
+    def _extract_with_llm(
+        self,
+        property_name: str,
+        context: str,
+        prompts: dict[str, Any],
+        *,
+        platform: str,
+        repo_url: str,
+    ) -> dict[str, Any]:
+        prompt = self._build_prompt(
+            property_name,
+            context,
+            prompts,
+            platform=platform,
+            repo_url=repo_url,
+        )
         raw = ""
         error: str | None = None
         try:
@@ -708,7 +740,13 @@ class ExtractLlmPropertyStep:
 
         for property_name in property_names:
             context_text = self._select_context(content, property_name, prompts)
-            result = self._extract_with_llm(property_name, context_text, prompts)
+            result = self._extract_with_llm(
+                property_name,
+                context_text,
+                prompts,
+                platform=(context.platform or "github").strip().lower(),
+                repo_url=context.repo_url,
+            )
             extracted[property_name] = {
                 "value": result.get("value"),
                 "evidence": result.get("evidence"),

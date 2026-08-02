@@ -8,6 +8,7 @@ from app.layer_3.steps.contracts import ExtractionPipeline, ExtractionPipelineRu
 from app.layer_3.steps.extract_steps.services.llm.extract_llm_property_step import (
     ExtractLlmPropertyStep,
 )
+from app.layer_3.utils.url_pattern_matcher import URLPatternMatcher
 
 if TYPE_CHECKING:
     from app.layer_3.extraction_metadata import ExtractionMetadataCollector
@@ -29,14 +30,18 @@ class LLMExtractor:
         pipeline = ExtractionPipeline(
             steps=(ExtractLlmPropertyStep(api_key=self.api_key, model=self.model),)
         )
+        platform = URLPatternMatcher.detect_platform(repo_url)
+        if platform not in {"github", "gitlab"}:
+            raise ValueError("Unsupported repository platform. Supported: GitHub, GitLab")
+
         context = StepContext(
             repo_url=repo_url,
             domain="software",
             schema="",
+            platform=platform,
         )
         state = StepState(metadata=metadata)
         return ExtractionPipelineRunner().run(pipeline, context, state).metadata
 
 
 __all__ = ["LLMExtractor"]
-

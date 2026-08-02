@@ -24,11 +24,13 @@ def repository_file_content(
     if not owner or not repo:
         return ""
 
-    fetcher = (
-        github_file_fetcher(context, state)
-        if context.platform == "github"
-        else gitlab_file_fetcher(context, state)
-    )
+    platform = (context.platform or "github").strip().lower()
+    if platform == "github":
+        fetcher = github_file_fetcher(context, state)
+    elif platform == "gitlab":
+        fetcher = gitlab_file_fetcher(context, state)
+    else:
+        return ""
     for branch in ("main", "master"):
         for file_name in file_names:
             content = fetcher.fetch_file_from_repo(owner, repo, file_name, branch)
@@ -37,4 +39,3 @@ def repository_file_content(
                 return content
     state.data[data_key] = ""
     return ""
-

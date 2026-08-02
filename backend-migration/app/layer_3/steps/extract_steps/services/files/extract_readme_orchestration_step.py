@@ -54,5 +54,7 @@ class ApplyReadmeOrchestrationStep:
                 base_url=self.llm_settings.base_url,
             ).run(context, state)
 
+        return state
+
 
 __all__ = ["ApplyReadmeOrchestrationStep"]
