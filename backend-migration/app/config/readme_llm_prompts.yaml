@@ -2,7 +2,7 @@ property_queries:
   license: [license, licensing, copyright, spdx]
   installation: [installation, install, pip, conda, requirements, setup]
   contact: [contact, email, maintainer, author]
-  contributors: [contributors, contributor, authors, maintainers, team, credits, '@', github.com]
+  contributors: [contributors, contributor, authors, maintainers, team, credits, '@', github.com, gitlab.com]
   links: [paper, publication, citation, arxiv, doi, docs, link, url]
   description: [overview, about, purpose, project, toolkit, library, framework, features, introduction]
 
@@ -10,13 +10,13 @@ property_schema_hints:
   license: normalized SPDX-style string if explicit, else null
   installation: short installation instruction summary or code snippet, else null
   contact: email or contact link, else null
-  contributors: list of contributors with name/github_url if available, else null
+  contributors: list of contributors with name and profile URL (GitHub or GitLab) if available, else null
   links: list of relevant links as objects {title, url, relevance, is_working, status_code}, else null
   description: one or two concise lines describing what the repository does, else null
 
 property_rules:
   license: "Return normalized SPDX license and exact evidence quote when possible."
-  contributors: "Return value as list of objects [{\"name\": string, \"github_url\": string|null}]."
+  contributors: "Return value as list of objects [{\"name\": string, \"url\": string|null}]. Preserve GitHub or GitLab profile URLs in url."
   links: "Return value as list of objects [{\"title\": string|null, \"url\": string, \"relevance\": \"paper\"|\"docs\"|\"repo\"|\"tutorial\"|\"other\", \"is_working\": bool|null, \"status_code\": int|null}]."
   description: "Return factual concise repository description from evidence only."
   default: "Return concise value and evidence quote if available."
