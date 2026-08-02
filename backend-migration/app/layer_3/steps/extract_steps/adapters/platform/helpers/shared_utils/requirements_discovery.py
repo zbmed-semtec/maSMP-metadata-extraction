@@ -29,11 +29,14 @@ def discover_requirement_urls_from_state(
     platform: str,
     repo_url: str,
 ) -> list[str]:
-    """Extract requirements links using callbacks injected into step state."""
+    """Extract requirements links using callbacks injected into step state.
+
+    GitLab directory listings already prove that a file exists.  Limit that
+    platform to its repository root and avoid follow-up HTTP probes: recursive
+    GitLab tree traversal can be prohibitively slow for large repositories.
+    """
     list_contents_fn = state_data.get("list_contents_fn")
     is_file_reachable_fn = state_data.get("is_file_reachable_fn")
-    if not callable(is_file_reachable_fn):
-        return []
 
     owner, repo = URLPatternMatcher.extract_repo_info(repo_url)
     if not owner or not repo:
@@ -62,7 +65,13 @@ def discover_requirement_urls_from_state(
                 f"{base_url}/-/blob/{branch}/{path}"
             ),
             branches=branches,
+            max_depth=0,
+            fallback_to_known_paths=False,
+            verify_listed_urls=False,
         )
+
+    if not callable(is_file_reachable_fn):
+        return []
 
     return _discover_software_requirement_urls(
         owner,
@@ -89,11 +98,13 @@ def _discover_software_requirement_urls(
     repo: str,
     *,
     list_contents_fn: Callable[[str, str, str], Iterable[dict]] | None,
-    is_file_reachable_fn: Callable[[str], bool],
+    is_file_reachable_fn: Callable[[str], bool] | None,
     build_blob_url_fn: Callable[[str, str], str],
     branches: tuple[str, ...] = ("main", "master"),
     requirement_files: set[str] | None = None,
     max_depth: int = 3,
+    fallback_to_known_paths: bool = True,
+    verify_listed_urls: bool = True,
 ) -> list[str]:
     files = requirement_files or set(DEFAULT_REQUIREMENT_FILES)
     requirement_urls: list[str] = []
@@ -102,7 +113,7 @@ def _discover_software_requirement_urls(
     def _try_add_url(url: str, path_key: str) -> bool:
         if path_key in seen_paths:
             return False
-        if is_file_reachable_fn(url):
+        if callable(is_file_reachable_fn) and is_file_reachable_fn(url):
             requirement_urls.append(url)
             seen_paths.add(path_key)
             return True
@@ -120,11 +131,18 @@ def _discover_software_requirement_urls(
             return
 
         html_url = item.get("html_url") or item.get("web_url")
-        if html_url and _try_add_url(html_url, item_path):
+        if html_url and (not verify_listed_urls or _try_add_url(html_url, item_path)):
+            if not verify_listed_urls:
+                requirement_urls.append(html_url)
+                seen_paths.add(item_path)
             return
 
         for branch in branches:
             file_url = build_blob_url_fn(branch, item_path)
+            if not verify_listed_urls:
+                requirement_urls.append(file_url)
+                seen_paths.add(item_path)
+                return
             if _try_add_url(file_url, item_path):
                 return
 
@@ -151,7 +169,7 @@ def _discover_software_requirement_urls(
     if callable(list_contents_fn):
         _walk("", 0)
 
-    if not requirement_urls:
+    if not requirement_urls and fallback_to_known_paths:
         for branch in branches:
             for filename in files:
                 if filename in seen_paths:
