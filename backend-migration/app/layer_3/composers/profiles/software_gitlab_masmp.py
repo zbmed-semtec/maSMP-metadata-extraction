@@ -29,6 +29,10 @@ from app.layer_3.steps.extract_steps.adapters.platform.gitlab.extract_gitlab_vcs
 from app.layer_3.steps.extract_steps.adapters.platform.common import common_platform_steps
 from app.layer_3.steps.extract_steps.services.files.license import ExtractLicenseCopyrightStep
 from app.layer_3.steps.merge_steps.software import MergeSoftwareCopyrightHolderStep
+from app.config import readme_llm_settings
+from app.layer_3.steps.extract_steps.services.files.extract_readme_orchestration_step import (
+    ApplyReadmeOrchestrationStep,
+)
 
 
 def build_software_gitlab_masmp_pipeline() -> ExtractionPipeline:
@@ -48,6 +52,7 @@ def build_software_gitlab_masmp_pipeline() -> ExtractionPipeline:
             + gitlab_license_steps()
             + (ExtractLicenseCopyrightStep(), MergeSoftwareCopyrightHolderStep())
             + gitlab_readme_changelog_link_steps()
+            + ((ApplyReadmeOrchestrationStep(),) if readme_llm_settings.enabled else ())
             + gitlab_requirements_link_steps()
             + gitlab_release_steps()
             + software_identifier_steps()
