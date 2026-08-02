@@ -9,7 +9,7 @@ that they are invariant to the exported schema (maSMP vs CODEMETA). The
 schema still controls the shape of the JSON-LD returned alongside the report.
 """
 from __future__ import annotations
-from typing import Dict, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 from app.layer_2.use_cases.extract_metadata import ExtractMetadataUseCase
 from app.layer_1.entities.fair_assessment import FairnessReport
@@ -30,6 +30,8 @@ def run_fairness_assessment(
     schema: str,
     access_token: Optional[str] = None,
     with_enrichment: bool = False,
+    progress_callback: Optional[Callable[[str, str], None]] = None,
+    step_progress_callback: Optional[Callable[[str, int, int, str], None]] = None,
 ) -> Tuple[Dict, FairnessReport]:
     """
     Run metadata extraction and FAIRness assessment once.
@@ -50,13 +52,16 @@ def run_fairness_assessment(
         extraction_metadata_collector=collector,
     )
 
-    result = use_case.execute(
+    execute_kwargs = dict(
         repo_url=repo_url,
         schema=schema,
         access_token=access_token,
+        progress_callback=progress_callback,
     )
+    if step_progress_callback is not None:
+        execute_kwargs["step_progress_callback"] = step_progress_callback
+    result = use_case.execute(**execute_kwargs)
 
     jsonld_document = result.jsonld_document
     fairness_report = evaluate_fairness_from_metadata(result.metadata)
     return jsonld_document, fairness_report
-

@@ -81,6 +81,7 @@ def run_extraction_with_progress(
     access_token: Optional[str],
     with_enrichment: bool,
     progress_callback: Optional[Callable[[str, str], None]] = None,
+    step_progress_callback: Optional[Callable[[str, int, int, str], None]] = None,
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]], bool]:
     """
     Run metadata extraction with optional progress callbacks.
@@ -102,6 +103,7 @@ def run_extraction_with_progress(
         schema=schema,
         access_token=access_token,
         progress_callback=progress_callback,
+        step_progress_callback=step_progress_callback,
     )
     jsonld_document = result.jsonld_document
 
