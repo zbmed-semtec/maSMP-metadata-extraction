@@ -94,6 +94,7 @@ class ExtractMetadataUseCase:
         schema: str,
         access_token: Optional[str] = None,
         progress_callback: Optional[Callable[[str, str], None]] = None,
+        step_progress_callback: Optional[Callable[[str, int, int, str], None]] = None,
     ) -> ExtractMetadataResult:
         """
         Execute metadata extraction for one repository.
@@ -136,7 +137,15 @@ class ExtractMetadataUseCase:
             platform=platform,
             access_token=access_token,
         )
-        metadata = self.pipeline_runner.run(pipeline, context, state).metadata
+        if step_progress_callback is not None:
+            metadata = self.pipeline_runner.run(
+                pipeline,
+                context,
+                state,
+                step_progress_callback=step_progress_callback,
+            ).metadata
+        else:
+            metadata = self.pipeline_runner.run(pipeline, context, state).metadata
 
         if progress_callback:
             progress_callback("pipeline", "completed")
@@ -211,4 +220,3 @@ def _confidence_for_field(field: str) -> float:
     if field in {"archivedAt"}:
         return CONFIDENCE_ARCHIVE
     return CONFIDENCE_PLATFORM
-
