@@ -4,13 +4,13 @@ import json
 import os
 import sys
 from dataclasses import asdict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, TextIO, Tuple
 
 from fastapi.encoders import jsonable_encoder
 
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.github_utils.github_client import GitHubRateLimitError
 from app.layer_3.steps.extract_steps.adapters.platform.helpers.gitlab_utils.gitlab_client import GitLabRateLimitError
-from app.layer_4.services.metadata_service import run_extraction
+from app.layer_4.services.metadata_service import run_extraction_with_progress
 from app.layer_4.services.fairness_service import run_fairness_assessment
 
 
@@ -21,12 +21,62 @@ def _print_json(data: Any) -> None:
     sys.stdout.write("\n")
 
 
+class TerminalProgress:
+    """Small dependency-free progress bar that leaves JSON stdout untouched."""
+
+    def __init__(self, enabled: bool, stream: TextIO = sys.stderr) -> None:
+        self.enabled = enabled
+        self.stream = stream
+        self.total = 2
+        self.completed = 0
+        self._detailed_pipeline = False
+
+    def callback(self, step_id: str, status: str) -> None:
+        if not self.enabled or (step_id == "pipeline" and self._detailed_pipeline):
+            return
+        if step_id == "pipeline":
+            self.completed = 1 if status == "completed" else 0
+            self._render("Extracting repository metadata")
+        elif step_id == "jsonld_build":
+            self.completed = self.total if status == "completed" else self.total - 1
+            self._render("Building JSON-LD result")
+
+    def step_callback(self, step_name: str, index: int, total: int, status: str) -> None:
+        """Render the active extraction step, including its position in the pipeline."""
+        if not self.enabled:
+            return
+        self._detailed_pipeline = True
+        self.total = total + 1  # The final JSON-LD build is not a pipeline step.
+        self.completed = index if status == "completed" else index - 1
+        label = step_name.replace(".", " · ").replace("_", " ")
+        self._render(f"Running: {label}")
+
+    def _render(self, label: str) -> None:
+        percent = int(self.completed / self.total * 100)
+        width = 20
+        filled = int(width * self.completed / self.total)
+        self.stream.write(
+            f"\r[{ '#' * filled}{'-' * (width - filled)}] "
+            f"{percent:3d}% ({self.completed}/{self.total}) {label}"
+        )
+        if self.completed == self.total:
+            self.stream.write("\n")
+        self.stream.flush()
+
+
+def _terminal_progress(args: argparse.Namespace) -> TerminalProgress:
+    return TerminalProgress(enabled=not args.no_progress and sys.stderr.isatty())
+
+
 def _extract_command(args: argparse.Namespace) -> None:
-    jsonld_document, enriched, llm_used = run_extraction(
+    progress = _terminal_progress(args)
+    jsonld_document, enriched, llm_used = run_extraction_with_progress(
         repo_url=args.url,
         schema=args.schema,
         access_token=args.token,
         with_enrichment=args.with_enrichment,
+        progress_callback=progress.callback,
+        step_progress_callback=progress.step_callback,
     )
 
     result = {
@@ -123,11 +173,14 @@ def _collect_property_results(
 
 
 def _extract_property_command(args: argparse.Namespace) -> None:
-    jsonld_document, enriched, llm_used = run_extraction(
+    progress = _terminal_progress(args)
+    jsonld_document, enriched, llm_used = run_extraction_with_progress(
         repo_url=args.url,
         schema=args.schema,
         access_token=args.token,
         with_enrichment=True,
+        progress_callback=progress.callback,
+        step_progress_callback=progress.step_callback,
     )
 
     result = _collect_property_results(
@@ -164,11 +217,14 @@ def _fairness_command(args: argparse.Namespace) -> None:
     """
     Compute a FAIRness report for a repository and print JSON.
     """
+    progress = _terminal_progress(args)
     jsonld_document, fairness_report = run_fairness_assessment(
         repo_url=args.url,
         schema=args.schema,
         access_token=args.token,
         with_enrichment=False,
+        progress_callback=progress.callback,
+        step_progress_callback=progress.step_callback,
     )
 
     result = {
@@ -210,6 +266,11 @@ def main() -> None:
         action="store_true",
         help="Include per-property enrichment (source, confidence, category) when available.",
     )
+    extract_parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable the terminal progress bar.",
+    )
     extract_parser.set_defaults(func=_extract_command)
 
     # comet-rs extract_property {GIT_URL} {PROPERTY_NAME} [--schema maSMP|CODEMETA]
@@ -238,6 +299,11 @@ def main() -> None:
         "--token",
         help="GitHub/GitLab token (or set GITHUB_TOKEN / GITLAB_TOKEN). Raises rate limits when unset.",
     )
+    extract_prop_parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable the terminal progress bar.",
+    )
     extract_prop_parser.set_defaults(func=_extract_property_command)
 
     # comet-rs fairness {GIT_URL} {SCHEMA}
@@ -254,6 +320,11 @@ def main() -> None:
     fairness_parser.add_argument(
         "--token",
         help="GitHub/GitLab token (or set GITHUB_TOKEN / GITLAB_TOKEN). Raises rate limits when unset.",
+    )
+    fairness_parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable the terminal progress bar.",
     )
     fairness_parser.set_defaults(func=_fairness_command)
 
@@ -276,4 +347,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
