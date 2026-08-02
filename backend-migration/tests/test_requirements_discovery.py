@@ -81,3 +81,31 @@ def test_discovery_finds_requirements_dev_txt():
     )
 
     assert urls[0].endswith("/blob/main/requirements-dev.txt")
+
+
+def test_gitlab_discovery_checks_root_once_without_follow_up_requests():
+    listed_paths: list[str] = []
+
+    def _list_contents(owner: str, repo: str, path: str):
+        listed_paths.append(path)
+        return [
+            {"type": "blob", "name": "pyproject.toml", "path": "pyproject.toml"},
+            {"type": "tree", "name": "nested", "path": "nested"},
+        ]
+
+    def _is_reachable(_url: str) -> bool:
+        raise AssertionError("GitLab listings must not trigger follow-up URL probes")
+
+    urls = discover_requirement_urls_from_state(
+        state_data={
+            "normalized_repo_url": "https://gitlab.com/group/project",
+            "repo_payload": {"default_branch": "develop"},
+            "list_contents_fn": _list_contents,
+            "is_file_reachable_fn": _is_reachable,
+        },
+        platform="gitlab",
+        repo_url="https://gitlab.com/group/project",
+    )
+
+    assert listed_paths == [""]
+    assert urls == ["https://gitlab.com/group/project/-/blob/develop/pyproject.toml"]

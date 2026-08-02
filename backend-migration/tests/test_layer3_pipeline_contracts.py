@@ -47,6 +47,30 @@ def test_pipeline_runner_executes_steps_in_order():
     assert result.data["order"] == ["a", "b"]
 
 
+def test_pipeline_runner_reports_each_step_progress():
+    pipeline = ExtractionPipeline(
+        steps=(
+            _AppendStep(name="first", token="a"),
+            _AppendStep(name="second", token="b"),
+        )
+    )
+    events: list[tuple[str, int, int, str]] = []
+
+    ExtractionPipelineRunner().run(
+        pipeline,
+        StepContext(repo_url="https://github.com/o/r", domain="software", schema="maSMP"),
+        StepState(metadata=SoftwareMetadata()),
+        step_progress_callback=lambda *event: events.append(event),
+    )
+
+    assert events == [
+        ("first", 1, 2, "started"),
+        ("first", 1, 2, "completed"),
+        ("second", 2, 2, "started"),
+        ("second", 2, 2, "completed"),
+    ]
+
+
 def test_pipeline_composer_software_returns_pipeline():
     composer = PipelineComposer()
     pipeline = composer.compose(domain="software", schema="maSMP", platform="github")

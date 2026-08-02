@@ -9,8 +9,15 @@ from app.layer_3.composers.profiles.software_github_codemeta import (
 from app.layer_3.composers.profiles.software_gitlab_codemeta import (
     build_software_gitlab_codemeta_pipeline,
 )
+from app.layer_3.composers.profiles.software_gitlab_masmp import (
+    build_software_gitlab_masmp_pipeline,
+)
 from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner, StepContext, StepState
+from app.layer_3.steps.extract_steps.services.files.extract_readme_orchestration_step import (
+    ApplyReadmeOrchestrationStep,
+)
+from app.config import readme_llm_settings
 
 
 def _run_pipeline(pipeline, repo_url: str, platform: str):
@@ -97,3 +104,13 @@ def test_gitlab_profile_populates_core_platform_fields():
     assert metadata.has_release is True
     assert extraction_metadata["name"]["source"] == SOURCE_GITLAB_API
 
+
+def test_gitlab_profiles_include_readme_llm_orchestration_when_enabled():
+    if not readme_llm_settings.enabled:
+        return
+
+    for pipeline in (
+        build_software_gitlab_codemeta_pipeline(),
+        build_software_gitlab_masmp_pipeline(),
+    ):
+        assert any(isinstance(step, ApplyReadmeOrchestrationStep) for step in pipeline.steps)
