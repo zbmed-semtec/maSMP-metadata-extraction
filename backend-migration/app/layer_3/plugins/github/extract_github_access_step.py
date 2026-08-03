@@ -1,7 +1,6 @@
 """GitHub access metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
-
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -22,6 +21,3 @@ class ExtractGithubAccessStep(ExtractionPlugin):
             self.name, "https://schema.org/isAccessibleForFree", isAccessibleForFree)
         return state
 
-
-def github_access_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGithubAccessStep(),)

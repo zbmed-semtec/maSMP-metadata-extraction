@@ -1,7 +1,6 @@
 """Extract project ``description`` from the GitLab API payload."""
 
 from typing import Callable
-
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 

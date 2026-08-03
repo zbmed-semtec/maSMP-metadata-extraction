@@ -1,7 +1,6 @@
 """GitLab issue tracker metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
-
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -21,7 +20,3 @@ class ExtractGitlabIssueTrackerStep(ExtractionPlugin):
             discussionUrl = web_url + "/-/discussions"
             state.metadata_collector.collect(self.name, "https://schema.org/discussionUrl", discussionUrl)
         return state
-
-
-def gitlab_issue_tracker_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGitlabIssueTrackerStep(),)

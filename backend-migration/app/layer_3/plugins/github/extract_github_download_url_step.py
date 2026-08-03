@@ -1,9 +1,7 @@
 """GitHub download URL metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
-
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -21,7 +19,3 @@ class ExtractGithubDownloadUrlStep(ExtractionPlugin):
             downloadUrl = archive_url.replace("{archive_format}{/ref}", "zipball/master")
             state.metadata_collector.collect(self.name, "downloadUrl", downloadUrl)
         return state
-
-
-def github_download_url_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGithubDownloadUrlStep(),)

@@ -1,8 +1,6 @@
 """GitHub date extraction steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
-
-
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
 
@@ -23,7 +21,3 @@ class ExtractGithubDatesStep(ExtractionPlugin):
         if repo_data.get("pushed_at"):
             state.metadata_collector.collect(self.name, "https://schema.org/datePublished", repo_data.get("pushed_at"))
         return state
-
-
-def github_date_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGithubDatesStep(),)

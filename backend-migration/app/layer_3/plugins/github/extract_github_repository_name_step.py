@@ -2,7 +2,6 @@
 
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 class ExtractGithubRepositoryNameStep(ExtractionPlugin):

@@ -1,9 +1,7 @@
 """GitHub source code URL metadata step."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
-
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -21,11 +19,6 @@ class ExtractGithubSourceCodeStep(ExtractionPlugin):
         hasSourceCode = source_url
         state.metadata_collector.collect(self.name, "https://codemeta.github.io/terms/hasSourceCode", hasSourceCode)
         return state
-
-
-def github_source_code_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGithubSourceCodeStep(),)
-
 
 
 

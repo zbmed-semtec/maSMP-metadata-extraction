@@ -1,8 +1,6 @@
 """GitHub contributor metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
-
-
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -20,6 +18,3 @@ class ExtractGithubContributorsStep(ExtractionPlugin):
             state.metadata_collector.collect(self.name, "https://schema.org/contributor", contributor)
         return state
 
-
-def github_contributor_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGithubContributorsStep(),)

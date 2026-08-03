@@ -2,7 +2,6 @@ import logging
 import time
 from typing import Optional, Dict, Any
 import requests
-
 from app.layer_2.base_plugin import BasePlugin
 
 logger = logging.getLogger(__name__)

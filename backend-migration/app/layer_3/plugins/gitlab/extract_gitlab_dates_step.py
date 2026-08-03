@@ -1,9 +1,7 @@
 """GitLab date extraction steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
-
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -31,6 +29,3 @@ class ExtractGitlabDatesStep(ExtractionPlugin):
             datePublished = str(date_published)[:10]
             state.metadata_collector.collect(self.name, "https://schema.org/datePublished", datePublished)
         return state
-
-def gitlab_date_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGitlabDatesStep(),)

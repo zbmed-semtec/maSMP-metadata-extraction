@@ -1,8 +1,7 @@
 """GitLab release/version metadata step."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -23,10 +22,6 @@ class ExtractGitlabReleaseStep(ExtractionPlugin):
         state.metadata_collector.collect(self.name, "https://schema.org/softwareVersion", softwareVersion)
         state.metadata_collector.collect(self.name, "https://schema.org/version", version)
         return state
-
-
-def gitlab_release_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGitlabReleaseStep(),)
 
 
 

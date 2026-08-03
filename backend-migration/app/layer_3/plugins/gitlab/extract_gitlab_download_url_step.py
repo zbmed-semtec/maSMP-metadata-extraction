@@ -1,8 +1,7 @@
 """GitLab download URL metadata steps."""
 
-from app.layer_3.steps.contracts import ExtractionStep, ExtractionContext, ExtractionState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.platform_payloads_plugin import PlatformPayloadsPlugin
-
 from app.layer_2.extraction_plugin import ExtractionPlugin
 
 
@@ -23,7 +22,3 @@ class ExtractGitlabDownloadUrlStep(ExtractionPlugin):
             downloadUrl = f"{web_url}/-/archive/master/{name}-master.zip"
             state.metadata_collector.collect(self.name, "downloadUrl", downloadUrl)
         return state
-
-
-def gitlab_download_url_steps() -> tuple[ExtractionStep, ...]:
-    return (ExtractGitlabDownloadUrlStep(),)
