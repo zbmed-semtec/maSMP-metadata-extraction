@@ -3,6 +3,7 @@ metadata fields from a repository's GitHub API data, CITATION.cff files,
 README files, and license files."""
 
 from app.layer_3.plugins.github.github_base_extractor import GitHubBaseExtractor
+from app.layer_3.plugins.shared.git_platform_codemeta_extractor import GitPlatformCodemetaExtractor
 from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtractor
     ,GitPlatformNameExtractor
     ,GitPlatformUrlExtractor
@@ -17,7 +18,6 @@ from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtract
     ,GitPlatformVersionControlSystemExtractor
     ,GitPlatformArchivedAtExtractor
     ,GitPlatformContributorsExtractor
-    ,GitPlatformReleaseNotesExtractor
     ,GitPlatformSoftwareVersionExtractor
     ,GitPlatformHasSourceCodeExtractor
     ,GitPlatformConditionsOfAccessExtractor
@@ -29,6 +29,7 @@ from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtract
     ,GitPlatformLicenseCopyrightHolderExtractor
     ,GitPlatformStorageReqExtractor
     ,GitPlatformDownloadUrlExtractor)
+
 class GitHubNameExtractor(GitPlatformNameExtractor, GitHubBaseExtractor):
     """schema:name"""
     name = "github.name_extractor"
@@ -99,13 +100,42 @@ class GitHubArchivedAtExtractor(GitPlatformArchivedAtExtractor, GitHubBaseExtrac
 class GitHubContributorsExtractor(GitPlatformContributorsExtractor, GitHubBaseExtractor):
     name = "github.contributors_extractor"
 
-class GitHubReleaseNotesExtractor(GitPlatformReleaseNotesExtractor, GitHubBaseExtractor):
+class GitHubReleaseNotesExtractor(GitHubBaseExtractor):
     """schema:releaseNotes"""
     name = "github.release_notes_extractor"
+
+    extracts = {'https://schema.org/releaseNotes','https://codemeta.github.io/terms/releaseNotes'}
+
+    def extract(self, context, state):
+        result = self.get_client(context, state).get_releases()
+        if isinstance(result, list) and len(result) > 0:
+            url = result[0].get("html_url")
+            if url:
+                state.metadata_collector.collect("Platform API", "https://schema.org/releaseNotes", url, 0.95)
+                state.metadata_collector.collect("Platform API", 'https://codemeta.github.io/terms/releaseNotes', url, 0.95)
+        return state
 
 class GitHubSoftwareVersionExtractor(GitPlatformSoftwareVersionExtractor, GitHubBaseExtractor):
     """schema:softwareVersion"""
     name = "github.software_version_extractor"
+
+    def extract(self, context, state):
+        # Extract from releases
+        result = self.get_client(context, state).get_releases()
+        if result and len(result) > 0:
+            version = result[0].get("tag_name")
+            if version:
+                state.metadata_collector.collect("Platform API", 'https://schema.org/softwareVersion', version, 0.95)
+                state.metadata_collector.collect("Platform API", 'https://schema.org/version', version, 0.95)
+        # Extract from tags if no releases found
+        if not result or len(result) == 0:
+            result = self.get_client(context, state).get_tags()
+            if result and len(result) > 0:
+                version = result[0].get("name")
+                if version:
+                    state.metadata_collector.collect("Platform API", 'https://schema.org/softwareVersion', version, 0.95)
+                    state.metadata_collector.collect("Platform API", 'https://schema.org/version', version, 0.95)
+        return super().extract(context, state)
 
 class GitHubHasSourceCodeExtractor(GitPlatformHasSourceCodeExtractor, GitHubBaseExtractor):
     """maSMP:hasSourceCode"""
@@ -132,6 +162,16 @@ class GitHubChangelogExtractor(GitPlatformChangelogExtractor, GitHubBaseExtracto
     """maSMP:changeLog - derived from the releases page and/or a CHANGELOG file in the repo root"""
     name = "github.changelog_extractor"
 
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        repo = client.get_repository()
+        if repo.get('has_releases', False):
+            if 'html_url' in repo:
+                changelog_url = f"{repo['html_url']}/releases"
+                state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.75)
+        
+        return super().extract(context, state)
+
 class GitHubSoftwareRequirementExtractor(GitPlatformSoftwareRequirementExtractor, GitHubBaseExtractor):
 
     name = "github.software_requirements_extractor"
@@ -147,3 +187,7 @@ class GitHubStorageReqExtractor(GitPlatformStorageReqExtractor, GitHubBaseExtrac
 class GitHubDownloadUrlExtractor(GitPlatformDownloadUrlExtractor, GitHubBaseExtractor):
     """extracts the copyright holder and year from the license file"""
     name = "github.GitHub_download_url_extractor"
+
+class GitHubCodemetaExtractor(GitPlatformCodemetaExtractor, GitHubBaseExtractor):
+    """extracts metadata from a repository's codemeta.json file"""
+    name = "github.codemeta_extractor"

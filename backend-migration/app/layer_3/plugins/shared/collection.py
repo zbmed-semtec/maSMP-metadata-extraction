@@ -15,18 +15,22 @@ class GitPlatformNameExtractor(GitPlatformBaseExtractor):
     def extract(self, context, state):
         
         # getting the name from the API
-        result = self.get_client(context, state).get_repository()
-        if result.get("name"):
-            state.metadata_collector.collect("Platform API", "https://schema.org/name", result['name'], 0.95)
+        client = self.get_client(context, state)
+        name = client.get_name()
+        if name:
+            state.metadata_collector.collect("Platform API", "https://schema.org/name", name, 0.95)
         
         # getting the name from the CFF
-        client = self.get_client(context, state)
         cffs = client.get_parsed_citations()
         for cff in cffs:
             if 'title' in cff:
                 state.metadata_collector.collect("CFF File", "https://schema.org/name", cff['title'], 0.85)
 
-        # TODO: getting the name from bibtex
+        entries = client.get_parsed_bibtex()
+        for entry in entries:
+            fields = entry.get('fields', {})
+            if 'title' in fields:
+                state.metadata_collector.collect("BibTeX", "https://schema.org/name", fields['title'], 0.85)
         return state
 
 class GitPlatformDescriptionExtractor(GitPlatformBaseExtractor):
@@ -221,7 +225,6 @@ class GitPlatformLicenseExtractor(GitPlatformBaseExtractor):
                     state.metadata_collector.collect(
                         "CITATION.cff", 'https://schema.org/license', license_object, conf
                     )
-        # TODO: get license from API
         return state
 
 class GitPlatformIdentifierExtractor(GitPlatformBaseExtractor):
@@ -242,7 +245,14 @@ class GitPlatformIdentifierExtractor(GitPlatformBaseExtractor):
         if len(identifiers) > 0:
             state.metadata_collector.collect("README", "https://schema.org/identifier", identifiers, 0.75)
 
-        #TODO: from bibtex
+        identifiers = []
+        for entry in client.get_parsed_bibtex():
+            fields = entry.get("fields", {})
+            if 'doi' in fields:
+                identifiers.append(fields['doi'])
+        if len(identifiers) > 0:
+            state.metadata_collector.collect("BibTeX", "https://schema.org/identifier", identifiers, 0.85)
+
         return state
 
 class GitPlatformCitationExtractor(GitPlatformBaseExtractor):
@@ -294,6 +304,7 @@ class GitPlatformCitationExtractor(GitPlatformBaseExtractor):
 
     def extract(self, context, state):
         client = self.get_client(context, state)
+        # from cff
         citations = client.get_parsed_citations()
         for cff in citations:
             preferred_citation = cff.get("preferred-citation")
@@ -342,6 +353,12 @@ class GitPlatformCitationExtractor(GitPlatformBaseExtractor):
                     continue
                 ref_citation_entry = self._build_citation_entry(ref)
                 state.metadata_collector.collect("CFF File", "https://schema.org/citation", ref_citation_entry, 0.85)
+
+        # from bibtex
+        for entry in client.get_parsed_bibtex():
+            fields = entry.get("fields", {})
+            if len(fields.keys()) > 0:
+                state.metadata_collector.collect("BibTeX", "https://schema.org/citation", fields, 0.85)
 
         return state
 
@@ -435,31 +452,12 @@ class GitPlatformContributorsExtractor(GitPlatformBaseExtractor):
             pass
         return state
 
-class GitPlatformReleaseNotesExtractor(GitPlatformBaseExtractor):
-    """schema:releaseNotes"""
-
-    extracts = {'https://schema.org/releaseNotes','https://codemeta.github.io/terms/releaseNotes'}
-
-    def extract(self, context, state):
-        client = self.get_client(context, state)
-        repo = client.get_repository()
-        has_release = repo.get("has_release", False)
-        if has_release:
-            result = self.get_client(context, state).get_releases()
-            if isinstance(result, list) and len(result) > 0:
-                body = result[0].get("body")
-                if body:
-                    state.metadata_collector.collect("Platform API", "https://schema.org/releaseNotes", body, 0.95)
-                    state.metadata_collector.collect("Platform API", 'https://codemeta.github.io/terms/releaseNotes', body, 0.95)
-        return state
-
 class GitPlatformSoftwareVersionExtractor(GitPlatformBaseExtractor):
     """schema:softwareVersion"""
 
     extracts = {'https://schema.org/softwareVersion', 'https://schema.org/version'}
 
     def extract(self, context, state):
-        # TODO: extract from releases
         # Extract from tags
         result = self.get_client(context, state).get_tags()
         if result and len(result) > 0:
@@ -569,16 +567,11 @@ class GitPlatformChangelogExtractor(GitPlatformBaseExtractor):
 
     def extract(self, context, state):
         client = self.get_client(context, state)
-        repo = client.get_repository()
-        if repo.get('has_releases', False):
-            if 'html_url' in repo:
-                changelog_url = f"{repo['html_url']}/releases"
-                state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.75)
-
+        
         files = client.get_changelog_candidate_files()
         for file in files:
             if (file.get_content() or "").lower().startswith('changelog'):
-                changelog_url = file.get('download_url')
+                changelog_url = file.get_html_url(client)
                 if changelog_url:
                     state.metadata_collector.collect("Changelog File", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.85)
         return state
@@ -593,7 +586,7 @@ class GitPlatformSoftwareRequirementExtractor(GitPlatformBaseExtractor):
         found = []
         for file in files:
             if file.name.lower() in dependency_files:
-                download_url = client.get_file(file.path).get('download_url')
+                download_url = client.get_file(file.path).get_html_url(client)
                 if download_url:
                     found.append(download_url)
         if len(found) > 0:

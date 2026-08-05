@@ -1,4 +1,5 @@
 from app.layer_3.plugins.gitlab.gitlab_base_extractor import GitLabBaseExtractor
+from app.layer_3.plugins.shared.git_platform_codemeta_extractor import GitPlatformCodemetaExtractor
 from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtractor
 ,GitPlatformNameExtractor
 ,GitPlatformUrlExtractor
@@ -13,7 +14,6 @@ from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtract
 ,GitPlatformVersionControlSystemExtractor
 ,GitPlatformArchivedAtExtractor
 ,GitPlatformContributorsExtractor
-,GitPlatformReleaseNotesExtractor
 ,GitPlatformSoftwareVersionExtractor
 ,GitPlatformHasSourceCodeExtractor
 ,GitPlatformConditionsOfAccessExtractor
@@ -78,13 +78,43 @@ class GitLabContributorsExtractor(GitPlatformContributorsExtractor, GitLabBaseEx
     """schema:contributor"""
     name = "gitlab.contributors_extractor"
 
-class GitLabReleaseNotesExtractor(GitPlatformReleaseNotesExtractor, GitLabBaseExtractor):
+class GitLabReleaseNotesExtractor(GitLabBaseExtractor):
     """schema:releaseNotes"""
     name = "gitlab.release_notes_extractor"
+
+    extracts = {'https://schema.org/releaseNotes','https://codemeta.github.io/terms/releaseNotes'}
+
+    def extract(self, context, state):
+        result = self.get_client(context, state).get_releases()
+        if isinstance(result, list) and len(result) > 0:
+            url = result[0].get("_links", {}).get("self")
+            if url:
+                state.metadata_collector.collect("Platform API", "https://schema.org/releaseNotes", url, 0.95)
+                state.metadata_collector.collect("Platform API", 'https://codemeta.github.io/terms/releaseNotes', url, 0.95)
+        return state
 
 class GitLabVersionExtractor(GitPlatformSoftwareVersionExtractor, GitLabBaseExtractor):
     """schema:softwareVersion / schema:version"""
     name = "gitlab.version_extractor"
+
+    def extract(self, context, state):
+        # Extract from releases
+        result = self.get_client(context, state).get_releases()
+        if result and len(result) > 0:
+            version = result[0].get("tag_name")
+            if version:
+                state.metadata_collector.collect("Platform API", 'https://schema.org/softwareVersion', version, 0.95)
+                state.metadata_collector.collect("Platform API", 'https://schema.org/version', version, 0.95)
+        # Extract from tags if no releases found
+        if not result or len(result) == 0:
+            result = self.get_client(context, state).get_tags()
+            if result and len(result) > 0:
+                version = result[0].get("name")
+                if version:
+                    state.metadata_collector.collect("Platform API", 'https://schema.org/softwareVersion', version, 0.95)
+                    state.metadata_collector.collect("Platform API", 'https://schema.org/version', version, 0.95)
+
+        return super().extract(context, state)
 
 class GitLabHasSourceCodeExtractor(GitPlatformHasSourceCodeExtractor, GitLabBaseExtractor):
     """maSMP:hasSourceCode"""
@@ -110,6 +140,17 @@ class GitLabChangelogExtractor(GitPlatformChangelogExtractor, GitLabBaseExtracto
     """maSMP:changeLog - derived from the releases page and/or a CHANGELOG file in the repo root"""
     name = "gitlab.changelog_extractor"
 
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        releases = client.get_releases()
+        if releases and len(releases) > 0:
+            latest_release = releases[0]
+            changelog_url = latest_release.get("_links", {}).get("self")
+            if changelog_url:
+                state.metadata_collector.collect("Pattern", 'https://discovery.biothings.io/ns/maSMP/changeLog', changelog_url, 0.75)
+        
+        return super().extract(context, state)
+
 class GitLabSoftwareRequirementExtractor(GitPlatformSoftwareRequirementExtractor, GitLabBaseExtractor):
     """schema:softwareRequirements"""
     name = "gitlab.software_requirements_extractor"
@@ -125,3 +166,7 @@ class GitLabLicenseCopyrightHolderExtractor(GitPlatformLicenseCopyrightHolderExt
 class GitLabStorageRequirementExtractor(GitPlatformStorageReqExtractor, GitLabBaseExtractor):
     """extracts storage requirements from repository size"""
     name = "gitlab.storage_requirement_extractor"
+
+class GitLabCodemetaExtractor(GitPlatformCodemetaExtractor, GitLabBaseExtractor):
+    """extracts metadata from a repository's codemeta.json file"""
+    name = "gitlab.codemeta_extractor"

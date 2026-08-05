@@ -191,6 +191,9 @@ class GitPlatformClient(CachingHttpClient, ABC):
     def get_date_published(self) -> str | None:
         pass
 
+    def get_name(self) -> str | None:
+        return self.get_repository().get('name')
+
     # ------------------------------------------------------------------
     # Normalized content contract — must be implemented per platform.
     #
@@ -249,7 +252,7 @@ class GitPlatformClient(CachingHttpClient, ABC):
     # Generic traversal built on the normalized contract above
     # ------------------------------------------------------------------
 
-    def list_contents(self, path: str = "", depth: int = 1) -> list[RepositoryItem]:
+    def list_contents(self, path: str = "", depth: int = 2) -> list[RepositoryItem]:
         """Recursively lists repository file/directory entries up to the given depth.
 
         Args:
@@ -352,7 +355,7 @@ class GitPlatformClient(CachingHttpClient, ABC):
                     cff_data = yaml.safe_load(content)
                 except yaml.YAMLError:
                     continue
-                if cff_data is not None:
+                if cff_data is not None and isinstance(cff_data, dict) and cff_data.get("cff-version"):
                     parsed.append(cff_data)
             self._parsed_citations = parsed
         return self._parsed_citations
