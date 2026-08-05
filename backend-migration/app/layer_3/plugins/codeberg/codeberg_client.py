@@ -1,5 +1,5 @@
+import re
 import base64
-
 import requests
 
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
@@ -11,7 +11,7 @@ from app.layer_3.plugins.shared.git_platform_client import (
 )
 
 
-class CodbergRepositoryItem(RepositoryItem):
+class CodebergRepositoryItem(RepositoryItem):
     @property
     def name(self) -> str:
         return self._raw["name"]
@@ -25,7 +25,7 @@ class CodbergRepositoryItem(RepositoryItem):
         return self._raw["type"] == "dir"
 
 
-class CodbergRepositoryFile(CodbergRepositoryItem, RepositoryFile):
+class CodebergRepositoryFile(CodebergRepositoryItem, RepositoryFile):
     def get_content(self) -> str | None:
         raw_content = self._raw.get("content")
         if raw_content is None:
@@ -51,18 +51,51 @@ class CodebergClient(GitPlatformClient):
     def _build_headers(self) -> dict:
         """Builds request headers for Codeberg API."""
         return {
-            "Accept": "application/vnd.Codberg.v3+json",
+            "Accept": "application/vnd.Codeberg.v3+json",
             "User-Agent": "maSMP-metadata-extraction",
             "Authorization": f"token {self.context.access_token}" if self.context.access_token else None
         }
 
     def _extract_repository_info(self, context: ExtractionContext) -> tuple[str, str]:
-        """Parses the repository owner and name from the context's repository URL."""
-        repository_url = context.repo_url
-        parts = repository_url.strip("/").split("/")
-        if len(parts) < 2:
-            raise ValueError("Invalid repository URL format.")
-        return parts[-2], parts[-1]
+        """Parses the repository owner and name from the context's repository URL.
+
+        Handles various Codeberg URL formats, including:
+        - https://codeberg.org/owner/repo
+        - https://codeberg.org/owner/repo.git
+        - git@codeberg.org:owner/repo.git
+        - https://codeberg.org/owner/repo/
+        - https://codeberg.org/owner/repo/src/branch/main
+        - https://codeberg.org/owner/repo/issues/123
+        - https://codeberg.org/owner/repo/pulls/456
+        - owner/repo (shorthand)
+        """
+        repository_url = context.repo_url.strip()
+
+        if not repository_url:
+            raise ValueError("Repository URL cannot be empty.")
+
+        # Handle SSH-style URLs: git@codeberg.org:owner/repo.git
+        ssh_match = re.match(r"^git@[\w.-]+:(.+)$", repository_url)
+        if ssh_match:
+            repository_url = ssh_match.group(1)
+
+        # Strip protocol and domain if present (https://codeberg.org/, http://, etc.)
+        repository_url = re.sub(r"^(https?://)?([\w.-]+\.)?codeberg\.org/", "", repository_url)
+
+        # Strip trailing slashes
+        repository_url = repository_url.strip("/")
+
+        # Remove trailing .git extension
+        repository_url = re.sub(r"\.git$", "", repository_url)
+
+        parts = repository_url.split("/")
+
+        if len(parts) < 2 or not parts[0] or not parts[1]:
+            raise ValueError(f"Invalid repository URL format: {context.repo_url}")
+
+        owner, repo = parts[0], parts[1]
+
+        return owner, repo
 
     def get_repository(self) -> dict:
         """Fetches the repository metadata from the Codeberg API."""
@@ -129,7 +162,7 @@ class CodebergClient(GitPlatformClient):
         raw = response.json()
         if not isinstance(raw, list):
             raise FileNotFoundOnPlatformError(path)
-        return [CodbergRepositoryItem(entry) for entry in raw]
+        return [CodebergRepositoryItem(entry) for entry in raw]
 
     def _fetch_file(self, path: str, ref: str | None = None) -> RepositoryFile:
         """Fetches a single file's metadata and content via GitHub's contents API."""
@@ -141,4 +174,4 @@ class CodebergClient(GitPlatformClient):
         raw = response.json()
         if isinstance(raw, list):
             raise FileNotFoundOnPlatformError(path)
-        return CodbergRepositoryFile(raw)
+        return CodebergRepositoryFile(raw)

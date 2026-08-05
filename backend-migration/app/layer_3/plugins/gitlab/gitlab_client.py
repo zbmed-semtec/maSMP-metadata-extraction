@@ -9,10 +9,10 @@ These are genuinely different endpoints on GitLab (unlike GitHub's unified
 "contents" endpoint), so no shape-sniffing or unified method is attempted.
 """
 
+import re
 import base64
-from urllib.parse import quote
-
 import requests
+from urllib.parse import quote
 
 from app.layer_3.plugins.shared.git_platform_client import (
     GitPlatformClient,
@@ -82,6 +82,7 @@ class GitLabClient(GitPlatformClient):
             headers["Authorization"] = f"Bearer {self.context.access_token}"
         return headers
 
+
     def _extract_repository_info(self, context: ExtractionContext) -> tuple[str, str]:
         """Parses the repository namespace and name from the context's repository URL.
 
@@ -90,20 +91,31 @@ class GitLabClient(GitPlatformClient):
         - https://gitlab.com/namespace/subgroup/project
         - https://gitlab.com/namespace/project.git
         - gitlab.com/namespace/project
+        - git@gitlab.com:namespace/project.git
+        - https://gitlab.com/namespace/project/-/tree/main
+        - https://gitlab.com/namespace/project/-/issues/123
         """
-        repository_url = context.repo_url.strip("/")
+        repository_url = context.repo_url.strip()
 
-        if repository_url.endswith(".git"):
-            repository_url = repository_url[:-4]
+        if not repository_url:
+            raise ValueError("Repository URL cannot be empty.")
 
-        for prefix in ("https://", "http://"):
-            if repository_url.startswith(prefix):
-                repository_url = repository_url[len(prefix):]
-                break
-        if repository_url.startswith("gitlab.com/"):
-            repository_url = repository_url[len("gitlab.com/"):]
+        # SSH-style: git@gitlab.com:namespace/project.git
+        ssh_match = re.match(r"^git@[\w.-]+:(.+)$", repository_url)
+        if ssh_match:
+            repository_url = ssh_match.group(1)
 
-        parts = repository_url.split("/")
+        # Strip protocol and optional gitlab domain
+        repository_url = re.sub(r"^(https?://)?([\w.-]+\.)?gitlab\.com/", "", repository_url)
+
+        # Strip trailing slashes and .git suffix
+        repository_url = repository_url.strip("/")
+        repository_url = re.sub(r"\.git$", "", repository_url)
+
+        # Strip GitLab's "/-/..." suffix (used for tree, issues, merge_requests, etc.)
+        repository_url = re.split(r"/-/", repository_url)[0]
+
+        parts = [p for p in repository_url.split("/") if p]
         if len(parts) < 2:
             raise ValueError("Invalid GitLab repository URL format. Expected: https://gitlab.com/namespace/project")
 

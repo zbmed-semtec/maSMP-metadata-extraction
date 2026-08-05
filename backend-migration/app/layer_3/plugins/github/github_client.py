@@ -9,7 +9,7 @@ GitHub-compatible surface.
 """
 
 import base64
-
+import re
 from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.plugins.shared.git_platform_client import (
     GitPlatformClient,
@@ -65,13 +65,48 @@ class GitHubClient(GitPlatformClient):
             headers["Authorization"] = f"token {self.context.access_token}"
         return headers
 
+
     def _extract_repository_info(self, context: ExtractionContext) -> tuple[str, str]:
-        """Parses the repository owner and name from the context's repository URL."""
-        repository_url = context.repo_url
-        parts = repository_url.strip("/").split("/")
-        if len(parts) < 2:
-            raise ValueError("Invalid repository URL format.")
-        return parts[-2], parts[-1]
+        """Parses the repository owner and name from the context's repository URL.
+        
+        Handles various GitHub URL formats, including:
+        - https://github.com/owner/repo
+        - https://github.com/owner/repo.git
+        - git@github.com:owner/repo.git
+        - https://github.com/owner/repo/
+        - https://github.com/owner/repo/tree/main
+        - https://github.com/owner/repo/blob/main/file.py
+        - https://github.com/owner/repo/issues/123
+        - https://github.com/owner/repo/pull/456
+        - owner/repo (shorthand)
+        """
+        repository_url = context.repo_url.strip()
+
+        if not repository_url:
+            raise ValueError("Repository URL cannot be empty.")
+
+        # Handle SSH-style URLs: git@github.com:owner/repo.git
+        ssh_match = re.match(r"^git@[\w.-]+:(.+)$", repository_url)
+        if ssh_match:
+            repository_url = ssh_match.group(1)
+
+        # Strip protocol and domain if present (https://github.com/, http://, etc.)
+        repository_url = re.sub(r"^(https?://)?([\w.-]+\.)?github\.com/", "", repository_url)
+
+        # Strip trailing slashes
+        repository_url = repository_url.strip("/")
+
+        # Remove trailing .git extension
+        repository_url = re.sub(r"\.git$", "", repository_url)
+
+        parts = repository_url.split("/")
+
+        if len(parts) < 2 or not parts[0] or not parts[1]:
+            raise ValueError(f"Invalid repository URL format: {context.repo_url}")
+
+        owner, repo = parts[0], parts[1]
+
+        return owner, repo
 
     def get_repository(self) -> dict:
         """Fetches the repository metadata from the GitHub API."""
