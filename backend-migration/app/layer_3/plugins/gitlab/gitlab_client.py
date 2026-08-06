@@ -39,6 +39,15 @@ class GitLabRepositoryItem(RepositoryItem):
     def is_dir(self) -> bool:
         return self._raw["type"] == "tree"
 
+    def get_html_url(self, client: GitPlatformClient) -> str | None:
+        repo = client.get_repository_name()
+        owner = client.get_repository_owner()
+        defbra = client.get_default_branch()
+        fname = self._raw.get('path') or self._raw.get('file_path')
+        if repo and owner and defbra and fname:
+            return f"https://gitlab.com/{owner}/{repo}/-/tree/{defbra}/{fname}?ref_type=heads"
+        return None
+
 class GitLabRepositoryFile(GitLabRepositoryItem, RepositoryFile):
     def get_content(self) -> str | None:
         raw_content = self._raw.get("content")
@@ -200,7 +209,7 @@ class GitLabClient(GitPlatformClient):
             raise
 
         raw_entries = response.json()
-        return [GitLabRepositoryFile(entry) for entry in raw_entries]
+        return [GitLabRepositoryItem(entry) for entry in raw_entries]
 
     def _fetch_file(self, path: str, ref: str | None = None) -> dict:
         """Fetches a single file's metadata and decoded content via GitLab's files API.

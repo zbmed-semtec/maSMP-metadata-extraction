@@ -662,3 +662,167 @@ class GitPlatformDownloadUrlExtractor(GitPlatformBaseExtractor):
             state.metadata_collector.collect("Platform API", "https://schema.org/codeRepository", download_url, 0.95)
             state.metadata_collector.collect("Platform API", 'https://codemeta.github.io/terms/codeRepository', download_url, 0.95)
         return state
+
+
+class GitPlatformDeveloperDocumentationExtractor(GitPlatformBaseExtractor):
+    """schema:developerDocumentation - looks for developer-facing documentation files such as
+    HACKING.md, DEVELOPERS.md, CONTRIBUTING.md, etc."""
+
+    extracts = {'https://codemeta.github.io/terms/developerDocumentation'}
+
+    developer_doc_filenames = {
+        'hacking.md',
+        'hacking.rst',
+        'hacking.txt',
+        'hacking',
+        'developers.md',
+        'developers.rst',
+        'developers.txt',
+        'developers',
+        'developer.md',
+        'developer.rst',
+        'developer.txt',
+        'developer',
+        'contributing.md',
+        'contributing.rst',
+        'contributing.txt',
+        'contributing',
+        'development.md',
+        'development.rst',
+        'development.txt',
+        'development',
+    }
+
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        found = []
+        for entry in client.list_contents():
+            if entry.name.lower() in self.developer_doc_filenames and not entry.is_dir:
+                doc_file = client.get_file(entry.path)
+                html_url = doc_file.get_html_url(client)
+                if html_url:
+                    found.append(html_url)
+        if len(found) > 0:
+            state.metadata_collector.collect("Pattern", 'https://codemeta.github.io/terms/developerDocumentation', found, 0.85)
+        return state
+
+class GitPlatformDocumentationExtractor(GitPlatformBaseExtractor):
+    """schema:documentation - looks for general user-facing documentation, either as
+    dedicated files/directories in the repo (docs/, DOCUMENTATION.md, mkdocs.yml, ...)
+    or as links to external documentation sites referenced in the README."""
+
+    extracts = {'https://schema.org/documentation'}
+
+    # top-level files that indicate documentation
+    doc_filenames = {
+        'documentation.md',
+        'documentation.rst',
+        'documentation.txt',
+        'documentation',
+        'docs.md',
+        'docs.rst',
+        'docs.txt',
+        'usage.md',
+        'usage.rst',
+        'usage.txt',
+        'guide.md',
+        'guide.rst',
+        'manual.md',
+        'manual.rst',
+    }
+
+    # directories whose mere presence strongly suggests documentation
+    doc_dirnames = {
+        'docs',
+        'doc',
+        'documentation',
+        'wiki',
+        'guides',
+        'manual',
+    }
+
+    # config files that indicate a documentation-generator/site is in use
+    doc_tool_filenames = {
+        'mkdocs.yml',
+        'mkdocs.yaml',
+        '_config.yml',       # Jekyll
+        'book.toml',         # mdBook
+        'docusaurus.config.js',
+        'docusaurus.config.ts',
+        '.readthedocs.yml',
+        '.readthedocs.yaml',
+        'vuepress.config.js',
+        'nextra.config.js',
+        'typedoc.json',
+        'jsdoc.json',
+        '.jsdoc.json',
+    }
+
+    # known documentation hosting domains, used to scan README links
+    doc_url_pattern = re.compile(
+        r'https?://[^\s\)"\']*'
+        r'(?:readthedocs\.(?:io|org)'
+        r'|\.github\.io'
+        r'|docs\.rs'
+        r'|pkg\.go\.dev'
+        r'|godoc\.org'
+        r'|gitbook\.(?:io|com)'
+        r'|docusaurus\.io'
+        r'|readme\.io'
+        r'|/docs?(?:/|$|[\?#])'
+        r'|/wiki(?:/|$|[\?#])'
+        r'|/documentation(?:/|$|[\?#])'
+        r')[^\s\)"\']*',
+        re.IGNORECASE
+    )
+
+    def extract(self, context, state):
+        client = self.get_client(context, state)
+        found = set()
+
+        # 1. Look for dedicated documentation files/directories at repo root
+        for entry in client.list_contents():
+            name_lower = entry.name.lower()
+            if entry.is_dir and name_lower in self.doc_dirnames:
+                dir_url = entry.get_html_url(client)
+                if dir_url:
+                    found.add(dir_url)
+            elif not entry.is_dir and (
+                name_lower in self.doc_filenames or name_lower in self.doc_tool_filenames
+            ):
+                doc_file = client.get_file(entry.path)
+                html_url = doc_file.get_html_url(client)
+                if html_url:
+                    found.add(html_url)
+
+        if found:
+            state.metadata_collector.collect(
+                "Pattern", "https://schema.org/documentation", list(found), 0.85
+            )
+
+        # 2. Scan README(s) for links to external documentation sites
+        readme_doc_urls = set()
+        for readme in client.get_readme_candidate_files():
+            content = readme.get_content()
+            if not content:
+                continue
+            for match in self.doc_url_pattern.finditer(content):
+                url = match.group(0).rstrip('.,;:)')
+                readme_doc_urls.add(url)
+
+        if readme_doc_urls:
+            state.metadata_collector.collect(
+                "README", "https://schema.org/documentation", list(readme_doc_urls), 0.7
+            )
+
+        # 3. Check CFF for an explicit documentation/url-like field, if present
+        citations = client.get_parsed_citations()
+        for cff in citations:
+            # non-standard, but sometimes present in the wild
+            doc_url = cff.get('documentation') or cff.get('docs-url')
+            if doc_url:
+                state.metadata_collector.collect(
+                    "CFF File", "https://schema.org/documentation", doc_url, 0.75
+                )
+
+        return state

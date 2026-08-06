@@ -28,6 +28,8 @@ from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtract
 ,GitPlatformSoftwareRequirementExtractor
 ,GitPlatformLicenseCopyrightHolderExtractor
 ,GitPlatformStorageReqExtractor
+,GitPlatformDeveloperDocumentationExtractor
+,GitPlatformDocumentationExtractor
 ,GitPlatformDownloadUrlExtractor)
 
 class CodebergNameExtractor(GitPlatformNameExtractor, CodebergBaseExtractor):
@@ -171,6 +173,14 @@ class CodebergStorageReqExtractor(GitPlatformStorageReqExtractor, CodebergBaseEx
 class CodebergDownloadUrlExtractor(GitPlatformDownloadUrlExtractor, CodebergBaseExtractor):
     """extracts the copyright holder and year from the license file"""
     name = "codeberg.codeberg_download_url_extractor"
+
+class CodebergDeveloperDocumentationExtractor(GitPlatformDeveloperDocumentationExtractor, CodebergBaseExtractor):
+    """extracts the copyright holder and year from the license file"""
+    name = "codeberg.developer_documentation_extractor"
+
+class CodebergDocumentationExtractor(GitPlatformDocumentationExtractor, CodebergBaseExtractor):
+    """extracts the copyright holder and year from the license file"""
+    name = "codeberg.documentation_extractor"
 
 class CodebergCodemetaExtractor(GitPlatformCodemetaExtractor, CodebergBaseExtractor):
     """extracts metadata from a repository's codemeta.json file"""

@@ -47,6 +47,9 @@ class RepositoryItem(ABC):
     def is_dir(self) -> bool:
         pass
 
+    @abstractmethod
+    def get_html_url(client : "GitPlatformClient") -> str | None:
+        ...
 
 class RepositoryFile(RepositoryItem, ABC):
     """Thin wrapper around a platform's raw JSON representation of a single
@@ -61,10 +64,6 @@ class RepositoryFile(RepositoryItem, ABC):
         """Returns the file's decoded text content, or None if the file is
         binary / not text-decodable."""
         pass
-
-    @abstractmethod
-    def get_html_url(client : "GitPlatformClient") -> str | None:
-        ...
 
 class FileNotFoundOnPlatformError(Exception):
     """Raised when a requested file path does not exist / is not a file on the platform."""

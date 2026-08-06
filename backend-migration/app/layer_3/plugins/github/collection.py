@@ -4,7 +4,8 @@ README files, and license files."""
 
 from app.layer_3.plugins.github.github_base_extractor import GitHubBaseExtractor
 from app.layer_3.plugins.shared.git_platform_codemeta_extractor import GitPlatformCodemetaExtractor
-from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtractor
+from app.layer_3.plugins.shared.collection import (
+    GitPlatformDescriptionExtractor
     ,GitPlatformNameExtractor
     ,GitPlatformUrlExtractor
     ,GitPlatformCodeRepositoryExtractor
@@ -28,7 +29,10 @@ from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtract
     ,GitPlatformSoftwareRequirementExtractor
     ,GitPlatformLicenseCopyrightHolderExtractor
     ,GitPlatformStorageReqExtractor
-    ,GitPlatformDownloadUrlExtractor)
+    ,GitPlatformDownloadUrlExtractor
+    ,GitPlatformDeveloperDocumentationExtractor
+    ,GitPlatformDocumentationExtractor
+    )
 
 class GitHubNameExtractor(GitPlatformNameExtractor, GitHubBaseExtractor):
     """schema:name"""
@@ -187,6 +191,14 @@ class GitHubStorageReqExtractor(GitPlatformStorageReqExtractor, GitHubBaseExtrac
 class GitHubDownloadUrlExtractor(GitPlatformDownloadUrlExtractor, GitHubBaseExtractor):
     """extracts the copyright holder and year from the license file"""
     name = "github.GitHub_download_url_extractor"
+
+class GitHubDeveloperDocumentationExtractor(GitPlatformDeveloperDocumentationExtractor, GitHubBaseExtractor):
+    """extracts the copyright holder and year from the license file"""
+    name = "github.developer_documentation_extractor"
+
+class GitHubDocumentationExtractor(GitPlatformDocumentationExtractor, GitHubBaseExtractor):
+    """extracts the copyright holder and year from the license file"""
+    name = "github.documentation_extractor"
 
 class GitHubCodemetaExtractor(GitPlatformCodemetaExtractor, GitHubBaseExtractor):
     """extracts metadata from a repository's codemeta.json file"""

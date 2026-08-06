@@ -31,6 +31,8 @@ class GitHubRepositoryItem(RepositoryItem):
     def is_dir(self) -> bool:
         return self._raw["type"] == "dir"
 
+    def get_html_url(self, _client) -> str | None:
+        return self._raw.get("html_url")
 
 class GitHubRepositoryFile(GitHubRepositoryItem, RepositoryFile):
     def get_content(self) -> str | None:

@@ -305,7 +305,7 @@ slots:
     required: false
     range: uri
     multivalued: true
-    slot_uri: maSMP:developerDocumentation
+    slot_uri: codemeta:developerDocumentation
 
   learningResource:
     description: URL to learning resources, tutorials, or training materials

@@ -24,6 +24,8 @@ from app.layer_3.plugins.shared.collection import (GitPlatformDescriptionExtract
 ,GitPlatformSoftwareRequirementExtractor
 ,GitPlatformLicenseCopyrightHolderExtractor
 ,GitPlatformStorageReqExtractor
+,GitPlatformDocumentationExtractor
+,GitPlatformDeveloperDocumentationExtractor
 ,GitPlatformDownloadUrlExtractor)
 
 class GitLabNameExtractor(GitPlatformNameExtractor, GitLabBaseExtractor):
@@ -166,6 +168,18 @@ class GitLabLicenseCopyrightHolderExtractor(GitPlatformLicenseCopyrightHolderExt
 class GitLabStorageRequirementExtractor(GitPlatformStorageReqExtractor, GitLabBaseExtractor):
     """extracts storage requirements from repository size"""
     name = "gitlab.storage_requirement_extractor"
+
+class GitLabDownloadUrlExtractor(GitPlatformDownloadUrlExtractor, GitLabBaseExtractor):
+    """extracts the download URL for the repository's default branch as a zip file"""
+    name = "gitlab.download_url_extractor"
+
+class GitLabDeveloperDocumentationExtractor(GitPlatformDeveloperDocumentationExtractor, GitLabBaseExtractor):
+    """extracts the developer documentation URL for the repository"""
+    name = "gitlab.developer_documentation_extractor"
+
+class GitLabDocumentationExtractor(GitPlatformDocumentationExtractor, GitLabBaseExtractor):
+    """extracts the documentation URL for the repository"""
+    name = "gitlab.documentation_extractor"
 
 class GitLabCodemetaExtractor(GitPlatformCodemetaExtractor, GitLabBaseExtractor):
     """extracts metadata from a repository's codemeta.json file"""
