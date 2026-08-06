@@ -15,13 +15,16 @@ class LinkMlSchemaRegistry(BaseSchemaRegistry):
 
         loaded = []
         for path in directory.glob("*.yaml"):
-            view = SchemaView(str(path))
-            for class_name in view.all_classes():
-                schema_name = view.schema.name
-                name = f"{schema_name.lower()}:{class_name.lower()}"
-                schema = LinkMlSchema(view, class_name)
-                self.schemas[name] = schema
+            try:
+                view = SchemaView(str(path))
+                for class_name in view.all_classes():
+                    schema_name = view.schema.name
+                    name = f"{schema_name.lower()}:{class_name.lower()}"
+                    schema = LinkMlSchema(view, class_name)
+                    self.schemas[name] = schema
                 loaded.append(name)
+            except Exception as e:
+                print(f"Error loading schema from {path}: {e}")
 
         return loaded
 

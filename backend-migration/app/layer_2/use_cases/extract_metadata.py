@@ -48,7 +48,7 @@ class ExtractMetadataUseCase:
         self,
         jsonld_builder: JSONLDBuilderBase,
         pipeline_composer: Optional[PipelineComposer] = None,
-        pipeline_runner: Optional[ExtractionPipelineRunner] = None,
+        pipeline_runner: Optional[PipelineRunner] = None,
         extraction_metadata_collector: Optional[MetadataCollector] = None,
     ):
         """
@@ -61,8 +61,8 @@ class ExtractMetadataUseCase:
             extraction_metadata_collector: Optional collector for source/confidence per property (for UI)
         """
         self.jsonld_builder = jsonld_builder
-        self.pipeline_composer = pipeline_composer or PipelineComposer()
-        self.pipeline_runner = pipeline_runner or ExtractionPipelineRunner()
+        self.pipeline_composer = pipeline_composer
+        self.pipeline_runner = pipeline_runner
         self.extraction_metadata_collector = extraction_metadata_collector
     
     def execute(
