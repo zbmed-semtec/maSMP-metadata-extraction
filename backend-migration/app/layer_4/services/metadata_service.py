@@ -2,28 +2,36 @@
 Metadata extraction service: wires adapters and use case, runs extraction.
 Single place for composition; endpoints call this instead of building the use case themselves.
 """
+import os
 from datetime import datetime
 from typing import Optional, Dict, Any, Callable, List
 
-from app.layer_3.composers import PipelineComposer
+from app.layer_3.composers.plugin_pipeline_composer import PluginPipelineComposer
 from app.layer_3.builders.jsonld_builder import JSONLDBuilder
-from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
+from app.layer_1.metadata_collector.metadata_collector import MetadataCollector
 from app.layer_3.steps.contracts import ExtractionPipelineRunner
 from app.layer_2.use_cases.extract_metadata import ExtractMetadataUseCase
 from app.layer_4.builders.enriched_metadata import build_enriched_metadata
-
+from app.layer_3.schemas.linkml.linkml_schema_registry import LinkMlSchemaRegistry
 
 # Stateless components (created once, reused)
 _jsonld_builder = JSONLDBuilder()
-_pipeline_composer = PipelineComposer()
+_pipeline_composer = PluginPipelineComposer()
 _pipeline_runner = ExtractionPipelineRunner()
+_schema_registry = LinkMlSchemaRegistry()
+
+def initialize():
+    schema_dir = os.environ.get("COMET_SCHEMAS_PATH")
+    if schema_dir is None:
+        raise RuntimeError("COMET_SCHEMAS_PATH environment variable not set!")
+    _schema_registry.load(schema_dir)
 
 
 def _create_extraction_use_case(
     repo_url: str,
     access_token: Optional[str],
     with_enrichment: bool,
-) -> tuple[ExtractMetadataUseCase, Optional[InMemoryExtractionMetadataCollector]]:
+) -> tuple[ExtractMetadataUseCase, Optional[MetadataCollector]]:
     """
     Internal helper to create a fully-wired ExtractMetadataUseCase plus optional collector.
 
@@ -31,7 +39,7 @@ def _create_extraction_use_case(
     (plain extraction, extraction with progress, FAIRness assessment, etc.)
     can all share the same composition.
     """
-    collector = InMemoryExtractionMetadataCollector() if with_enrichment else None
+    collector = MetadataCollector()
 
     use_case = ExtractMetadataUseCase(
         jsonld_builder=_jsonld_builder,
@@ -45,9 +53,10 @@ def _create_extraction_use_case(
 
 def run_extraction(
     repo_url: str,
-    schema: str,
+    schema_name: str,
     access_token: Optional[str],
     with_enrichment: bool,
+    schema_class: str = "SoftwareSourceCode",
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """
     Run metadata extraction once.
@@ -61,13 +70,14 @@ def run_extraction(
         with_enrichment=with_enrichment,
     )
 
+    schema = _schema_registry.get(schema_name, schema_class)
+
     result = use_case.execute(repo_url=repo_url, schema=schema, access_token=access_token)
     jsonld_document = result.jsonld_document
 
-    if with_enrichment and result.extraction_metadata:
+    if with_enrichment:
         enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
+            collector,
             schema,
         )
         return jsonld_document, enriched
@@ -76,10 +86,11 @@ def run_extraction(
 
 def run_extraction_with_progress(
     repo_url: str,
-    schema: str,
+    schema_name: str,
     access_token: Optional[str],
     with_enrichment: bool,
     progress_callback: Optional[Callable[[str, str], None]] = None,
+    schema_class: str = "SoftwareSourceCode",
 ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """
     Run metadata extraction with optional progress callbacks.
@@ -96,6 +107,8 @@ def run_extraction_with_progress(
         with_enrichment=with_enrichment,
     )
 
+    schema = _schema_registry.get(schema_name, schema_class)
+
     result = use_case.execute(
         repo_url=repo_url,
         schema=schema,
@@ -104,10 +117,9 @@ def run_extraction_with_progress(
     )
     jsonld_document = result.jsonld_document
 
-    if with_enrichment and result.extraction_metadata:
+    if with_enrichment:
         enriched = build_enriched_metadata(
-            jsonld_document,
-            result.extraction_metadata,
+            collector,
             schema,
         )
         return jsonld_document, enriched
@@ -116,9 +128,10 @@ def run_extraction_with_progress(
 
 def run_single_property_extraction(
     repo_url: str,
-    schema: str,
+    schema_name: str,
     access_token: Optional[str],
     property_name: str,
+    schema_class: str = "SoftwareSourceCode",
 ) -> tuple[str, List[Dict[str, Any]]]:
     """
     Run extraction with enrichment and project down to a single property's
@@ -127,11 +140,14 @@ def run_single_property_extraction(
     Returns:
         (extracted_at_iso, [ {profile, value, source, confidence}, ... ])
     """
+    schema = _schema_registry.get(schema_name, schema_class)
+
     jsonld_document, enriched = run_extraction(
         repo_url=repo_url,
         schema=schema,
         access_token=access_token,
         with_enrichment=True,
+        schema_class=schema_class,
     )
 
     extracted_at = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"

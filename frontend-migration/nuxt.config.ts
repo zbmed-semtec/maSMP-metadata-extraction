@@ -8,6 +8,22 @@ export default defineNuxtConfig({
   // Explicitly set Nitro compatibility date to silence Nuxt's warning
   compatibilityDate: '2026-01-28',
   
+  vite: {
+    build: {
+      sourcemap: true,
+      minify: false,  // 👈 disables mangling/minification
+    },
+    esbuild: {
+    minifyIdentifiers: false,
+    minifySyntax: false,
+    minifyWhitespace: false,
+  }
+  },
+
+  css: {
+    devSourcemap: true
+  },
+
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt'

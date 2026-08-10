@@ -1,0 +1,531 @@
+id: https://w3id.org/codemeta/schema
+name: codemeta
+title: CodeMeta Schema (LinkML)
+description: >-
+  LinkML schema for CodeMeta 3.1 software metadata,
+  aligned with schema.org and the maSMP profile.
+version: "3.1"
+license: https://spdx.org/licenses/Apache-2.0.html
+
+prefixes:
+  linkml:    https://w3id.org/linkml/
+  schema:    https://schema.org/
+  codemeta:  https://codemeta.github.io/terms/
+  spdx:      https://spdx.org/licenses/
+  xsd:       http://www.w3.org/2001/XMLSchema#
+
+default_prefix: codemeta
+default_range: string
+
+# ──────────────────────────────────────────────
+# SUBSETS  (map to required / recommended / optional)
+# ──────────────────────────────────────────────
+subsets:
+  required:
+    description: Fields that must be present for a valid CodeMeta record
+  recommended:
+    description: Fields strongly encouraged by the CodeMeta / maSMP profile
+  optional:
+    description: Fields that may be included for richer metadata
+
+# ──────────────────────────────────────────────
+# CLASSES
+# ──────────────────────────────────────────────
+classes:
+
+  Agent:
+    description: >-
+      Abstract base for any person or organization that can
+      take a role in relation to a software artifact.
+    abstract: true
+    slots:
+      - name
+      - email
+      - url
+      - identifier
+
+  Person:
+    description: A human individual.
+    is_a: Agent
+    class_uri: schema:Person
+    slots:
+      - givenName
+      - familyName
+      - affiliation
+
+  Organization:
+    description: An organization or institution.
+    is_a: Agent
+    class_uri: schema:Organization
+    slots:
+      - legalName
+      - affiliation
+
+  FundingAgency:
+    description: An organization acting specifically as a funder.
+    is_a: Organization
+    slots:
+      - fundingScheme
+
+  SoftwareSourceCode:
+    description: >-
+      A software project described according to the CodeMeta 3.1
+      specification and the maSMP profile.
+    class_uri: schema:SoftwareSourceCode
+    tree_root: true
+    slots:
+      # ── required ──────────────────────────────
+      - name
+      - description
+      - codeRepository
+      - version
+      - programmingLanguage
+      # ── agent roles ───────────────────────────
+      - author
+      - contributor
+      - maintainer
+      - copyrightHolder
+      - funder
+      - provider
+      - publisher
+      - sponsor
+      - editor
+      # ── licensing & identity ──────────────────
+      - license
+      - identifier
+      - url
+      - keywords
+      # ── dates ─────────────────────────────────
+      - dateCreated
+      - dateModified
+      - datePublished
+      # ── links & documentation ─────────────────
+      - readme
+      - releaseNotes
+      - issueTracker
+      - discussionUrl
+      - buildInstructions
+      - referencePublication
+      - downloadUrl
+      - archivedAt
+      # ── runtime & requirements ────────────────
+      - softwareRequirements
+      - operatingSystem
+      - memoryRequirements
+      - processorRequirements
+      - storageRequirements
+      # ── provenance & status ───────────────────
+      - developmentStatus
+      - isPartOf
+      - hasPart
+      - citation
+      - copyrightYear
+
+    slot_usage:
+      name:
+        required: true
+        in_subset:
+          - required
+      description:
+        required: true
+        in_subset:
+          - required
+      codeRepository:
+        required: true
+        in_subset:
+          - required
+      version:
+        in_subset:
+          - required
+      programmingLanguage:
+        in_subset:
+          - required
+      author:
+        required: true
+        in_subset:
+          - required
+      license:
+        in_subset:
+          - recommended
+      identifier:
+        in_subset:
+          - recommended
+      keywords:
+        in_subset:
+          - recommended
+      readme:
+        in_subset:
+          - recommended
+      releaseNotes:
+        in_subset:
+          - recommended
+      developmentStatus:
+        in_subset:
+          - recommended
+      contributor:
+        in_subset:
+          - recommended
+      maintainer:
+        in_subset:
+          - recommended
+      funder:
+        in_subset:
+          - recommended
+      citation:
+        in_subset:
+          - recommended
+      archivedAt:
+        in_subset:
+          - recommended
+      issueTracker:
+        in_subset:
+          - optional
+      discussionUrl:
+        in_subset:
+          - optional
+      buildInstructions:
+        in_subset:
+          - optional
+      referencePublication:
+        in_subset:
+          - optional
+      downloadUrl:
+        in_subset:
+          - optional
+      softwareRequirements:
+        in_subset:
+          - optional
+      operatingSystem:
+        in_subset:
+          - optional
+      memoryRequirements:
+        in_subset:
+          - optional
+      processorRequirements:
+        in_subset:
+          - optional
+      storageRequirements:
+        in_subset:
+          - optional
+      provider:
+        in_subset:
+          - optional
+      publisher:
+        in_subset:
+          - optional
+      sponsor:
+        in_subset:
+          - optional
+      editor:
+        in_subset:
+          - optional
+      copyrightHolder:
+        in_subset:
+          - optional
+      copyrightYear:
+        in_subset:
+          - optional
+      dateCreated:
+        in_subset:
+          - optional
+      dateModified:
+        in_subset:
+          - optional
+      datePublished:
+        in_subset:
+          - optional
+      isPartOf:
+        in_subset:
+          - optional
+      hasPart:
+        in_subset:
+          - optional
+
+# ──────────────────────────────────────────────
+# SLOTS
+# ──────────────────────────────────────────────
+slots:
+
+  # ── shared / Agent slots ────────────────────
+
+  name:
+    slot_uri: schema:name
+    description: The name of the entity.
+    range: string
+
+  email:
+    slot_uri: schema:email
+    description: Email address.
+    range: string
+
+  url:
+    slot_uri: schema:url
+    description: URL of the entity.
+    range: uri
+
+  identifier:
+    slot_uri: schema:identifier
+    description: >-
+      A formal identifier for the entity, e.g. a DOI or ORCID.
+    range: string
+    multivalued: true
+
+  givenName:
+    slot_uri: schema:givenName
+    description: First / given name of a person.
+    range: string
+
+  familyName:
+    slot_uri: schema:familyName
+    description: Last / family name of a person.
+    range: string
+
+  affiliation:
+    slot_uri: schema:affiliation
+    description: Organization the agent is affiliated with.
+    range: Organization
+    multivalued: true
+    inlined_as_list: true
+
+  legalName:
+    slot_uri: schema:legalName
+    description: Official legal name of the organization.
+    range: string
+
+  fundingScheme:
+    slot_uri: schema:fundingScheme
+    description: >-
+      The funding programme or scheme under which support was provided,
+      e.g. "Horizon Europe".
+    range: string
+
+  # ── Agent-role slots (on SoftwareSourceCode) ─
+
+  author:
+    slot_uri: schema:author
+    description: The author(s) of the software.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  contributor:
+    slot_uri: schema:contributor
+    description: Additional contributor(s) beyond the listed authors.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  maintainer:
+    slot_uri: codemeta:maintainer
+    description: Person or organization currently maintaining the software.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  copyrightHolder:
+    slot_uri: schema:copyrightHolder
+    description: Holder(s) of the copyright.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  funder:
+    slot_uri: schema:funder
+    description: Organization or person that funded the software development.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  provider:
+    slot_uri: schema:provider
+    description: Organization or person providing the software as a service.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  publisher:
+    slot_uri: schema:publisher
+    description: Organization or person that published the software.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  sponsor:
+    slot_uri: schema:sponsor
+    description: Sponsor(s) of the software project.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  editor:
+    slot_uri: schema:editor
+    description: Editor(s) of the software documentation or release.
+    range: Agent
+    multivalued: true
+    inlined_as_list: true
+
+  # ── SoftwareSourceCode core slots ───────────
+
+  description:
+    slot_uri: schema:description
+    description: A short description of the software.
+    range: string
+
+  codeRepository:
+    slot_uri: codemeta:codeRepository
+    description: URL of the source code repository, e.g. a GitHub URL.
+    range: uri
+
+  version:
+    slot_uri: schema:version
+    description: The version of the software, e.g. "1.4.2".
+    range: string
+
+  programmingLanguage:
+    slot_uri: schema:programmingLanguage
+    description: Programming language(s) used in the software.
+    range: string
+    multivalued: true
+
+  license:
+    slot_uri: schema:license
+    description: >-
+      License for the software. Prefer an SPDX identifier URI,
+      e.g. https://spdx.org/licenses/MIT.html
+    range: uri
+    multivalued: true
+
+  keywords:
+    slot_uri: schema:keywords
+    description: Keywords or tags describing the software.
+    range: string
+    multivalued: true
+
+  # ── dates ────────────────────────────────────
+
+  dateCreated:
+    slot_uri: schema:dateCreated
+    description: Date the software was first created (ISO 8601).
+    range: date
+
+  dateModified:
+    slot_uri: schema:dateModified
+    description: Date the software was last modified (ISO 8601).
+    range: date
+
+  datePublished:
+    slot_uri: schema:datePublished
+    description: Date the software was first published (ISO 8601).
+    range: date
+
+  copyrightYear:
+    slot_uri: schema:copyrightYear
+    description: Year of copyright.
+    range: integer
+
+  # ── links & documentation ────────────────────
+
+  readme:
+    slot_uri: codemeta:readme
+    description: URL pointing to the README file.
+    range: uri
+
+  releaseNotes:
+    slot_uri: codemeta:releaseNotes
+    description: URL or text describing changes in this release.
+    range: string
+
+  issueTracker:
+    slot_uri: codemeta:issueTracker
+    description: URL of the issue tracker.
+    range: uri
+
+  discussionUrl:
+    slot_uri: schema:discussionUrl
+    description: URL of a forum or discussion channel for the software.
+    range: uri
+
+  buildInstructions:
+    slot_uri: codemeta:buildInstructions
+    description: URL pointing to build instructions.
+    range: uri
+
+  referencePublication:
+    slot_uri: codemeta:referencePublication
+    description: >-
+      Academic publication(s) that describe or should be cited
+      for this software.
+    range: string
+    multivalued: true
+
+  downloadUrl:
+    slot_uri: schema:downloadUrl
+    description: URL where the software can be downloaded.
+    range: uri
+    multivalued: true
+
+  archivedAt:
+    slot_uri: schema:archivedAt
+    description: >-
+      URL of a permanent archive of the software,
+      e.g. a Zenodo or Software Heritage URL.
+    range: uri
+
+  citation:
+    slot_uri: schema:citation
+    description: >-
+      A citation or reference to a work that should be used when
+      citing this software.
+    range: string
+    multivalued: true
+
+  # ── runtime & requirements ───────────────────
+
+  softwareRequirements:
+    slot_uri: schema:softwareRequirements
+    description: Required software dependencies.
+    range: string
+    multivalued: true
+
+  operatingSystem:
+    slot_uri: schema:operatingSystem
+    description: Operating system(s) supported by the software.
+    range: string
+    multivalued: true
+
+  memoryRequirements:
+    slot_uri: schema:memoryRequirements
+    description: Minimum memory required to run the software.
+    range: string
+
+  processorRequirements:
+    slot_uri: schema:processorRequirements
+    description: CPU or processor requirements.
+    range: string
+
+  storageRequirements:
+    slot_uri: schema:storageRequirements
+    description: Minimum storage space required.
+    range: string
+
+  # ── provenance & status ──────────────────────
+
+  developmentStatus:
+    slot_uri: codemeta:developmentStatus
+    description: >-
+      Current development status using a controlled vocabulary,
+      e.g. a repostatus.org badge URI.
+    range: string
+
+  isPartOf:
+    slot_uri: schema:isPartOf
+    description: >-
+      A larger software suite or project this software is part of.
+    range: uri
+    multivalued: true
+
+  hasPart:
+    slot_uri: schema:hasPart
+    description: A sub-component or module that is part of this software.
+    range: uri
+    multivalued: true

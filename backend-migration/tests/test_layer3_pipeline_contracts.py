@@ -7,8 +7,8 @@ from app.layer_3.composers import PipelineComposer
 from app.layer_3.steps.contracts import (
     ExtractionPipeline,
     ExtractionPipelineRunner,
-    StepContext,
-    StepState,
+    ExtractionContext,
+    ExtractionState,
 )
 from app.layer_3.steps.extract_steps.services.files.citation import ExtractCitationTitleStep
 from app.layer_3.steps.extract_steps.adapters.platform.common import CommonPlatformPreambleStep
@@ -25,7 +25,7 @@ class _AppendStep:
     name: str
     token: str
 
-    def run(self, context: StepContext, state: StepState) -> StepState:
+    def run(self, context: ExtractionContext, state: ExtractionState) -> ExtractionState:
         state.data.setdefault("order", []).append(self.token)
         return state
 
@@ -38,8 +38,8 @@ def test_pipeline_runner_executes_steps_in_order():
         )
     )
     runner = ExtractionPipelineRunner()
-    context = StepContext(repo_url="https://github.com/o/r", domain="software", schema="maSMP")
-    state = StepState(metadata=SoftwareMetadata())
+    context = ExtractionContext(repo_url="https://github.com/o/r", domain="software", schema="maSMP")
+    state = ExtractionState(metadata=SoftwareMetadata())
 
     result = runner.run(pipeline, context, state)
 
@@ -70,13 +70,13 @@ def test_pipeline_platform_steps_populate_state():
     composer = PipelineComposer()
     pipeline = composer.compose(domain="software", schema="maSMP", platform="gitlab")
     runner = ExtractionPipelineRunner()
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://gitlab.com/org/repo/",
         domain="software",
         schema="maSMP",
         platform="gitlab",
     )
-    state = StepState(metadata=SoftwareMetadata(), data={"cff_content": "title: demo"})
+    state = ExtractionState(metadata=SoftwareMetadata(), data={"cff_content": "title: demo"})
 
     result = runner.run(pipeline, context, state)
 
@@ -91,25 +91,25 @@ def test_pipeline_platform_file_discovery_differs_by_platform():
     github_pipeline = composer.compose(domain="software", schema="maSMP", platform="github")
     github_result = runner.run(
         github_pipeline,
-        StepContext(
+        ExtractionContext(
             repo_url="https://github.com/org/repo",
             domain="software",
             schema="maSMP",
             platform="github",
         ),
-        StepState(metadata=SoftwareMetadata(), data={"cff_content": "title: demo"}),
+        ExtractionState(metadata=SoftwareMetadata(), data={"cff_content": "title: demo"}),
     )
 
     gitlab_pipeline = composer.compose(domain="software", schema="maSMP", platform="gitlab")
     gitlab_result = runner.run(
         gitlab_pipeline,
-        StepContext(
+        ExtractionContext(
             repo_url="https://gitlab.com/org/repo",
             domain="software",
             schema="maSMP",
             platform="gitlab",
         ),
-        StepState(metadata=SoftwareMetadata(), data={"cff_content": "title: demo"}),
+        ExtractionState(metadata=SoftwareMetadata(), data={"cff_content": "title: demo"}),
     )
 
     github_readme = github_result.data["metadata_file_candidates"]["readme"][0]
@@ -128,13 +128,13 @@ def test_pipeline_resolves_reachable_metadata_file_links():
 
     result = runner.run(
         pipeline,
-        StepContext(
+        ExtractionContext(
             repo_url="https://github.com/org/repo",
             domain="software",
             schema="codemeta",
             platform="github",
         ),
-        StepState(
+        ExtractionState(
             metadata=SoftwareMetadata(),
             data={"cff_content": "title: demo", "is_file_reachable_fn": _is_reachable},
         ),
@@ -162,13 +162,13 @@ def test_pipeline_discovers_github_requirements_links_from_state_callbacks():
 
     result = runner.run(
         pipeline,
-        StepContext(
+        ExtractionContext(
             repo_url="https://github.com/org/repo",
             domain="software",
             schema="maSMP",
             platform="github",
         ),
-        StepState(
+        ExtractionState(
             metadata=SoftwareMetadata(),
             data={
                 "cff_content": "title: demo",
@@ -197,13 +197,13 @@ def test_pipeline_discovers_gitlab_requirements_links_from_state_callbacks():
 
     result = runner.run(
         pipeline,
-        StepContext(
+        ExtractionContext(
             repo_url="https://gitlab.com/org/repo",
             domain="software",
             schema="codemeta",
             platform="gitlab",
         ),
-        StepState(
+        ExtractionState(
             metadata=SoftwareMetadata(),
             data={
                 "cff_content": "title: demo",

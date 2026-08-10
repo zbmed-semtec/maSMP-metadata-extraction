@@ -3,10 +3,39 @@ FAIRness evaluator – computes FAIR scores from JSON-LD and SoftwareMetadata.
 """
 from collections import defaultdict
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal
+from dataclasses import dataclass
 
-from app.layer_1.entities.fair_assessment import FairnessIndicator, FairnessReport, FairPrinciple
-from app.layer_1.entities.software_metadata import SoftwareMetadata
+FairPrinciple = Literal["F", "A", "I", "R"]
+
+@dataclass(frozen=True)
+class FairnessIndicator:
+    """
+    Single FAIRness indicator result.
+
+    Each indicator contributes a score to one FAIR principle.
+    """
+
+    id: str
+    title: str
+    principle: FairPrinciple
+    score: float
+    details: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class FairnessReport:
+    """
+    Aggregated FAIRness assessment for a repository.
+    """
+
+    overall_score: float
+    findable: float
+    accessible: float
+    interoperable: float
+    reusable: float
+    indicators: List[FairnessIndicator]
+    model_version: str = "1.0.0"
 
 
 def _bool_to_score(value: bool) -> float:
@@ -74,7 +103,7 @@ def evaluate_fairness(jsonld_document: Dict[str, Any], schema: str) -> FairnessR
     return FairnessReport(overall_score=overall, findable=f_score, accessible=a_score, interoperable=i_score, reusable=r_score, indicators=indicators)
 
 
-def evaluate_fairness_from_metadata(metadata: SoftwareMetadata) -> FairnessReport:
+def evaluate_fairness_from_metadata(metadata: "SoftwareMetadata") -> FairnessReport:
     indicators: List[FairnessIndicator] = []
     indicators.append(FairnessIndicator(id="bp1_description_present", title="Description / README available", principle="F", score=_bool_to_score(bool(metadata.description or metadata.codemeta_readme)), details={"description_present": bool(metadata.description), "codemeta_readme_present": bool(metadata.codemeta_readme)}))
     identifier_values: List[str] = []

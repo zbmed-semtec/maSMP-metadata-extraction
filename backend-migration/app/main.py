@@ -5,7 +5,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
 from app.layer_4.endpoints import metadata
+import app.layer_4.services.metadata_service
 
+app.layer_4.services.metadata_service.initialize()
 
 app = FastAPI(
     title=settings.api_title,

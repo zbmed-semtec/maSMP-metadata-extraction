@@ -253,17 +253,24 @@ function parseValue(value: string): ValuePart[] {
     const raw = m[1]
     if (!raw) continue
     if (m.index > lastIndex) {
-      parts.push({ type: 'text', content: value.slice(lastIndex, m.index) })
+      const between = value.slice(lastIndex, m.index).trim()
+      if (between) {
+        parts.push({ type: 'text', content: between })
+      }
     }
     const href = raw.replace(/[.,;?!)]+$/, '')
     parts.push({ type: 'url', content: raw, href })
     lastIndex = re.lastIndex
   }
   if (lastIndex < value.length) {
-    parts.push({ type: 'text', content: value.slice(lastIndex) })
+    const remaining = value.slice(lastIndex).trim()
+    if (remaining) {
+      parts.push({ type: 'text', content: remaining })
+    }
   }
   return parts.length ? parts : [{ type: 'text', content: value }]
 }
+
 
 function isDescription(property: string): boolean {
   return (property || '').trim().toLowerCase() === 'description'

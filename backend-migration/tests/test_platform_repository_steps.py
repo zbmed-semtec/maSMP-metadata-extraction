@@ -1,7 +1,7 @@
 """Unit tests for platform repository core-field extract steps."""
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata
-from app.layer_3.steps.contracts import StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionContext, ExtractionState
 from app.layer_3.steps.extract_steps.adapters.platform.github.extract_github_repository_property_steps import (
     github_basic_info_steps,
 )
@@ -16,7 +16,7 @@ def test_extract_github_repository_property_steps_set_fields_and_records():
     def _record(field: str) -> None:
         calls.append(field)
 
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "repo_payload": {
@@ -27,7 +27,7 @@ def test_extract_github_repository_property_steps_set_fields_and_records():
             "record_field": _record,
         },
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="maSMP",
@@ -50,7 +50,7 @@ def test_extract_gitlab_repository_property_steps_set_fields_and_records():
     def _record(field: str) -> None:
         calls.append(field)
 
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "repo_payload": {
@@ -62,7 +62,7 @@ def test_extract_gitlab_repository_property_steps_set_fields_and_records():
             "record_field": _record,
         },
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://gitlab.com/org/repo",
         domain="software",
         schema="codemeta",

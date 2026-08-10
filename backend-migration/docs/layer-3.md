@@ -14,8 +14,8 @@ An **`ExtractionPipeline`** is an ordered tuple of steps. **`ExtractionPipelineR
 
 ```text
 Step 1 -> Step 2 -> ... -> Step N
-   same StepContext (immutable)
-   same StepState (mutable metadata + data scratchpad)
+   same ExtractionContext (immutable)
+   same ExtractionState (mutable metadata + data scratchpad)
 ```
 
 Order matters: a step that reads `state.data["extracted_citation_authors"]` must run after the step that fills it.
@@ -24,8 +24,8 @@ Order matters: a step that reads `state.data["extracted_citation_authors"]` must
 
 | Piece | Location | Purpose |
 |-------|----------|---------|
-| `StepContext` | `steps/contracts/step.py` | Repo URL, schema, platform, token |
-| `StepState` | `steps/contracts/step.py` | `metadata` + `data` dict |
+| `ExtractionContext` | `steps/contracts/step.py` | Repo URL, schema, platform, token |
+| `ExtractionState` | `steps/contracts/step.py` | `metadata` + `data` dict |
 | `ExtractionStep` | `steps/contracts/step.py` | `name` + `run()` |
 | `ExtractionPipeline` | `steps/contracts/pipeline.py` | Ordered steps |
 | `ExtractionMetadataCollector` | `extraction_metadata/protocol.py` | Record source/confidence |
@@ -144,7 +144,7 @@ app/layer_3/
 4. Wire into a bundle and/or profile; keep producers before consumers.  
 5. Record provenance if the field appears in UI enrichment.  
 6. Update Layer 1 entity + provenance for new fields.  
-7. Add tests (`StepContext` + `StepState`).
+7. Add tests (`ExtractionContext` + `ExtractionState`).
 
 ## Adding a profile or platform
 

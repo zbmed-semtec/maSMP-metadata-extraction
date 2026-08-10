@@ -9,7 +9,7 @@ from app.layer_3.composers.profiles.software_gitlab_codemeta import (
     build_software_gitlab_codemeta_pipeline,
 )
 from app.layer_3.extraction_metadata import InMemoryExtractionMetadataCollector
-from app.layer_3.steps.contracts import ExtractionPipelineRunner, StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionPipelineRunner, ExtractionContext, ExtractionState
 
 
 def _run_pipeline(pipeline, repo_url: str, platform: str):
@@ -23,7 +23,7 @@ def _run_pipeline(pipeline, repo_url: str, platform: str):
             confidence if confidence is not None else 1.0,
         )
 
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={
             "record_field": record,
@@ -59,7 +59,7 @@ def _run_pipeline(pipeline, repo_url: str, platform: str):
             "list_contents_fn": lambda _owner, _repo, _path="": [],
         },
     )
-    context = StepContext(repo_url=repo_url, domain="software", schema="CODEMETA", platform=platform)
+    context = ExtractionContext(repo_url=repo_url, domain="software", schema="CODEMETA", platform=platform)
     return ExtractionPipelineRunner().run(pipeline, context, state).metadata, collector.get_all()
 
 

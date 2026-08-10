@@ -3,7 +3,7 @@
 from typing import Any, Dict, Optional
 
 from app.layer_1.entities.software_metadata import SoftwareMetadata
-from app.layer_3.steps.contracts import ExtractionPipeline, ExtractionPipelineRunner, StepContext, StepState
+from app.layer_3.steps.contracts import ExtractionPipeline, ExtractionPipelineRunner, ExtractionContext, ExtractionState
 from app.layer_3.steps.extract_steps.services.external.openalex import (
     ExtractOpenAlexAuthorsStep,
     ExtractOpenAlexKeywordsStep,
@@ -41,11 +41,11 @@ class DummyWaybackClient:
 
 
 def test_external_archive_steps_merge_archived_urls():
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(),
         data={"readme_content": "https://zenodo.org/record/111111"},
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="CODEMETA",
@@ -74,11 +74,11 @@ def test_openalex_property_steps_merge_metadata():
         "authorships": [{"author": {"display_name": "Jane Doe"}}],
     }
     client = DummyOpenAlexClient(work)
-    state = StepState(
+    state = ExtractionState(
         metadata=SoftwareMetadata(identifier=["https://doi.org/10.1234/abcd"]),
         data={},
     )
-    context = StepContext(
+    context = ExtractionContext(
         repo_url="https://github.com/org/repo",
         domain="software",
         schema="CODEMETA",
