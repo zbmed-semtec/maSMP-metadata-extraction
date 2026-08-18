@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """Application settings"""
 
     # Scehma settings
-    COMET_SCHEMAS_PATH: str
+    comet_schemas_path: str
     
     # API settings
     api_title: str = "Metadata Extractor API"

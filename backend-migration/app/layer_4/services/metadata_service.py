@@ -21,7 +21,7 @@ _pipeline_runner = ExtractionPipelineRunner()
 _schema_registry = LinkMlSchemaRegistry()
 
 def initialize():
-    schema_dir = settings.COMET_SCHEMAS_PATH
+    schema_dir = settings.comet_schemas_path
     if not schema_dir:
         raise RuntimeError("COMET_SCHEMAS_PATH is not configured!")
     _schema_registry.load(schema_dir)
